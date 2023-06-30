@@ -1,0 +1,4 @@
+name: HoloQuiz2
+version: '${project.version}'
+main: benloti.holoquiz2.HoloQuiz2
+api-version: '1.19'
