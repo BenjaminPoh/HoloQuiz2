@@ -17,20 +17,26 @@ public class TestHandler implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     //only in this shibal import that a lower priority run before the higher ones
     public void onTorchPlaced2(BlockPlaceEvent event) {
-        Block block = event.getBlock();
-        if(block.getType() == Material.TORCH) {
-            block.setType(Material.WARPED_HYPHAE);
+        if(!event.getPlayer().hasPermission("Thetestpermission")) {
+            event.setCancelled(true);
+            return;
         }
-        Bukkit.getLogger().info("yeetus");
+
+        Block block = event.getBlock();
+        if(block.getType() == Material.REDSTONE_TORCH) {
+            block.setType(Material.WARPED_HYPHAE);
+            Bukkit.getLogger().info("mahboi placed a redstone torch, now its a hyphae");
+        }
+
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onTorchPlaced(BlockPlaceEvent testEvent) {
         Block block = testEvent.getBlock();
 
         if (block.getType() != Material.TORCH) {
             return;
         }
-        Bukkit.getLogger().info("DINGDINGDING");
+        Bukkit.getLogger().info("Mah boi placed a torch");
     }
 }
