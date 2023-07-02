@@ -11,7 +11,7 @@ public final class HoloQuiz2 extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        Bukkit.getLogger().info("Hello World v2");
+        Bukkit.getLogger().info("Hello World Peko");
 
         getCommand("Peko").setExecutor(new TestClass());
 
@@ -22,6 +22,6 @@ public final class HoloQuiz2 extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        Bukkit.getLogger().info("bye");
+        Bukkit.getLogger().info("Shutting Down Peko");
     }
 }
