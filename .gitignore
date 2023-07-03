@@ -1,10 +1,5 @@
 
 *.class
 *.jar
-*.class
-*.jar
-*.class
-*.jar
 .idea/uiDesigner.xml
-*.jar
-*.class
+
