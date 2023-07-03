@@ -1,7 +1,7 @@
 package benloti.holoquiz2.handlers;
 
 import benloti.holoquiz2.HoloQuiz2;
-import benloti.holoquiz2.data.PlayerPekoCount;
+import benloti.holoquiz2.data.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -24,39 +24,49 @@ public class PekoHandler implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    private static Map<String, PlayerPekoCount> totalPekoCount = new HashMap<>();
+    private static Map<String, PlayerData> fullPlayerData = new HashMap<>();
 
-    public static PlayerPekoCount getTotalPekoCount(Player p) {
+    public static PlayerData getPlayerData(Player p) {
         String playerName = p.getUniqueId().toString();
-        if (!totalPekoCount.containsKey(playerName)) {
-            PlayerPekoCount count = new PlayerPekoCount();
-            totalPekoCount.put(playerName, count);
+        if (!fullPlayerData.containsKey(playerName)) {
+            PlayerData playerData = new PlayerData();
+            playerData.initialiseData();
+            fullPlayerData.put(playerName, playerData);
         }
-        return totalPekoCount.get(playerName);
+        return fullPlayerData.get(playerName);
     }
 
-    public static void setTotalPekoCount(Player p, PlayerPekoCount peko) {
-        totalPekoCount.put(p.getUniqueId().toString(), peko);
+    public static void updatePlayerData(Player p, PlayerData peko) {
+        fullPlayerData.put(p.getUniqueId().toString(), peko);
     }
 
     @EventHandler
     public void sentPekoToChat(AsyncPlayerChatEvent theMessage) {
         if (theMessage.getMessage().equals("peko")) {
             givePekoCarrot(theMessage);
-            Player player = theMessage.getPlayer();
-            PlayerPekoCount playerPekoCount = getTotalPekoCount(player);
-            int numberOfPekos = playerPekoCount.getPekoCount();
-            playerPekoCount.increasePekoCount();
-            setTotalPekoCount(player, playerPekoCount);
-
+            reportPekoCount(theMessage);
         }
     }
 
+    private static void reportPekoCount(AsyncPlayerChatEvent theMessage) {
+        Player player = theMessage.getPlayer();
+        PlayerData playerData = getPlayerData(player);
+        playerData.increasePekoCount();
+        int numberOfPekos = playerData.getPekoCount();
+        updatePlayerData(player, playerData);
+        String message = "You have sent " + numberOfPekos + " pekos to chat!";
+        player.sendMessage(message);
+    }
+
+    /*
     @EventHandler
     public void checkPlayerJoin(PlayerJoinEvent joinEvent) {
         Player player = joinEvent.getPlayer();
-        PlayerPekoCount playerPekoCount = getTotalPekoCount(player);
+        PlayerData playerData = getPlayerData(player);
     }
+    */
+
+
 
     private static void givePekoCarrot(AsyncPlayerChatEvent theMessage) {
         Player player = theMessage.getPlayer();

@@ -1,7 +1,7 @@
 package benloti.holoquiz2;
 
 import benloti.holoquiz2.commands.TestClass;
-import benloti.holoquiz2.data.PlayerData;
+import benloti.holoquiz2.data.TestPlayerData;
 import benloti.holoquiz2.handlers.PekoHandler;
 import benloti.holoquiz2.handlers.TestHandler;
 import org.bukkit.Bukkit;
@@ -9,7 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class HoloQuiz2 extends JavaPlugin {
 
-    private PlayerData playerData;
+    private TestPlayerData testPlayerData;
 
     @Override
     public void onEnable() {
@@ -19,7 +19,7 @@ public final class HoloQuiz2 extends JavaPlugin {
         if(!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
-        this.playerData = new PlayerData(this);
+        this.testPlayerData = new TestPlayerData(this);
 
         getCommand("Peko").setExecutor(new TestClass());
         new TestHandler(this);
