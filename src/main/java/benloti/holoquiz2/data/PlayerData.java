@@ -4,6 +4,11 @@ public class PlayerData {
     private int pekoCount;
     private String name;
 
+    public PlayerData() {
+        this.pekoCount = 0;
+        this.name = "TestingName peko";
+    }
+
     public int getPekoCount() {
         return this.pekoCount;
     }
@@ -19,10 +24,4 @@ public class PlayerData {
     public void setName(String name) {
         this.name = name;
     }
-
-    public void initialiseData() {
-        this.pekoCount = 0;
-        this.name = "TestingName peko";
-    }
-
 }

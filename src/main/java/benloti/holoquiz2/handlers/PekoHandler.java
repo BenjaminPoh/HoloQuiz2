@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -30,7 +29,6 @@ public class PekoHandler implements Listener {
         String playerName = p.getUniqueId().toString();
         if (!fullPlayerData.containsKey(playerName)) {
             PlayerData playerData = new PlayerData();
-            playerData.initialiseData();
             fullPlayerData.put(playerName, playerData);
         }
         return fullPlayerData.get(playerName);
@@ -46,6 +44,7 @@ public class PekoHandler implements Listener {
             givePekoCarrot(theMessage);
             reportPekoCount(theMessage);
         }
+
     }
 
     private static void reportPekoCount(AsyncPlayerChatEvent theMessage) {
@@ -77,7 +76,7 @@ public class PekoHandler implements Listener {
         assert meta != null;
         String name = "&6Pekopekopeko";
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
-        List<String> loreList = new ArrayList<String>();
+        List<String> loreList = new ArrayList<>();
         loreList.add("&bA carrot from Pekoland, for &a" + playerName);
         loreList.add("&bAH HA HA HA HA");
         List<String> coloredLoreList = new ArrayList<>();
