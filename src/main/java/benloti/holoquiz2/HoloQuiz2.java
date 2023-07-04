@@ -10,7 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class HoloQuiz2 extends JavaPlugin {
 
-    private TestPlayerData testPlayerData;
+    //private TestPlayerData testPlayerData;
 
     @Override
     public void onEnable() {
@@ -20,7 +20,7 @@ public final class HoloQuiz2 extends JavaPlugin {
         if(!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
-        this.testPlayerData = new TestPlayerData(this);
+        //this.testPlayerData = new TestPlayerData(this);
 
         getCommand("Peko").setExecutor(new TestClass());
         new TestHandler(this);

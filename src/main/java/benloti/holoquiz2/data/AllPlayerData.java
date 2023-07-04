@@ -4,11 +4,11 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
-public class allPlayerData{
+public class AllPlayerData {
 
     private static Map<String, PlayerData> fullPlayerData;
 
-    public allPlayerData(Map<String, PlayerData> data) {
+    public AllPlayerData(Map<String, PlayerData> data) {
         fullPlayerData = data;
     }
 
