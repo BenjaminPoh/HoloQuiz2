@@ -1,10 +1,14 @@
 questions:
-  question1:
+  1:
     question: "What is 1 + 1"
-    answer: "2"
-  question2:
+    answer:
+    - "2"
+    - "two"
+  2:
     question: "peko peko peko"
-    answer: "peko"
-  question3:
+    answer:
+    - "peko"
+  3:
     question: "Is Djikstra a greedy algorithm"
-    answer: "I forgor"
+    answer:
+    - "I forgor"
