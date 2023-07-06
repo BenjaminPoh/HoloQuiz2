@@ -4,6 +4,7 @@ import benloti.holoquiz2.commands.TestClass;
 import benloti.holoquiz2.data.TestPlayerData;
 import benloti.holoquiz2.files.TimedTask;
 import benloti.holoquiz2.handlers.PekoHandler;
+import benloti.holoquiz2.handlers.QuizAnswerHandler;
 import benloti.holoquiz2.handlers.TestHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,6 +27,7 @@ public final class HoloQuiz2 extends JavaPlugin {
         new TestHandler(this);
         new PekoHandler(this);
         TimedTask testTask = new TimedTask(this);
+        new QuizAnswerHandler(this, testTask);
         testTask.start();
     }
 

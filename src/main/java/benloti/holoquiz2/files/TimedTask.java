@@ -1,7 +1,9 @@
 package benloti.holoquiz2.files;
 
-import benloti.holoquiz2.HoloQuiz2;
+import benloti.holoquiz2.data.Question;
+import benloti.holoquiz2.handlers.QuizAnswerHandler;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,8 +15,8 @@ import java.util.List;
 import java.util.Random;
 
 public class TimedTask extends BukkitRunnable {
-    private String message = "This is a default message sent every 5s peko";
-    private final List<String> allQuestions;
+    Question question;
+    private final List<Question> allQuestions;
     private long interval = 5;
     //private int index = -1;
     private final JavaPlugin plugin;
@@ -30,11 +32,13 @@ public class TimedTask extends BukkitRunnable {
             }
         }
         FileConfiguration questionFile = YamlConfiguration.loadConfiguration(configFile);
-        allQuestions = questionFile.getStringList("messages");
+        ConfigurationSection anotherFile = questionFile.getConfigurationSection("questions");
+        assert anotherFile != null;
+        allQuestions = Question.loadFromConfig(anotherFile);
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public Question showQuestion() {
+        return this.question;
     }
 
     public void setInterval(long interval) {
@@ -45,14 +49,14 @@ public class TimedTask extends BukkitRunnable {
     public void run() {
         int size = allQuestions.size();
         if(size == 0) {
-            setMessage(message);
-            Bukkit.broadcastMessage(message);
-            return;
+            question = new Question("There is no question. Peko is the answer" , "peko");
+            Bukkit.broadcastMessage(question.getQuestion());
         }
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
-        setMessage(allQuestions.get(randomIndex));
-        Bukkit.broadcastMessage(message);
+        Question question = allQuestions.get(randomIndex);
+        Bukkit.broadcastMessage(question.getQuestion());
+
     }
 
     public void start() {

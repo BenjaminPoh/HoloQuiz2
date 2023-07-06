@@ -1,4 +1,7 @@
-messages:
-  - "One peko"
-  - "Two peko"
-  - "Three peko"
+questions:
+  - question: "What is 1 + 1"
+    answer: "2"
+  - question: "peko peko peko"
+    answer: "peko"
+  - question: "Is Djikstra a greedy algorithm"
+    answer: "I forgor"
