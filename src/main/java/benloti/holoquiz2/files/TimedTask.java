@@ -1,5 +1,6 @@
 package benloti.holoquiz2.files;
 
+import benloti.holoquiz2.HoloQuiz2;
 import benloti.holoquiz2.data.Question;
 import benloti.holoquiz2.handlers.QuizAnswerHandler;
 import org.bukkit.Bukkit;
@@ -22,6 +23,7 @@ public class TimedTask extends BukkitRunnable {
     private final JavaPlugin plugin;
 
     public TimedTask(JavaPlugin plugin) {
+        Bukkit.getLogger().info("This should be seen peko");
         this.plugin = plugin;
         File configFile = new File(plugin.getDataFolder(), "QuestionBank.yml");
         if(!configFile.exists()) {
@@ -31,10 +33,15 @@ public class TimedTask extends BukkitRunnable {
                 e.printStackTrace();
             }
         }
+
         FileConfiguration questionFile = YamlConfiguration.loadConfiguration(configFile);
         ConfigurationSection anotherFile = questionFile.getConfigurationSection("questions");
-        assert anotherFile != null;
+        if(anotherFile == null) {
+            Bukkit.getLogger().info("Your .yml formatting is wrong peko");
+            //Yeah how do i terminate lmao
+        }
         allQuestions = Question.loadFromConfig(anotherFile);
+        //new QuizAnswerHandler((HoloQuiz2) this.plugin, this);
     }
 
     public Question showQuestion() {
@@ -48,15 +55,17 @@ public class TimedTask extends BukkitRunnable {
     @Override
     public void run() {
         int size = allQuestions.size();
+        /*
         if(size == 0) {
             question = new Question("There is no question. Peko is the answer" , "peko");
             Bukkit.broadcastMessage(question.getQuestion());
         }
+        */
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
         Question question = allQuestions.get(randomIndex);
+        this.question = question;
         Bukkit.broadcastMessage(question.getQuestion());
-
     }
 
     public void start() {

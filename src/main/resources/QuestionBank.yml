@@ -1,7 +1,10 @@
 questions:
-  - question: "What is 1 + 1"
+  question1:
+    question: "What is 1 + 1"
     answer: "2"
-  - question: "peko peko peko"
+  question2:
+    question: "peko peko peko"
     answer: "peko"
-  - question: "Is Djikstra a greedy algorithm"
+  question3:
+    question: "Is Djikstra a greedy algorithm"
     answer: "I forgor"

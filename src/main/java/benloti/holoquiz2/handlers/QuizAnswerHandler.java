@@ -7,9 +7,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+import java.sql.Time;
+
 public class QuizAnswerHandler implements Listener {
 
-    private TimedTask task;
+    private final TimedTask task;
 
     public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
