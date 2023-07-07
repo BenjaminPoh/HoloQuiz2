@@ -4,19 +4,20 @@ import benloti.holoquiz2.HoloQuiz2;
 import benloti.holoquiz2.files.TimedTask;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
@@ -37,17 +38,19 @@ public class QuizAnswerHandler implements Listener {
         String playerName = player.getName();
         List<String> answers = task.showQuestion().getAnswers();
         for(String possibleAnswer : answers) {
-            if (message.equalsIgnoreCase(possibleAnswer)) {
+            if (message.equalsIgnoreCase(possibleAnswer) && !task.isQuestionAnswered()) {
                 long timeAnswered = System.currentTimeMillis();
+                task.setQuestionAnswered(true);
                 sendAnnouncement(possibleAnswer, playerName, timeAnswered);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
+                //giveReward(player, timeAnswered);
                 displayTitle(player);
                 new BukkitRunnable() {
                     public void run() {
                         makeFireworks(player);
                     }
                 }.runTask(plugin);
-                break; //doesnt work.
+                //break; //doesnt work.
             }
         }
     }
@@ -88,6 +91,46 @@ public class QuizAnswerHandler implements Listener {
         String announcement1 = ChatColor.translateAlternateColorCodes('&', message1);
         String announcement2 = ChatColor.translateAlternateColorCodes('&', message2);
         player.sendTitle(announcement1, announcement2, 10, 60, 10);
+    }
+
+    private void giveReward(Player player, long timeTaken) {
+        String playerName = player.getName();
+        ItemStack item;
+        if(timeTaken <= 2000) {
+            item = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1);
+        } else if (timeTaken <= 5000) {
+            item = new ItemStack(Material.GOLDEN_APPLE, 1);
+        } else {
+            item = new ItemStack(Material.DIAMOND, 1);
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        List<String> loreList = new ArrayList<>();
+        if(timeTaken <= 1000) {
+            loreList.add("&bA carrot from Pekoland, for &a" + playerName);
+            loreList.add("&bAH HA HA HA HA");
+        } else if (timeTaken <= 2000) {
+            loreList.add("&5Special Prize");
+            loreList.add("&5for &a[player]");
+            loreList.add("");
+            loreList.add("&bSpeed is your middle name");
+        } else if (timeTaken <= 5000) {
+            loreList.add("9Holoquiz Reward");
+            loreList.add("&9For &a" + playerName);
+         } else {
+            loreList.add("&bHoloquiz Reward");
+            loreList.add("&bFor &a" + playerName);
+        }
+        List<String> coloredLoreList = new ArrayList<>();
+        for (String s : loreList) {
+            coloredLoreList.add(ChatColor.translateAlternateColorCodes('&', s));
+        }
+        assert meta != null;
+        meta.setLore(coloredLoreList);
+
+        item.setItemMeta(meta);
+        Inventory inv = player.getInventory();
+        inv.addItem(item);
     }
 
 }

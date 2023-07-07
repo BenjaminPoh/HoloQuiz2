@@ -10,7 +10,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.List;
 import java.util.Random;
 
@@ -20,6 +19,7 @@ public class TimedTask extends BukkitRunnable {
     private long interval = 10;
     private final JavaPlugin plugin;
     private long timeQuestionSent;
+    private boolean questionAnswered;
 
     public TimedTask(JavaPlugin plugin) {
         Bukkit.getLogger().info("This should be seen peko");
@@ -59,6 +59,14 @@ public class TimedTask extends BukkitRunnable {
         return this.timeQuestionSent;
     }
 
+    public void setQuestionAnswered(boolean questionAnswered) {
+        this.questionAnswered = questionAnswered;
+    }
+
+    public boolean isQuestionAnswered() {
+        return questionAnswered;
+    }
+
     @Override
     public void run() {
         int size = allQuestions.size();
@@ -72,6 +80,7 @@ public class TimedTask extends BukkitRunnable {
         int randomIndex = rand.nextInt(size);
         Question question = allQuestions.get(randomIndex);
         this.question = question;
+        setQuestionAnswered(false);
         setTimeQuestionSent(System.currentTimeMillis());
         Bukkit.broadcastMessage(question.getQuestion());
     }
