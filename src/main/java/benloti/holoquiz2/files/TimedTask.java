@@ -1,8 +1,6 @@
 package benloti.holoquiz2.files;
 
-import benloti.holoquiz2.HoloQuiz2;
 import benloti.holoquiz2.data.Question;
-import benloti.holoquiz2.handlers.QuizAnswerHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,15 +10,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.List;
 import java.util.Random;
 
 public class TimedTask extends BukkitRunnable {
     Question question;
     private final List<Question> allQuestions;
-    private long interval = 5;
-    //private int index = -1;
+    private long interval = 10;
     private final JavaPlugin plugin;
+    private long timeQuestionSent;
 
     public TimedTask(JavaPlugin plugin) {
         Bukkit.getLogger().info("This should be seen peko");
@@ -52,6 +51,14 @@ public class TimedTask extends BukkitRunnable {
         this.interval = interval;
     }
 
+    private void setTimeQuestionSent(long time) {
+        this.timeQuestionSent = time;
+    }
+
+    public long getTimeQuestionSent() {
+        return this.timeQuestionSent;
+    }
+
     @Override
     public void run() {
         int size = allQuestions.size();
@@ -65,10 +72,12 @@ public class TimedTask extends BukkitRunnable {
         int randomIndex = rand.nextInt(size);
         Question question = allQuestions.get(randomIndex);
         this.question = question;
+        setTimeQuestionSent(System.currentTimeMillis());
         Bukkit.broadcastMessage(question.getQuestion());
     }
 
     public void start() {
+
         this.runTaskTimer(plugin, 0, interval * 20);
     }
 }

@@ -8,24 +8,26 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.awt.*;
-import java.sql.Time;
 import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
 
     private final TimedTask task;
+    private final HoloQuiz2 plugin;
 
     public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.task = task;
+        this.plugin = plugin;
     }
 
     @EventHandler
@@ -36,29 +38,40 @@ public class QuizAnswerHandler implements Listener {
         List<String> answers = task.showQuestion().getAnswers();
         for(String possibleAnswer : answers) {
             if (message.equalsIgnoreCase(possibleAnswer)) {
-                sendAnnouncement(possibleAnswer, playerName);
-                //makeFireworks(player); //Broken, how
+                long timeAnswered = System.currentTimeMillis();
+                sendAnnouncement(possibleAnswer, playerName, timeAnswered);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
                 displayTitle(player);
+                new BukkitRunnable() {
+                    public void run() {
+                        makeFireworks(player);
+                    }
+                }.runTask(plugin);
+                break; //doesnt work.
             }
         }
     }
 
-    private void sendAnnouncement(String possibleAnswer, String playerName) {
-        String message = "&6" + playerName + "&e wins! The answer was &6" + possibleAnswer;
+    private void sendAnnouncement(String possibleAnswer, String playerName, long timeAnswered) {
+        long startTime = task.getTimeQuestionSent();
+        double timeTaken = (timeAnswered - startTime) / 1000.0;
+        String message = "&6" + playerName + "&e wins after &6" + timeTaken +
+                "&e seconds! The answer was &6" + possibleAnswer;
         String announcement = ChatColor.translateAlternateColorCodes('&', message);
         Bukkit.broadcastMessage(announcement);
     }
 
     private void makeFireworks(Player player) {
-        Firework firework = player.getWorld().spawn(player.getLocation(), Firework.class);
+        Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
         FireworkMeta fireworkMeta = firework.getFireworkMeta();
         FireworkEffect.Builder builder = FireworkEffect.builder();
 
-        fireworkMeta.addEffect(builder.flicker(true).withColor(Color.BLUE).build());
-        fireworkMeta.addEffect(builder.withFade(Color.YELLOW).build());
-        fireworkMeta.addEffect(builder.trail(true).build());
-        fireworkMeta.addEffect(builder.with(FireworkEffect.Type.BURST).build());
+        builder.flicker(true).withColor(Color.AQUA);
+        builder.withFade(Color.YELLOW);
+        builder.trail(true);
+        builder.with(FireworkEffect.Type.BURST);
+
+        fireworkMeta.addEffect(builder.build());
         fireworkMeta.setPower(1);
         firework.setFireworkMeta(fireworkMeta);
     }
