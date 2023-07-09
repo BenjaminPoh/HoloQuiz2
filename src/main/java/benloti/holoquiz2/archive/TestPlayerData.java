@@ -1,7 +1,6 @@
-package benloti.holoquiz2.data;
+package benloti.holoquiz2.archive;
 
 import benloti.holoquiz2.HoloQuiz2;
-import benloti.holoquiz2.files.AbstractFile;
 import org.bukkit.entity.Player;
 
 public class TestPlayerData extends AbstractFile {

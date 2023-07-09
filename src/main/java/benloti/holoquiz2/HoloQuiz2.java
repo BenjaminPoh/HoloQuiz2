@@ -1,13 +1,13 @@
 package benloti.holoquiz2;
 
 import benloti.holoquiz2.commands.TestClass;
-import benloti.holoquiz2.data.TestPlayerData;
+import benloti.holoquiz2.files.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
-import benloti.holoquiz2.handlers.PekoHandler;
 import benloti.holoquiz2.handlers.QuizAnswerHandler;
-import benloti.holoquiz2.handlers.TestHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import javax.xml.crypto.Data;
 
 public final class HoloQuiz2 extends JavaPlugin {
     @Override
@@ -19,11 +19,11 @@ public final class HoloQuiz2 extends JavaPlugin {
             getDataFolder().mkdirs();
         }
 
+        DatabaseManager database = new DatabaseManager(this);
+
         getCommand("Peko").setExecutor(new TestClass());
-        new TestHandler(this);
-        new PekoHandler(this);
         TimedTask testTask = new TimedTask(this);
-        new QuizAnswerHandler(this, testTask);
+        new QuizAnswerHandler(this, testTask, database);
         testTask.start();
     }
 

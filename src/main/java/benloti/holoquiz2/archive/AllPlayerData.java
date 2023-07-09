@@ -1,4 +1,4 @@
-package benloti.holoquiz2.data;
+package benloti.holoquiz2.archive;
 
 import org.bukkit.entity.Player;
 

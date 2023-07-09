@@ -1,6 +1,6 @@
 //Shamelessly robbed from ReadySetPawn
 
-package benloti.holoquiz2.files;
+package benloti.holoquiz2.archive;
 
 import benloti.holoquiz2.HoloQuiz2;
 import org.bukkit.Bukkit;

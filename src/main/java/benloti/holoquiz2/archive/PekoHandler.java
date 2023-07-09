@@ -1,7 +1,6 @@
-package benloti.holoquiz2.handlers;
+package benloti.holoquiz2.archive;
 
 import benloti.holoquiz2.HoloQuiz2;
-import benloti.holoquiz2.data.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

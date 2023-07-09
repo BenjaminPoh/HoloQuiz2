@@ -1,6 +1,7 @@
 package benloti.holoquiz2.handlers;
 
 import benloti.holoquiz2.HoloQuiz2;
+import benloti.holoquiz2.files.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +26,13 @@ public class QuizAnswerHandler implements Listener {
 
     private final TimedTask task;
     private final HoloQuiz2 plugin;
+    private final DatabaseManager database;
 
-    public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task) {
+    public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task, DatabaseManager database) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.task = task;
         this.plugin = plugin;
+        this.database = database;
     }
 
     @EventHandler
@@ -50,18 +54,19 @@ public class QuizAnswerHandler implements Listener {
                         makeFireworks(player);
                     }
                 }.runTask(plugin);
-                //break; //doesnt work.
             }
         }
     }
 
     private void sendAnnouncement(String possibleAnswer, String playerName, long timeAnswered) {
         long startTime = task.getTimeQuestionSent();
-        double timeTaken = (timeAnswered - startTime) / 1000.0;
-        String message = "&6" + playerName + "&e wins after &6" + timeTaken +
+        long timeTaken = (timeAnswered - startTime);
+        double timeTakenInSeconds = timeTaken / 1000.0;
+        String message = "&6" + playerName + "&e wins after &6" + timeTakenInSeconds +
                 "&e seconds! The answer was &6" + possibleAnswer;
         String announcement = ChatColor.translateAlternateColorCodes('&', message);
         Bukkit.broadcastMessage(announcement);
+        database.updateLogsRecord2(1, startTime, timeTaken);
     }
 
     private void makeFireworks(Player player) {
@@ -126,6 +131,8 @@ public class QuizAnswerHandler implements Listener {
             coloredLoreList.add(ChatColor.translateAlternateColorCodes('&', s));
         }
         assert meta != null;
+
+
         meta.setLore(coloredLoreList);
 
         item.setItemMeta(meta);

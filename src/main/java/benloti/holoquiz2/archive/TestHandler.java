@@ -1,4 +1,4 @@
-package benloti.holoquiz2.handlers;
+package benloti.holoquiz2.archive;
 
 import benloti.holoquiz2.HoloQuiz2;
 import org.bukkit.Bukkit;
