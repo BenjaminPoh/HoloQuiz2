@@ -8,21 +8,21 @@ import java.io.IOException;
 import java.sql.*;
 
 public class DatabaseManager {
-    //public static final String HOLOQUIZ_STATS_TABLE_NAME = "holoquiz_stats";
-    //public static final String ANSWER_LOGS_TABLE_NAME = "answer_logs";
+    private static final String DB_NAME = "HoloQuiz";
+
     private static final String SQL_STATEMENT_CREATE_STATS_TABLE =
-            "CREATE TABLE IF NOT EXISTS holoquiz_stats (userId INT , best LONG, average LONG, answers LONG)";
+            "CREATE TABLE IF NOT EXISTS holoquiz_stats (user_id INT , best LONG, average LONG, answers LONG)";
     private static final String SQL_STATEMENT_CREATE_LOGS_TABLE =
-            "CREATE TABLE IF NOT EXISTS answers_logs (userId INT , timestamp LONG, took LONG)";
-    //private static final String SQL_STATEMENT_CREATE_USERS_TABLE =
-            //"CREATE TABLE IF NOT EXISTS users_ids (userId INT , player_uuid STRING, username STRING)";
+            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp LONG, took LONG)";
+    private static final String SQL_STATEMENT_CREATE_USERS_TABLE =
+            "CREATE TABLE IF NOT EXISTS user_info (user_id INT , player_uuid STRING, username STRING)";
+
+    public static final String SQL_STATEMENT_UPDATE_LOGS =
+            "INSERT INTO answers_logs (userID, timestamp, took) VALUES (?, ?, ?)";
 
     private static Connection connection;
     private final JavaPlugin plugin;
     private final File dataFile;
-
-    //private static final String DB_PATH = "plugins/HoloQuiz2/HoloQuiz.db";
-    private static final String DB_NAME = "HoloQuiz";
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -46,7 +46,7 @@ public class DatabaseManager {
         Connection connection = getConnection();
         createTable(connection, SQL_STATEMENT_CREATE_STATS_TABLE);
         createTable(connection,SQL_STATEMENT_CREATE_LOGS_TABLE);
-        //createTable(connection, SQL_STATEMENT_CREATE_USERS_TABLE);
+        createTable(connection, SQL_STATEMENT_CREATE_USERS_TABLE);
     }
 
     public Connection getConnection() {
@@ -75,6 +75,56 @@ public class DatabaseManager {
         }
     }
 
+    public int obtainPlayerID(String PlayerUUID, String PlayerName) {
+        String SQLQuery = "SELECT * FROM user_info WHERE player_uuid = '" + PlayerUUID + "'";
+        try {
+            PreparedStatement statement = connection.prepareStatement(SQLQuery);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                Bukkit.getLogger().info("Player has answered before...");
+                String savedName = resultSet.getString("username");
+                if(!savedName.equals(PlayerName)) {
+                    Bukkit.getLogger().info("Supposed to update table. Not important at this point given how" +
+                            " minecraft works and this is intended for HoloCraft, which is a cracked server");
+                }
+                return resultSet.getInt("user_id");
+            } else {
+                String insertUserInfoStatement =
+                        "INSERT INTO user_info (user_id, player_uuid, username) VALUES (?, ?, ?)";
+                PreparedStatement infoStatement = connection.prepareStatement(insertUserInfoStatement);
+                int newUserID = assignNewUserID();
+                infoStatement.setInt(1, newUserID);
+                infoStatement.setString(2, PlayerUUID);
+                infoStatement.setString(3, PlayerName);
+                infoStatement.executeUpdate();
+                Bukkit.getLogger().info("Player has never answered before, assigned ID: " + newUserID);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    private static int assignNewUserID() throws SQLException {
+        String assignNewUserIDStatement = "SELECT COUNT (user_id) FROM user_info";
+        PreparedStatement assignIDStatement = connection.prepareStatement(assignNewUserIDStatement);
+        ResultSet resultSet = assignIDStatement.executeQuery();
+        resultSet.next();
+        return resultSet.getInt(1) + 1;
+    }
+
+    public void updateLogsRecord(int userID, long timeStamp, long timeTaken) {
+        String updateLogsStatement = SQL_STATEMENT_UPDATE_LOGS;
+        try (PreparedStatement logsStatement = connection.prepareStatement(updateLogsStatement)) {
+            logsStatement.setInt(1, userID);
+            logsStatement.setLong(2, timeStamp);
+            logsStatement.setLong(3, timeTaken);
+            logsStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void updateStatsRecord(int userID, long bestTime, long answers, double averageTime) {
             String updateStatsStatement =
                     "UPDATE holoquiz_stats SET best = ?, answers = ?, average = ? WHERE userId = ?";
@@ -85,18 +135,6 @@ public class DatabaseManager {
                 statsStatement.setInt(4, userID);
                 statsStatement.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void updateLogsRecord(int userID, long timeStamp, long timeTaken) {
-        String updateLogsStatement = "INSERT INTO answers_logs (userID, timestamp, took) VALUES (?, ?, ?)";
-        try (PreparedStatement logsStatement = connection.prepareStatement(updateLogsStatement)) {
-            logsStatement.setInt(1, userID);
-            logsStatement.setLong(2, timeStamp);
-            logsStatement.setLong(3, timeTaken);
-            logsStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

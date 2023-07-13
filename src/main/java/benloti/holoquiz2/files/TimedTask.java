@@ -40,7 +40,6 @@ public class TimedTask extends BukkitRunnable {
             //Yeah how do i terminate lmao
         }
         allQuestions = Question.loadFromConfig(anotherFile);
-        //new QuizAnswerHandler((HoloQuiz2) this.plugin, this);
     }
 
     public Question showQuestion() {

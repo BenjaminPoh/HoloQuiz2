@@ -62,7 +62,8 @@ public class QuizAnswerHandler implements Listener {
                 }.runTask(plugin);
 
                 //Update database
-                database.updateLogsRecord(1,timeAnswered,timeTaken);
+                int playerHoloQuizID = database.obtainPlayerID(player.getUniqueId().toString(), player.getName());
+                database.updateLogsRecord(playerHoloQuizID,timeAnswered,timeTaken);
             }
         }
     }
