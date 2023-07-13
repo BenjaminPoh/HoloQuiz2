@@ -18,7 +18,6 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +42,16 @@ public class QuizAnswerHandler implements Listener {
         List<String> answers = task.showQuestion().getAnswers();
         for(String possibleAnswer : answers) {
             if (message.equalsIgnoreCase(possibleAnswer) && !task.isQuestionAnswered()) {
+                //Time sensitive tasks
                 long timeAnswered = System.currentTimeMillis();
                 task.setQuestionAnswered(true);
-                sendAnnouncement(possibleAnswer, playerName, timeAnswered);
+
+                //Simple calculations for later
+                long startTime = task.getTimeQuestionSent();
+                long timeTaken = (timeAnswered - startTime);
+
+                //The actual tasks
+                sendAnnouncement(possibleAnswer, playerName, timeTaken);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
                 //giveReward(player, timeAnswered);
                 displayTitle(player);
@@ -54,19 +60,19 @@ public class QuizAnswerHandler implements Listener {
                         makeFireworks(player);
                     }
                 }.runTask(plugin);
+
+                //Update database
+                database.updateLogsRecord(1,timeAnswered,timeTaken);
             }
         }
     }
 
-    private void sendAnnouncement(String possibleAnswer, String playerName, long timeAnswered) {
-        long startTime = task.getTimeQuestionSent();
-        long timeTaken = (timeAnswered - startTime);
+    private void sendAnnouncement(String possibleAnswer, String playerName, long timeTaken) {
         double timeTakenInSeconds = timeTaken / 1000.0;
         String message = "&6" + playerName + "&e wins after &6" + timeTakenInSeconds +
                 "&e seconds! The answer was &6" + possibleAnswer;
         String announcement = ChatColor.translateAlternateColorCodes('&', message);
         Bukkit.broadcastMessage(announcement);
-        database.updateLogsRecord2(1, startTime, timeTaken);
     }
 
     private void makeFireworks(Player player) {
