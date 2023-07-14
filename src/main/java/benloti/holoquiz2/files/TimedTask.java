@@ -85,7 +85,6 @@ public class TimedTask extends BukkitRunnable {
     }
 
     public void start() {
-
         this.runTaskTimer(plugin, 0, interval * 20);
     }
 }

@@ -48,7 +48,7 @@ public class QuizAnswerHandler implements Listener {
 
                 //Simple calculations for later
                 long startTime = task.getTimeQuestionSent();
-                long timeTaken = (timeAnswered - startTime);
+                int timeTaken = (int)(timeAnswered - startTime);
 
                 //The actual tasks
                 sendAnnouncement(possibleAnswer, playerName, timeTaken);
@@ -63,7 +63,8 @@ public class QuizAnswerHandler implements Listener {
 
                 //Update database
                 int playerHoloQuizID = database.obtainPlayerID(player.getUniqueId().toString(), player.getName());
-                database.updateLogsRecord(playerHoloQuizID,timeAnswered,timeTaken);
+                database.updateLogsRecord(playerHoloQuizID, timeAnswered, timeTaken);
+                database.updateStatsRecord(playerHoloQuizID, timeTaken);
             }
         }
     }

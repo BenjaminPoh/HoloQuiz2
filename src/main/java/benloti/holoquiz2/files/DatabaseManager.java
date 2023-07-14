@@ -3,6 +3,7 @@ package benloti.holoquiz2.files;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.xml.transform.Result;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -11,9 +12,9 @@ public class DatabaseManager {
     private static final String DB_NAME = "HoloQuiz";
 
     private static final String SQL_STATEMENT_CREATE_STATS_TABLE =
-            "CREATE TABLE IF NOT EXISTS holoquiz_stats (user_id INT , best LONG, average LONG, answers LONG)";
+            "CREATE TABLE IF NOT EXISTS holoquiz_stats (user_id INT , best INT, total LONG, answers INT)";
     private static final String SQL_STATEMENT_CREATE_LOGS_TABLE =
-            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp LONG, took LONG)";
+            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp LONG, took INT)";
     private static final String SQL_STATEMENT_CREATE_USERS_TABLE =
             "CREATE TABLE IF NOT EXISTS user_info (user_id INT , player_uuid STRING, username STRING)";
 
@@ -113,28 +114,42 @@ public class DatabaseManager {
         return resultSet.getInt(1) + 1;
     }
 
-    public void updateLogsRecord(int userID, long timeStamp, long timeTaken) {
+    public void updateLogsRecord(int userID, long timeStamp, int timeTaken) {
         String updateLogsStatement = SQL_STATEMENT_UPDATE_LOGS;
         try (PreparedStatement logsStatement = connection.prepareStatement(updateLogsStatement)) {
             logsStatement.setInt(1, userID);
             logsStatement.setLong(2, timeStamp);
-            logsStatement.setLong(3, timeTaken);
+            logsStatement.setInt(3, timeTaken);
             logsStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void updateStatsRecord(int userID, long bestTime, long answers, double averageTime) {
-            String updateStatsStatement =
-                    "UPDATE holoquiz_stats SET best = ?, answers = ?, average = ? WHERE userId = ?";
-            try (PreparedStatement statsStatement = connection.prepareStatement(updateStatsStatement)) {
+    public void updateStatsRecord(int userID, int timeTaken) {
+            String fetchStatsStatement = "SELECT * FROM holoquiz_stats WHERE user_id = '" + userID + "'";
+        String updateStatsStatement =
+                "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE userId = ?";
+        try {
+            PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
+            ResultSet resultSet = fetchStatsQuery.executeQuery();
+            resultSet.next();
+            int totalAnswers = resultSet.getInt("answers");
+            long totalTimeTaken = resultSet.getLong("total");
+            int bestTime = resultSet.getInt("best");
+
+            if(bestTime > timeTaken) {
+                bestTime = timeTaken;
+            }
+            totalTimeTaken += timeTaken;
+            totalAnswers += 1;
+
+            PreparedStatement statsStatement = connection.prepareStatement(updateStatsStatement);
                 statsStatement.setLong(1, bestTime);
-                statsStatement.setLong(2, answers);
-                statsStatement.setDouble(3, averageTime);
+                statsStatement.setLong(2, totalAnswers);
+                statsStatement.setDouble(3, totalTimeTaken);
                 statsStatement.setInt(4, userID);
                 statsStatement.executeUpdate();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
