@@ -1,4 +1,4 @@
-package benloti.holoquiz2.commands;
+package benloti.holoquiz2.archive;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,3 +18,4 @@ public class TestClass implements CommandExecutor {
         return true;
     }
 }
+

@@ -1,6 +1,6 @@
 package benloti.holoquiz2;
 
-import benloti.holoquiz2.commands.TestClass;
+import benloti.holoquiz2.archive.TestClass;
 import benloti.holoquiz2.files.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import benloti.holoquiz2.handlers.QuizAnswerHandler;

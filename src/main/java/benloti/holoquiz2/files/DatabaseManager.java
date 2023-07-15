@@ -16,9 +16,25 @@ public class DatabaseManager {
             "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp LONG, took INT)";
     private static final String SQL_STATEMENT_CREATE_USERS_TABLE =
             "CREATE TABLE IF NOT EXISTS user_info (user_id INT , player_uuid STRING, username STRING)";
-
-    public static final String SQL_STATEMENT_UPDATE_LOGS =
+    
+    private static final String SQL_STATEMENT_OBTAIN_USER_ID =
+            "SELECT * FROM user_info WHERE player_uuid = '%s'";
+    private static final String SQL_STATEMENT_ADD_NEW_USER_INFO =
+            "INSERT INTO user_info (user_id, player_uuid, username) VALUES (?, ?, ?)";
+    private static final String SQL_STATEMENT_ASSIGN_NEW_USER_ID =
+            "SELECT COUNT (user_id) FROM user_info";
+    private static final String SQL_STATEMENT_UPDATE_LOGS =
             "INSERT INTO answers_logs (user_id, timestamp, took) VALUES (?, ?, ?)";
+    private static final String SQL_STATEMENT_FETCH_STATS = 
+            "SELECT * FROM holoquiz_stats WHERE user_id = '%s'";
+    private static final String SQL_STATEMENT_UPDATE_STATS = 
+            "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
+    private static final String SQL_STATEMENT_INSERT_NEW_STATS = 
+            "INSERT INTO holoquiz_stats (best, answers, total, user_id) VALUES (?, ?, ?, ?)";
+    
+    private static final String ERROR_MSG_DB_FILE = "Yabe peko, what happened to the db peko";
+    private static final String ERROR_MSG_UUID_USERNAME_MISMATCH =
+            "Supposed to update table. Not important at this point given how minecraft works and this is intended for HoloCraft, which is a cracked server";
 
     private static Connection connection;
     private final JavaPlugin plugin;
@@ -36,7 +52,7 @@ public class DatabaseManager {
             try {
                 dataFolder.createNewFile();
             } catch (IOException e) {
-                Bukkit.getLogger().info("Yabe peko, what happened to the db peko");
+                Bukkit.getLogger().info(ERROR_MSG_DB_FILE);
                 e.printStackTrace();
             }
         }
@@ -58,7 +74,7 @@ public class DatabaseManager {
                 connection = DriverManager.getConnection("jdbc:sqlite:" + dataFile);
             }
             if (connection == null || connection.isClosed()) {
-                Bukkit.getLogger().info("This aint right peko");
+                Bukkit.getLogger().info("This ain't right peko");
                 return null;
             }
             return connection;
@@ -77,22 +93,19 @@ public class DatabaseManager {
     }
 
     public int obtainPlayerID(String PlayerUUID, String PlayerName) {
-        String SQLQuery = "SELECT * FROM user_info WHERE player_uuid = '" + PlayerUUID + "'";
+        String firstStatement = String.format(SQL_STATEMENT_OBTAIN_USER_ID, PlayerUUID);
         try {
-            PreparedStatement statement = connection.prepareStatement(SQLQuery);
+            PreparedStatement statement = connection.prepareStatement(firstStatement);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 Bukkit.getLogger().info("Player has answered before...");
                 String savedName = resultSet.getString("username");
                 if (!savedName.equals(PlayerName)) {
-                    Bukkit.getLogger().info("Supposed to update table. Not important at this point given how" +
-                            " minecraft works and this is intended for HoloCraft, which is a cracked server");
+                    Bukkit.getLogger().info(ERROR_MSG_UUID_USERNAME_MISMATCH);
                 }
                 return resultSet.getInt("user_id");
             } else {
-                String insertUserInfoStatement =
-                        "INSERT INTO user_info (user_id, player_uuid, username) VALUES (?, ?, ?)";
-                PreparedStatement infoStatement = connection.prepareStatement(insertUserInfoStatement);
+                PreparedStatement infoStatement = connection.prepareStatement(SQL_STATEMENT_ADD_NEW_USER_INFO);
                 int newUserID = assignNewUserID();
                 infoStatement.setInt(1, newUserID);
                 infoStatement.setString(2, PlayerUUID);
@@ -108,16 +121,14 @@ public class DatabaseManager {
     }
 
     private static int assignNewUserID() throws SQLException {
-        String assignNewUserIDStatement = "SELECT COUNT (user_id) FROM user_info";
-        PreparedStatement assignIDStatement = connection.prepareStatement(assignNewUserIDStatement);
+        PreparedStatement assignIDStatement = connection.prepareStatement(SQL_STATEMENT_ASSIGN_NEW_USER_ID);
         ResultSet resultSet = assignIDStatement.executeQuery();
         resultSet.next();
         return resultSet.getInt(1) + 1;
     }
 
     public void updateLogsRecord(int userID, long timeStamp, int timeTaken) {
-        String updateLogsStatement = SQL_STATEMENT_UPDATE_LOGS;
-        try (PreparedStatement logsStatement = connection.prepareStatement(updateLogsStatement)) {
+        try (PreparedStatement logsStatement = connection.prepareStatement(SQL_STATEMENT_UPDATE_LOGS)) {
             logsStatement.setInt(1, userID);
             logsStatement.setLong(2, timeStamp);
             logsStatement.setInt(3, timeTaken);
@@ -128,21 +139,18 @@ public class DatabaseManager {
     }
 
     public void updateStatsRecord(int userID, int timeTaken) {
-        String fetchStatsStatement = "SELECT * FROM holoquiz_stats WHERE user_id = '" + userID + "'";
-        String updateStatsStatement =
-                "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
-        String insertStatsStatement =
-                "INSERT INTO holoquiz_stats (best, answers, total, user_id) VALUES (?, ?, ?, ?)";
-
+        String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, userID);
+        String statsStatement;
+        int totalAnswers, bestTime;
+        long totalTimeTaken;
+        
         try {
             PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
             ResultSet resultSet = fetchStatsQuery.executeQuery();
             boolean isNotFirstAnswer = resultSet.next();
-
-            int totalAnswers, bestTime;
-            long totalTimeTaken;
+            
             if (isNotFirstAnswer) {
-                Bukkit.getLogger().info("not first answer stats updating");
+                Bukkit.getLogger().info("Player has answered before!");
                 totalAnswers = resultSet.getInt("answers");
                 totalTimeTaken = resultSet.getLong("total");
                 bestTime = resultSet.getInt("best");
@@ -152,19 +160,16 @@ public class DatabaseManager {
                 }
                 totalTimeTaken += timeTaken;
                 totalAnswers += 1;
+
+                statsStatement = SQL_STATEMENT_UPDATE_STATS;
             } else {
-                Bukkit.getLogger().info("first answer stats updating");
+                Bukkit.getLogger().info("Player has never answered before!");
                 totalAnswers = 1;
                 totalTimeTaken = timeTaken;
                 bestTime = timeTaken;
+                statsStatement = SQL_STATEMENT_INSERT_NEW_STATS;
             }
-
-            String statsStatement;
-            if (isNotFirstAnswer) {
-                statsStatement = updateStatsStatement;
-            } else {
-                statsStatement = insertStatsStatement;
-            }
+            
             PreparedStatement statsSQLQuery = connection.prepareStatement(statsStatement);
             statsSQLQuery.setLong(1, bestTime);
             statsSQLQuery.setLong(2, totalAnswers);
