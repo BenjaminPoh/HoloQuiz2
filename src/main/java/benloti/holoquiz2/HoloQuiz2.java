@@ -7,8 +7,6 @@ import benloti.holoquiz2.handlers.QuizAnswerHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.crypto.Data;
-
 public final class HoloQuiz2 extends JavaPlugin {
     @Override
     public void onEnable() {

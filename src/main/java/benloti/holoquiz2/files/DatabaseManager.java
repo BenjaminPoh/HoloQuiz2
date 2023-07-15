@@ -3,7 +3,6 @@ package benloti.holoquiz2.files;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.transform.Result;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -19,7 +18,7 @@ public class DatabaseManager {
             "CREATE TABLE IF NOT EXISTS user_info (user_id INT , player_uuid STRING, username STRING)";
 
     public static final String SQL_STATEMENT_UPDATE_LOGS =
-            "INSERT INTO answers_logs (userID, timestamp, took) VALUES (?, ?, ?)";
+            "INSERT INTO answers_logs (user_id, timestamp, took) VALUES (?, ?, ?)";
 
     private static Connection connection;
     private final JavaPlugin plugin;
@@ -43,10 +42,11 @@ public class DatabaseManager {
         }
         return dataFolder;
     }
+
     public void initialiseTables() {
         Connection connection = getConnection();
         createTable(connection, SQL_STATEMENT_CREATE_STATS_TABLE);
-        createTable(connection,SQL_STATEMENT_CREATE_LOGS_TABLE);
+        createTable(connection, SQL_STATEMENT_CREATE_LOGS_TABLE);
         createTable(connection, SQL_STATEMENT_CREATE_USERS_TABLE);
     }
 
@@ -84,7 +84,7 @@ public class DatabaseManager {
             if (resultSet.next()) {
                 Bukkit.getLogger().info("Player has answered before...");
                 String savedName = resultSet.getString("username");
-                if(!savedName.equals(PlayerName)) {
+                if (!savedName.equals(PlayerName)) {
                     Bukkit.getLogger().info("Supposed to update table. Not important at this point given how" +
                             " minecraft works and this is intended for HoloCraft, which is a cracked server");
                 }
@@ -99,6 +99,7 @@ public class DatabaseManager {
                 infoStatement.setString(3, PlayerName);
                 infoStatement.executeUpdate();
                 Bukkit.getLogger().info("Player has never answered before, assigned ID: " + newUserID);
+                return newUserID;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -127,29 +128,50 @@ public class DatabaseManager {
     }
 
     public void updateStatsRecord(int userID, int timeTaken) {
-            String fetchStatsStatement = "SELECT * FROM holoquiz_stats WHERE user_id = '" + userID + "'";
+        String fetchStatsStatement = "SELECT * FROM holoquiz_stats WHERE user_id = '" + userID + "'";
         String updateStatsStatement =
-                "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE userId = ?";
+                "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
+        String insertStatsStatement =
+                "INSERT INTO holoquiz_stats (best, answers, total, user_id) VALUES (?, ?, ?, ?)";
+
         try {
             PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
             ResultSet resultSet = fetchStatsQuery.executeQuery();
-            resultSet.next();
-            int totalAnswers = resultSet.getInt("answers");
-            long totalTimeTaken = resultSet.getLong("total");
-            int bestTime = resultSet.getInt("best");
+            boolean isNotFirstAnswer = resultSet.next();
 
-            if(bestTime > timeTaken) {
+            int totalAnswers, bestTime;
+            long totalTimeTaken;
+            if (isNotFirstAnswer) {
+                Bukkit.getLogger().info("not first answer stats updating");
+                totalAnswers = resultSet.getInt("answers");
+                totalTimeTaken = resultSet.getLong("total");
+                bestTime = resultSet.getInt("best");
+
+                if (bestTime > timeTaken) {
+                    bestTime = timeTaken;
+                }
+                totalTimeTaken += timeTaken;
+                totalAnswers += 1;
+            } else {
+                Bukkit.getLogger().info("first answer stats updating");
+                totalAnswers = 1;
+                totalTimeTaken = timeTaken;
                 bestTime = timeTaken;
             }
-            totalTimeTaken += timeTaken;
-            totalAnswers += 1;
 
-            PreparedStatement statsStatement = connection.prepareStatement(updateStatsStatement);
-                statsStatement.setLong(1, bestTime);
-                statsStatement.setLong(2, totalAnswers);
-                statsStatement.setDouble(3, totalTimeTaken);
-                statsStatement.setInt(4, userID);
-                statsStatement.executeUpdate();
+            String statsStatement;
+            if (isNotFirstAnswer) {
+                statsStatement = updateStatsStatement;
+            } else {
+                statsStatement = insertStatsStatement;
+            }
+            PreparedStatement statsSQLQuery = connection.prepareStatement(statsStatement);
+            statsSQLQuery.setLong(1, bestTime);
+            statsSQLQuery.setLong(2, totalAnswers);
+            statsSQLQuery.setDouble(3, totalTimeTaken);
+            statsSQLQuery.setInt(4, userID);
+            statsSQLQuery.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
