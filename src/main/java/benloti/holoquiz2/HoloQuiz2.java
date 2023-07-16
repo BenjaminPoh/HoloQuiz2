@@ -1,6 +1,6 @@
 package benloti.holoquiz2;
 
-import benloti.holoquiz2.archive.TestClass;
+import benloti.holoquiz2.commands.PlayerCmds;
 import benloti.holoquiz2.files.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import benloti.holoquiz2.handlers.QuizAnswerHandler;
@@ -18,11 +18,11 @@ public final class HoloQuiz2 extends JavaPlugin {
         }
 
         DatabaseManager database = new DatabaseManager(this);
+        TimedTask triviaTask = new TimedTask(this);
+        new QuizAnswerHandler(this, triviaTask, database);
+        getCommand("HoloQuiz").setExecutor(new PlayerCmds(triviaTask, database));
 
-        getCommand("Peko").setExecutor(new TestClass());
-        TimedTask testTask = new TimedTask(this);
-        new QuizAnswerHandler(this, testTask, database);
-        testTask.start();
+        triviaTask.start();
     }
 
     @Override

@@ -3,7 +3,12 @@ version: '1.0-SNAPSHOT'
 main: benloti.holoquiz2.HoloQuiz2
 api-version: '1.19'
 commands:
-  Peko:
-    description: Sends the entire pekopasta
-    usage: /peko
-    aliases: pekopasta
+  HoloQuiz:
+    info:
+      description: Displays information related to the current Question
+      usage: /HoloQuiz info
+      aliases: holoquiz info
+    peko:
+      description: PEKO PEKO PEKO
+      usage: /HoloQuiz peko
+      aliases: holoquiz peko

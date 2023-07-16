@@ -50,6 +50,10 @@ public class TimedTask extends BukkitRunnable {
         this.interval = interval;
     }
 
+    public long getInterval() {
+        return this.interval;
+    }
+
     private void setTimeQuestionSent(long time) {
         this.timeQuestionSent = time;
     }
@@ -69,12 +73,6 @@ public class TimedTask extends BukkitRunnable {
     @Override
     public void run() {
         int size = allQuestions.size();
-        /*
-        if(size == 0) {
-            question = new Question("There is no question. Peko is the answer" , "peko");
-            Bukkit.broadcastMessage(question.getQuestion());
-        }
-        */
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
         Question question = allQuestions.get(randomIndex);

@@ -1,11 +1,12 @@
 package benloti.holoquiz2.files;
 
+import benloti.holoquiz2.data.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.*; //Blasphemy
 
 public class DatabaseManager {
     private static final String DB_NAME = "HoloQuiz";
@@ -182,22 +183,30 @@ public class DatabaseManager {
         }
     }
 
-    public int load(String playerId) {
-        try (Connection connection = getConnection()) {
-            String requestStatsStatement = "SELECT * FROM holoquiz_stats WHERE userId = ?";
-            try (PreparedStatement statement = connection.prepareStatement(requestStatsStatement)) {
-
-                statement.setString(1, playerId);
-                ResultSet resultSet = statement.executeQuery();
-
-                if (resultSet.next()) {
-                    return resultSet.getInt("score");
-                }
+    public PlayerData loadPlayerData(String playerName) {
+        try {
+            String fetchHoloQuizIDStatement = String.format("SELECT * FROM user_info WHERE username = '%s'", playerName);
+            PreparedStatement fetchHoloQuizIDQuery = connection.prepareStatement(fetchHoloQuizIDStatement);
+            ResultSet resultSet = fetchHoloQuizIDQuery.executeQuery();
+            boolean resultExists = resultSet.next();
+            if (!resultExists) {
+                return null;
             }
+
+            int holoQuizID = resultSet.getInt("user_id");
+            String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, holoQuizID);
+            PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
+            ResultSet resultSet2 = fetchStatsQuery.executeQuery();
+            resultSet2.next();
+            int totalAnswers = resultSet2.getInt("answers");
+            long totalTimeTaken = resultSet2.getLong("total");
+            int bestTime = resultSet2.getInt("best");
+            double averageTime = totalTimeTaken * 1.0 / totalAnswers;
+            return new PlayerData(playerName, averageTime, bestTime, totalAnswers);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return 0;
+        return null;
     }
 
 }
