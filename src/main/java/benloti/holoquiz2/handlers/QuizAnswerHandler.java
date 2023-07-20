@@ -36,6 +36,9 @@ public class QuizAnswerHandler implements Listener {
 
     @EventHandler
     public void correctAnswerSent(AsyncPlayerChatEvent theEvent) {
+        if(task.isStopped()) {
+            return;
+        }
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
         String playerName = player.getName();

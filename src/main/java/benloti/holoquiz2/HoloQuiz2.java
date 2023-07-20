@@ -21,8 +21,7 @@ public final class HoloQuiz2 extends JavaPlugin {
         TimedTask triviaTask = new TimedTask(this);
         new QuizAnswerHandler(this, triviaTask, database);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(triviaTask, database));
-
-        triviaTask.start();
+        triviaTask.firstStart();
     }
 
     @Override

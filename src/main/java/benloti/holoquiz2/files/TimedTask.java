@@ -20,6 +20,7 @@ public class TimedTask extends BukkitRunnable {
     private final JavaPlugin plugin;
     private long timeQuestionSent;
     private boolean questionAnswered;
+    private boolean acceptingAnswers; //Override
 
     public TimedTask(JavaPlugin plugin) {
         Bukkit.getLogger().info("This should be seen peko");
@@ -40,6 +41,7 @@ public class TimedTask extends BukkitRunnable {
             //Yeah how do i terminate lmao
         }
         allQuestions = Question.loadFromConfig(anotherFile);
+        this.acceptingAnswers = true;
     }
 
     public Question showQuestion() {
@@ -70,8 +72,16 @@ public class TimedTask extends BukkitRunnable {
         return questionAnswered;
     }
 
+    public boolean isStopped() {
+        return !acceptingAnswers;
+    }
+
     @Override
     public void run() {
+        if(isStopped()) {
+            return;
+        }
+
         int size = allQuestions.size();
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
@@ -82,8 +92,21 @@ public class TimedTask extends BukkitRunnable {
         Bukkit.broadcastMessage(question.getQuestion());
     }
 
-    public void start() {
+    public void firstStart() {
         this.runTaskTimer(plugin, 0, interval * 20);
+    }
+
+    public void start() {
+        this.acceptingAnswers = true;
+        nextQuestion();
+    }
+
+    public void stop() {
+        this.acceptingAnswers = false;
+    }
+
+    public void nextQuestion() {
+        this.run();
     }
 }
 

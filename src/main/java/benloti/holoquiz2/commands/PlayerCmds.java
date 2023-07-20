@@ -46,13 +46,12 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equals("stats") && args.length == 1) {
-            displayPlayerStats(player, player.getName());
-            return true;
-        }
-
-        if (args[0].equals("stats") && args.length == 2) {
-            displayPlayerStats(player, args[1]);
+        if (args[0].equals("stats")) {
+            if(args.length == 1) {
+                displayPlayerStats(player, player.getName());
+            } else {
+                displayPlayerStats(player, args[1]);
+            }
             return true;
         }
 
@@ -65,10 +64,49 @@ public class PlayerCmds implements CommandExecutor {
             player.sendMessage("Peko Peko Peko!!!");
             return true;
         }
+
+        //ADMIN SECTION, to divide after figuring out perms
+        if (args[0].equals("info")) {
+            //send full info
+            return true;
+        }
+
+        if (args[0].equals("next")) {
+            if(timedTask.isStopped()) {
+                player.sendMessage(ChatColor.translateAlternateColorCodes
+                        ('&', "&bYou can't do that, HoloQuiz &cis stopped!"));
+                return true;
+            }
+
+            timedTask.nextQuestion();
+            return true;
+        }
+
+        if (args[0].equals("stop")) {
+            timedTask.stop();
+            player.sendMessage(ChatColor.translateAlternateColorCodes
+                    ('&', "&bHoloQuiz &chas been stopped!"));
+            return true;
+        }
+
+        if (args[0].equals("start")) {
+            timedTask.start();
+            player.sendMessage(ChatColor.translateAlternateColorCodes
+                    ('&', "&bHoloQuiz &ahas started!"));
+            return true;
+        }
+
         return true;
     }
 
     private void displayQuestionInfo(Player player) {
+        if(timedTask.isStopped()) {
+            String message = "&bHoloQuiz &cis not running!";
+            message = ChatColor.translateAlternateColorCodes('&', message);
+            player.sendMessage(message);
+            return;
+        }
+
         String currentQuestion = timedTask.showQuestion().getQuestion();
         long currentTime = System.currentTimeMillis();
         //Simple calculations for later
@@ -105,7 +143,6 @@ public class PlayerCmds implements CommandExecutor {
             player.sendMessage(errorMessage);
             return;
         }
-
 
         String playerStats = String.format(
                 "&b|Answers: &6%s &b| Best Time: &6%ss &b| Average Time: &6%ss &b|", playerData.getQuestionsAnswered(),
