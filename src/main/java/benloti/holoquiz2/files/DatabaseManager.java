@@ -1,6 +1,7 @@
 package benloti.holoquiz2.files;
 
 import benloti.holoquiz2.data.PlayerData;
+import benloti.holoquiz2.leaderboard.Leaderboard;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -32,6 +33,10 @@ public class DatabaseManager {
             "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
     private static final String SQL_STATEMENT_INSERT_NEW_STATS = 
             "INSERT INTO holoquiz_stats (best, answers, total, user_id) VALUES (?, ?, ?, ?)";
+    private static final String SQL_STATEMENT_FETCH_ALL_STATS =
+            "SELECT * FROM holoquiz_stats";
+    private static final String SQL_STATEMENT_OBTAIN_USER_NAME =
+            "SELECT * FROM user_info WHERE user_id = '%s'";
     
     private static final String ERROR_MSG_DB_FILE = "Yabe peko, what happened to the db peko";
     private static final String ERROR_MSG_UUID_USERNAME_MISMATCH =
@@ -139,7 +144,7 @@ public class DatabaseManager {
         }
     }
 
-    public void updateStatsRecord(int userID, int timeTaken) {
+    public PlayerData updateStatsRecord(int userID, int timeTaken, String playerName) {
         String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, userID);
         String statsStatement;
         int totalAnswers, bestTime;
@@ -174,13 +179,15 @@ public class DatabaseManager {
             PreparedStatement statsSQLQuery = connection.prepareStatement(statsStatement);
             statsSQLQuery.setLong(1, bestTime);
             statsSQLQuery.setLong(2, totalAnswers);
-            statsSQLQuery.setDouble(3, totalTimeTaken);
+            statsSQLQuery.setLong(3, totalTimeTaken);
             statsSQLQuery.setInt(4, userID);
             statsSQLQuery.executeUpdate();
 
+            return new PlayerData(playerName,bestTime,totalTimeTaken,totalAnswers);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public PlayerData loadPlayerData(String playerName) {
@@ -201,8 +208,33 @@ public class DatabaseManager {
             int totalAnswers = resultSet2.getInt("answers");
             long totalTimeTaken = resultSet2.getLong("total");
             int bestTime = resultSet2.getInt("best");
-            double averageTime = totalTimeTaken * 1.0 / totalAnswers;
-            return new PlayerData(playerName, averageTime, bestTime, totalAnswers);
+            return new PlayerData(playerName, bestTime, totalTimeTaken, totalAnswers);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Leaderboard loadAllPlayerData(int limit, int minReq) {
+        try {
+            PreparedStatement fetchPlayerStatsQuery = connection.prepareStatement(SQL_STATEMENT_FETCH_ALL_STATS);
+            ResultSet resultSet = fetchPlayerStatsQuery.executeQuery();
+            Leaderboard playersData = new Leaderboard(minReq, limit);
+            while(resultSet.next()) {
+                int totalAnswers = resultSet.getInt("answers");
+                long totalTimeTaken = resultSet.getLong("total");
+                int bestTime = resultSet.getInt("best");
+                int holoQuizID = resultSet.getInt("user_id");
+                String fetchNameStatement = String.format(SQL_STATEMENT_OBTAIN_USER_NAME, holoQuizID);
+                PreparedStatement fetchNameQuery = connection.prepareStatement(fetchNameStatement);
+                ResultSet resultSet2 = fetchNameQuery.executeQuery();
+                resultSet2.next();
+                String playerName = resultSet2.getString("username");
+                PlayerData playerData = new PlayerData(playerName, bestTime, totalTimeTaken, totalAnswers);
+                playersData.startUpAddToData(playerData);
+            }
+            return playersData;
         } catch (SQLException e) {
             e.printStackTrace();
         }

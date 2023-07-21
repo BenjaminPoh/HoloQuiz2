@@ -1,6 +1,8 @@
 package benloti.holoquiz2.handlers;
 
 import benloti.holoquiz2.HoloQuiz2;
+import benloti.holoquiz2.leaderboard.Leaderboard;
+import benloti.holoquiz2.data.PlayerData;
 import benloti.holoquiz2.files.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import net.md_5.bungee.api.ChatMessageType;
@@ -26,12 +28,14 @@ public class QuizAnswerHandler implements Listener {
     private final TimedTask task;
     private final HoloQuiz2 plugin;
     private final DatabaseManager database;
+    private final Leaderboard leaderboard;
 
-    public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task, DatabaseManager database) {
+    public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task, DatabaseManager database, Leaderboard leaderboard) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.task = task;
         this.plugin = plugin;
         this.database = database;
+        this.leaderboard = leaderboard;
     }
 
     @EventHandler
@@ -67,7 +71,11 @@ public class QuizAnswerHandler implements Listener {
                 //Update database
                 int playerHoloQuizID = database.obtainPlayerID(player.getUniqueId().toString(), player.getName());
                 database.updateLogsRecord(playerHoloQuizID, timeAnswered, timeTaken);
-                database.updateStatsRecord(playerHoloQuizID, timeTaken);
+                PlayerData playerdata = database.updateStatsRecord(playerHoloQuizID, timeTaken, playerName);
+
+                //update leaderboards
+                leaderboard.updateLeaderBoard(playerdata);
+
             }
         }
     }

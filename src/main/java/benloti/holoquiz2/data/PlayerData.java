@@ -6,11 +6,11 @@ public class PlayerData {
     private int bestTime;
     private int questionsAnswered;
 
-    public PlayerData(String name, double averageTime, int bestTime, int answers) {
+    public PlayerData(String name, int bestTime, long totalTime, int answers) {
         this.playerName = name;
         this.bestTime = bestTime;
-        this.averageTime = averageTime;
         this.questionsAnswered = answers;
+        this.averageTime = (totalTime * 1.0 /answers);
     }
 
     public String getPlayerName() {

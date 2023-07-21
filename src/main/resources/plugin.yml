@@ -12,3 +12,8 @@ commands:
       description: PEKO PEKO PEKO
       usage: /HoloQuiz peko
       aliases: holoquiz peko
+permissions:
+  HoloQuiz.admin:
+    description: Allow access to admin commands
+    default: op
+  
