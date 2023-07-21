@@ -1,9 +1,9 @@
 package benloti.holoquiz2.commands;
 
-import benloti.holoquiz2.data.PlayerData;
+import benloti.holoquiz2.structs.PlayerData;
 import benloti.holoquiz2.leaderboard.Leaderboard;
 import net.md_5.bungee.api.ChatColor;
-import benloti.holoquiz2.files.DatabaseManager;
+import benloti.holoquiz2.database.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;

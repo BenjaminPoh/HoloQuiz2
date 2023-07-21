@@ -1,6 +1,6 @@
 package benloti.holoquiz2.files;
 
-import benloti.holoquiz2.data.Question;
+import benloti.holoquiz2.structs.Question;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;

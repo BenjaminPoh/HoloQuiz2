@@ -2,8 +2,8 @@ package benloti.holoquiz2.handlers;
 
 import benloti.holoquiz2.HoloQuiz2;
 import benloti.holoquiz2.leaderboard.Leaderboard;
-import benloti.holoquiz2.data.PlayerData;
-import benloti.holoquiz2.files.DatabaseManager;
+import benloti.holoquiz2.structs.PlayerData;
+import benloti.holoquiz2.database.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -74,7 +74,7 @@ public class QuizAnswerHandler implements Listener {
                 PlayerData playerdata = database.updateStatsRecord(playerHoloQuizID, timeTaken, playerName);
 
                 //update leaderboards
-                leaderboard.updateLeaderBoard(playerdata);
+                //leaderboard.updateLeaderBoard(playerdata);
 
             }
         }

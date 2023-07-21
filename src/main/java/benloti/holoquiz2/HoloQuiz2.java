@@ -2,7 +2,7 @@ package benloti.holoquiz2;
 
 import benloti.holoquiz2.commands.PlayerCmds;
 import benloti.holoquiz2.leaderboard.Leaderboard;
-import benloti.holoquiz2.files.DatabaseManager;
+import benloti.holoquiz2.database.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
 import benloti.holoquiz2.handlers.PlayerActivityHandler;
 import benloti.holoquiz2.handlers.QuizAnswerHandler;

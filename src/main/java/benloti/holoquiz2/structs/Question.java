@@ -1,4 +1,4 @@
-package benloti.holoquiz2.data;
+package benloti.holoquiz2.structs;
 
 import org.bukkit.configuration.ConfigurationSection;
 

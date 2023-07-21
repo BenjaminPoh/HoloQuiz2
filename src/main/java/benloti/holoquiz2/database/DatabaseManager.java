@@ -1,6 +1,6 @@
-package benloti.holoquiz2.files;
+package benloti.holoquiz2.database;
 
-import benloti.holoquiz2.data.PlayerData;
+import benloti.holoquiz2.structs.PlayerData;
 import benloti.holoquiz2.leaderboard.Leaderboard;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
