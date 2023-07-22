@@ -1,5 +1,6 @@
 package benloti.holoquiz2.leaderboard;
 
+import benloti.holoquiz2.database.DatabaseManager;
 import benloti.holoquiz2.structs.PlayerData;
 
 import java.util.ArrayList;
@@ -13,21 +14,22 @@ public class Leaderboard {
     private final int amountOfPlayersToShow;
     private final int minimumQuestionsRequired;
 
-    public Leaderboard(int limit, int min) {
+    public Leaderboard(int limit, int min, DatabaseManager databaseManager) {
         this.amountOfPlayersToShow = limit;
         this.minimumQuestionsRequired = min;
         mostAnswers = new MostAnswers();
         fastestTime = new FastestTime();
         averageBestTime = new AverageBestTime();
+        initialiseLeaderboard(databaseManager);
     }
 
-    public void startUpAddToData(PlayerData playerData) {
-        if (playerData.getQuestionsAnswered() < minimumQuestionsRequired) {
-            return;
+    public void initialiseLeaderboard(DatabaseManager databaseManager) {
+        ArrayList<PlayerData> allPlayerData = databaseManager.loadAllPlayerData();
+        for(PlayerData peko : allPlayerData) {
+            processStartUpInformation(peko, mostAnswers.getTopPlayers(), new MostAnswers.sortByMostAnswers());
+            processStartUpInformation(peko, fastestTime.getTopPlayers(), new FastestTime.sortByBestTime());
+            processStartUpInformation(peko, averageBestTime.getTopPlayers(), new AverageBestTime.sortByAverageTime());
         }
-        processStartUpInformation(playerData, mostAnswers.getTopPlayers(), new MostAnswers.sortByMostAnswers());
-        processStartUpInformation(playerData, fastestTime.getTopPlayers(), new FastestTime.sortByBestTime());
-        processStartUpInformation(playerData, averageBestTime.getTopPlayers(), new AverageBestTime.sortByAverageTime());
     }
 
     private void processStartUpInformation(

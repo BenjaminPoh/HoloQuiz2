@@ -21,7 +21,7 @@ public final class HoloQuiz2 extends JavaPlugin {
 
         DatabaseManager database = new DatabaseManager(this);
         TimedTask triviaTask = new TimedTask(this);
-        Leaderboard leaderboard = database.loadAllPlayerData(10, 20);
+        Leaderboard leaderboard = new Leaderboard(10, 20, database);
         new QuizAnswerHandler(this, triviaTask, database, leaderboard);
         new PlayerActivityHandler(this, database, leaderboard);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(triviaTask, database, leaderboard));

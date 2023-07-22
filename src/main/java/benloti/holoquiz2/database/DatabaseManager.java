@@ -1,55 +1,35 @@
 package benloti.holoquiz2.database;
 
 import benloti.holoquiz2.structs.PlayerData;
-import benloti.holoquiz2.leaderboard.Leaderboard;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.*; //Blasphemy
+import java.util.ArrayList;
 
 public class DatabaseManager {
     private static final String DB_NAME = "HoloQuiz";
-
-    private static final String SQL_STATEMENT_CREATE_STATS_TABLE =
-            "CREATE TABLE IF NOT EXISTS holoquiz_stats (user_id INT , best INT, total LONG, answers INT)";
-    private static final String SQL_STATEMENT_CREATE_LOGS_TABLE =
-            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp LONG, took INT)";
-    private static final String SQL_STATEMENT_CREATE_USERS_TABLE =
-            "CREATE TABLE IF NOT EXISTS user_info (user_id INT , player_uuid STRING, username STRING)";
-    
-    private static final String SQL_STATEMENT_OBTAIN_USER_ID =
-            "SELECT * FROM user_info WHERE player_uuid = '%s'";
-    private static final String SQL_STATEMENT_ADD_NEW_USER_INFO =
-            "INSERT INTO user_info (user_id, player_uuid, username) VALUES (?, ?, ?)";
-    private static final String SQL_STATEMENT_ASSIGN_NEW_USER_ID =
-            "SELECT COUNT (user_id) FROM user_info";
-    private static final String SQL_STATEMENT_UPDATE_LOGS =
-            "INSERT INTO answers_logs (user_id, timestamp, took) VALUES (?, ?, ?)";
-    private static final String SQL_STATEMENT_FETCH_STATS = 
-            "SELECT * FROM holoquiz_stats WHERE user_id = '%s'";
-    private static final String SQL_STATEMENT_UPDATE_STATS = 
-            "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
-    private static final String SQL_STATEMENT_INSERT_NEW_STATS = 
-            "INSERT INTO holoquiz_stats (best, answers, total, user_id) VALUES (?, ?, ?, ?)";
-    private static final String SQL_STATEMENT_FETCH_ALL_STATS =
-            "SELECT * FROM holoquiz_stats";
-    private static final String SQL_STATEMENT_OBTAIN_USER_NAME =
-            "SELECT * FROM user_info WHERE user_id = '%s'";
-    
     private static final String ERROR_MSG_DB_FILE = "Yabe peko, what happened to the db peko";
-    private static final String ERROR_MSG_UUID_USERNAME_MISMATCH =
-            "Supposed to update table. Not important at this point given how minecraft works and this is intended for HoloCraft, which is a cracked server";
 
     private static Connection connection;
     private final JavaPlugin plugin;
     private final File dataFile;
+    private final HoloQuizStats holoQuizStats;
+    private final AnswersLogs answersLogs;
+    private final UserInfo userInfo;
+    private final int numberOfEntries;
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.dataFile = checkFile();
-        initialiseTables();
+        getConnection();
+        this.holoQuizStats = new HoloQuizStats(connection);
+        this.answersLogs = new AnswersLogs(connection);
+        this.userInfo = new UserInfo(connection);
+        this.numberOfEntries = userInfo.getSize(connection);
     }
 
     public File checkFile() {
@@ -63,13 +43,6 @@ public class DatabaseManager {
             }
         }
         return dataFolder;
-    }
-
-    public void initialiseTables() {
-        Connection connection = getConnection();
-        createTable(connection, SQL_STATEMENT_CREATE_STATS_TABLE);
-        createTable(connection, SQL_STATEMENT_CREATE_LOGS_TABLE);
-        createTable(connection, SQL_STATEMENT_CREATE_USERS_TABLE);
     }
 
     public Connection getConnection() {
@@ -90,155 +63,24 @@ public class DatabaseManager {
         return null;
     }
 
-    private void createTable(Connection connection, String query) {
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public PlayerData updateAfterCorrectAnswer (Player player, long timeAnswered, int timeTaken) {
+        String playerName = player.getName();
+        String playerUUID = player.getUniqueId().toString();
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName, numberOfEntries);
+        if(playerHoloQuizID == 0) {
+            return null;
         }
-    }
-
-    public int obtainPlayerID(String PlayerUUID, String PlayerName) {
-        String firstStatement = String.format(SQL_STATEMENT_OBTAIN_USER_ID, PlayerUUID);
-        try {
-            PreparedStatement statement = connection.prepareStatement(firstStatement);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                Bukkit.getLogger().info("Player has answered before...");
-                String savedName = resultSet.getString("username");
-                if (!savedName.equals(PlayerName)) {
-                    Bukkit.getLogger().info(ERROR_MSG_UUID_USERNAME_MISMATCH);
-                }
-                return resultSet.getInt("user_id");
-            } else {
-                PreparedStatement infoStatement = connection.prepareStatement(SQL_STATEMENT_ADD_NEW_USER_INFO);
-                int newUserID = assignNewUserID();
-                infoStatement.setInt(1, newUserID);
-                infoStatement.setString(2, PlayerUUID);
-                infoStatement.setString(3, PlayerName);
-                infoStatement.executeUpdate();
-                Bukkit.getLogger().info("Player has never answered before, assigned ID: " + newUserID);
-                return newUserID;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    private static int assignNewUserID() throws SQLException {
-        PreparedStatement assignIDStatement = connection.prepareStatement(SQL_STATEMENT_ASSIGN_NEW_USER_ID);
-        ResultSet resultSet = assignIDStatement.executeQuery();
-        resultSet.next();
-        return resultSet.getInt(1) + 1;
-    }
-
-    public void updateLogsRecord(int userID, long timeStamp, int timeTaken) {
-        try (PreparedStatement logsStatement = connection.prepareStatement(SQL_STATEMENT_UPDATE_LOGS)) {
-            logsStatement.setInt(1, userID);
-            logsStatement.setLong(2, timeStamp);
-            logsStatement.setInt(3, timeTaken);
-            logsStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public PlayerData updateStatsRecord(int userID, int timeTaken, String playerName) {
-        String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, userID);
-        String statsStatement;
-        int totalAnswers, bestTime;
-        long totalTimeTaken;
-        
-        try {
-            PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
-            ResultSet resultSet = fetchStatsQuery.executeQuery();
-            boolean isNotFirstAnswer = resultSet.next();
-            
-            if (isNotFirstAnswer) {
-                Bukkit.getLogger().info("Player has answered before!");
-                totalAnswers = resultSet.getInt("answers");
-                totalTimeTaken = resultSet.getLong("total");
-                bestTime = resultSet.getInt("best");
-
-                if (bestTime > timeTaken) {
-                    bestTime = timeTaken;
-                }
-                totalTimeTaken += timeTaken;
-                totalAnswers += 1;
-
-                statsStatement = SQL_STATEMENT_UPDATE_STATS;
-            } else {
-                Bukkit.getLogger().info("Player has never answered before!");
-                totalAnswers = 1;
-                totalTimeTaken = timeTaken;
-                bestTime = timeTaken;
-                statsStatement = SQL_STATEMENT_INSERT_NEW_STATS;
-            }
-            
-            PreparedStatement statsSQLQuery = connection.prepareStatement(statsStatement);
-            statsSQLQuery.setLong(1, bestTime);
-            statsSQLQuery.setLong(2, totalAnswers);
-            statsSQLQuery.setLong(3, totalTimeTaken);
-            statsSQLQuery.setInt(4, userID);
-            statsSQLQuery.executeUpdate();
-
-            return new PlayerData(playerName,bestTime,totalTimeTaken,totalAnswers);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken);
+        return holoQuizStats.updateStatsRecord(connection, playerHoloQuizID, timeTaken, playerName);
     }
 
     public PlayerData loadPlayerData(String playerName) {
-        try {
-            String fetchHoloQuizIDStatement = String.format("SELECT * FROM user_info WHERE username = '%s'", playerName);
-            PreparedStatement fetchHoloQuizIDQuery = connection.prepareStatement(fetchHoloQuizIDStatement);
-            ResultSet resultSet = fetchHoloQuizIDQuery.executeQuery();
-            boolean resultExists = resultSet.next();
-            if (!resultExists) {
-                return null;
-            }
-
-            int holoQuizID = resultSet.getInt("user_id");
-            String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, holoQuizID);
-            PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
-            ResultSet resultSet2 = fetchStatsQuery.executeQuery();
-            resultSet2.next();
-            int totalAnswers = resultSet2.getInt("answers");
-            long totalTimeTaken = resultSet2.getLong("total");
-            int bestTime = resultSet2.getInt("best");
-            return new PlayerData(playerName, bestTime, totalTimeTaken, totalAnswers);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
+        return holoQuizStats.loadPlayerData(connection,playerHoloQuizID,playerName);
     }
 
-    public Leaderboard loadAllPlayerData(int limit, int minReq) {
-        try {
-            PreparedStatement fetchPlayerStatsQuery = connection.prepareStatement(SQL_STATEMENT_FETCH_ALL_STATS);
-            ResultSet resultSet = fetchPlayerStatsQuery.executeQuery();
-            Leaderboard playersData = new Leaderboard(minReq, limit);
-            while(resultSet.next()) {
-                int totalAnswers = resultSet.getInt("answers");
-                long totalTimeTaken = resultSet.getLong("total");
-                int bestTime = resultSet.getInt("best");
-                int holoQuizID = resultSet.getInt("user_id");
-                String fetchNameStatement = String.format(SQL_STATEMENT_OBTAIN_USER_NAME, holoQuizID);
-                PreparedStatement fetchNameQuery = connection.prepareStatement(fetchNameStatement);
-                ResultSet resultSet2 = fetchNameQuery.executeQuery();
-                resultSet2.next();
-                String playerName = resultSet2.getString("username");
-                PlayerData playerData = new PlayerData(playerName, bestTime, totalTimeTaken, totalAnswers);
-                playersData.startUpAddToData(playerData);
-            }
-            return playersData;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public ArrayList<PlayerData> loadAllPlayerData() {
+        String[] allPlayerNames = userInfo.getAllPlayerNames(connection, numberOfEntries);
+        return holoQuizStats.getAllPlayerData(connection, allPlayerNames);
     }
-
 }

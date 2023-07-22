@@ -45,7 +45,6 @@ public class QuizAnswerHandler implements Listener {
         }
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
-        String playerName = player.getName();
         List<String> answers = task.showQuestion().getAnswers();
         for(String possibleAnswer : answers) {
             if (message.equalsIgnoreCase(possibleAnswer) && !task.isQuestionAnswered()) {
@@ -58,7 +57,7 @@ public class QuizAnswerHandler implements Listener {
                 int timeTaken = (int)(timeAnswered - startTime);
 
                 //The actual tasks
-                sendAnnouncement(possibleAnswer, playerName, timeTaken);
+                sendAnnouncement(possibleAnswer, player.getName(), timeTaken);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
                 //giveReward(player, timeAnswered);
                 displayTitle(player);
@@ -69,9 +68,7 @@ public class QuizAnswerHandler implements Listener {
                 }.runTask(plugin);
 
                 //Update database
-                int playerHoloQuizID = database.obtainPlayerID(player.getUniqueId().toString(), player.getName());
-                database.updateLogsRecord(playerHoloQuizID, timeAnswered, timeTaken);
-                PlayerData playerdata = database.updateStatsRecord(playerHoloQuizID, timeTaken, playerName);
+                PlayerData playerData = database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
 
                 //update leaderboards
                 //leaderboard.updateLeaderBoard(playerdata);
