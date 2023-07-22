@@ -1,6 +1,7 @@
 package benloti.holoquiz2;
 
 import benloti.holoquiz2.commands.PlayerCmds;
+import benloti.holoquiz2.files.ConfigFile;
 import benloti.holoquiz2.leaderboard.Leaderboard;
 import benloti.holoquiz2.database.DatabaseManager;
 import benloti.holoquiz2.files.TimedTask;
@@ -19,9 +20,10 @@ public final class HoloQuiz2 extends JavaPlugin {
             getDataFolder().mkdirs();
         }
 
+        ConfigFile configFile = new ConfigFile(this);
         DatabaseManager database = new DatabaseManager(this);
-        TimedTask triviaTask = new TimedTask(this);
-        Leaderboard leaderboard = new Leaderboard(10, 20, database);
+        TimedTask triviaTask = new TimedTask(this, configFile);
+        Leaderboard leaderboard = new Leaderboard(configFile, database);
         new QuizAnswerHandler(this, triviaTask, database, leaderboard);
         new PlayerActivityHandler(this, database, leaderboard);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(triviaTask, database, leaderboard));

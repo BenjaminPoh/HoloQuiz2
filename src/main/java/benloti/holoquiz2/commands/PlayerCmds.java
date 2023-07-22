@@ -78,7 +78,11 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        return runUserCommand(player, args);
+        if (runUserCommand(player, args)) {
+            return true;
+        }
+
+        return runEasterEggCommands(player, args);
     }
 
     private boolean runAdminCommand(Player player, String[] args) {
@@ -93,13 +97,13 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equals("next")) {
+        if (args[0].equals("next")) { //BROKEN
             if (timedTask.isStopped()) {
                 formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, player);
                 return true;
             }
 
-            timedTask.nextQuestion(); //BROKEN
+            timedTask.nextQuestion();
             return true;
         }
 
@@ -162,10 +166,15 @@ public class PlayerCmds implements CommandExecutor {
             }
         }
 
+        return false;
+    }
+
+    private boolean runEasterEggCommands(Player player, String[] args) {
         if (args[0].equals("peko")) {
             player.sendMessage("Peko Peko Peko!!!");
             return true;
         }
+
         return false;
     }
 

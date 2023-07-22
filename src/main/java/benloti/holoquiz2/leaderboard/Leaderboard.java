@@ -1,6 +1,7 @@
 package benloti.holoquiz2.leaderboard;
 
 import benloti.holoquiz2.database.DatabaseManager;
+import benloti.holoquiz2.files.ConfigFile;
 import benloti.holoquiz2.structs.PlayerData;
 
 import java.util.ArrayList;
@@ -14,9 +15,9 @@ public class Leaderboard {
     private final int amountOfPlayersToShow;
     private final int minimumQuestionsRequired;
 
-    public Leaderboard(int limit, int min, DatabaseManager databaseManager) {
-        this.amountOfPlayersToShow = limit;
-        this.minimumQuestionsRequired = min;
+    public Leaderboard(ConfigFile configFile, DatabaseManager databaseManager) {
+        this.amountOfPlayersToShow = configFile.getLeaderboardSize();
+        this.minimumQuestionsRequired = configFile.getLeaderboardMinReq();
         mostAnswers = new MostAnswers();
         fastestTime = new FastestTime();
         averageBestTime = new AverageBestTime();

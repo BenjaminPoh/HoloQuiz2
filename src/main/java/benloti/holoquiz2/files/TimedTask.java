@@ -16,40 +16,32 @@ import java.util.Random;
 public class TimedTask extends BukkitRunnable {
     Question question;
     private final List<Question> allQuestions;
-    private long interval = 10;
+    private final int interval;
     private final JavaPlugin plugin;
     private long timeQuestionSent;
     private boolean questionAnswered;
     private boolean acceptingAnswers; //Override
 
-    public TimedTask(JavaPlugin plugin) {
-        Bukkit.getLogger().info("This should be seen peko");
+    public TimedTask(JavaPlugin plugin, ConfigFile configFile) {
         this.plugin = plugin;
-        File configFile = new File(plugin.getDataFolder(), "QuestionBank.yml");
-        if(!configFile.exists()) {
+        File questionBank = new File(plugin.getDataFolder(), "QuestionBank.yml");
+        if(!questionBank.exists()) {
             try {
-                configFile.createNewFile();
+                questionBank.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        FileConfiguration questionFile = YamlConfiguration.loadConfiguration(configFile);
+        FileConfiguration questionFile = YamlConfiguration.loadConfiguration(questionBank);
         ConfigurationSection anotherFile = questionFile.getConfigurationSection("questions");
-        if(anotherFile == null) {
-            Bukkit.getLogger().info("Your .yml formatting is wrong peko");
-            //Yeah how do i terminate lmao
-        }
         allQuestions = Question.loadFromConfig(anotherFile);
+        this.interval = configFile.getInterval();
         this.acceptingAnswers = true;
     }
 
     public Question showQuestion() {
         return this.question;
-    }
-
-    public void setInterval(long interval) {
-        this.interval = interval;
     }
 
     public long getInterval() {

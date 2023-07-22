@@ -29,6 +29,9 @@ public class PlayerActivityHandler implements Listener {
         Player newPlayer = theEvent.getPlayer();
         String playerName = newPlayer.getName();
         PlayerData playerData = database.loadPlayerData(playerName);
+        if(playerData == null) {
+            return;
+        }
         leaderboard.playerJoinUpdate(playerData);
     }
 
@@ -37,6 +40,9 @@ public class PlayerActivityHandler implements Listener {
         Player newPlayer = theEvent.getPlayer();
         String playerName = newPlayer.getName();
         PlayerData playerData = database.loadPlayerData(playerName);
+        if(playerData == null) {
+            return;
+        }
         leaderboard.playerLeftUpdate(playerData);
     }
 }

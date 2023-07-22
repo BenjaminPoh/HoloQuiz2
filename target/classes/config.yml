@@ -1,0 +1,11 @@
+# Plugin Config
+Interval: 10
+#CheatingChecker: true
+#CheatingTimer: 0.5
+#CountAsCorrect: false
+#CommandToPerform:
+
+# Leaderboard Config
+LeaderboardSize: 10
+LeaderboardMinQuestionsNeeded: 3
+
