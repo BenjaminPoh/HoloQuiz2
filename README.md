@@ -1,5 +1,5 @@
 # HoloQuizEX
-Here, I try to recreate HoloQuiz. Because the plugin sucks.
+Here, I try to recreate HoloQuiz. Because the plugin we used sucks.
 
 Join Holocraft on Minecraft! Free Cracked server!
 Server IP: play.holocraft.xyz

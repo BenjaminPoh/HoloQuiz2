@@ -71,8 +71,7 @@ public class QuizAnswerHandler implements Listener {
                 PlayerData playerData = database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
 
                 //update leaderboards
-                //leaderboard.updateLeaderBoard(playerdata);
-
+                leaderboard.updateLeaderBoard(playerData);
             }
         }
     }
