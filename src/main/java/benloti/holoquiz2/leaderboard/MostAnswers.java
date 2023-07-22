@@ -36,11 +36,11 @@ public class MostAnswers {
 
     static class sortByMostAnswers implements Comparator<PlayerData> {
         public int compare (PlayerData player1, PlayerData player2) {
-            int determinant = player1.getQuestionsAnswered() - player2.getQuestionsAnswered();
+            int determinant = player2.getQuestionsAnswered() - player1.getQuestionsAnswered();
             if(determinant != 0) {
                 return determinant;
             }
-            return (player1.getBestTime() - player2.getBestTime());
+            return (player2.getBestTime() - player1.getBestTime());
         }
     }
 }

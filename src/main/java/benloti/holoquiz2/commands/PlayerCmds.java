@@ -24,6 +24,7 @@ public class PlayerCmds implements CommandExecutor {
     public static final String ERROR_NO_PERMS = "&cYou do not have permissions to do this!";
     public static final String ERROR_NO_PLAYER_FOUND = "&cNo such player found!";
     public static final String ERROR_HOLOQUIZ_IS_STOPPED = "&bYou can't do that, HoloQuiz &cis stopped!";
+    public static final String ERROR_INCORRECT_COMMAND = "&bWhat are you doing peko";
 
     public static final String MSG_PLAYER_STATS_FORMAT = "&b|Answers: &6%s &b| Best Time: &6%ss &b| Average Time: &6%ss &b|";
     public static final String MSG_PLAYER_NAME_FORMAT = "&9=-=-=-=-=-=-=[ &bPlayer Stats for &a&l%s&9 ]=-=-=-=-=-=-=";
@@ -33,6 +34,19 @@ public class PlayerCmds implements CommandExecutor {
     public static final String MSG_QUESTION_STATUS_UNANSWERED_FORMAT = "&bThe Question is &cNot Yet Answered!";
     public static final String MSG_NEXT_QUESTION_COUNTDOWN_FORMAT = "&bNext Question is in &6%s seconds";
     public static final String MSG_DISPLAY_QUESTION_FORMAT = "&bQuestion: &6%s";
+
+    public static final String MSG_LEADERBOARD_HEADER_MOST_ANSWERS =
+            "&9=-=-=-=-=-=-=[ &bLeaderboard for &aTop %s Most Answers&9 ]=-=-=-=-=-=-=";
+    public static final String MSG_LEADERBOARD_HEADER_FASTEST_ANSWERS =
+            "&9=-=-=-=-=-=-=[ &bLeaderboard for &aTop %s Fastest Times&9 ]=-=-=-=-=-=-=";
+    public static final String MSG_LEADERBOARD_HEADER_AVERAGE_BEST_ANSWERS =
+            "&9=-=-=-=-=-=-=[ &bLeaderboard for &aTop %s Fastest on Average&9 ]=-=-=-=-=-=-=";
+    public static final String MSG_LEADERBOARD_BODY_MOST_ANSWERS_FORMAT =
+            "&3%s. &6%s&3: &6%s &3Best Time: &2%s &3| Average Time: &2%s";
+    public static final String MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT =
+            "&3%s. &6%s&3: &2%s &eBest Time: &6%s &3| Average Time: &2%s";
+    public static final String MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT =
+            "&3%s. &6%s&3: &2%s &3Best Time: &2%s &3| &eAverage Time: &6%s";
 
     private final TimedTask timedTask;
     private final DatabaseManager databaseManager;
@@ -125,12 +139,27 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equals("top")) {
-            if(args[1].equals("best")) {
-                //you alrd know what to do
+        if (args[0].equals("top") && args.length > 1) {
+            switch (args[1]) {
+            default:
+                formatInformationForPlayer(ERROR_INCORRECT_COMMAND, player);
+                return false;
+            case "best":
+                String [] topPlayers = displayTopPlayers(leaderboard.getFastest(),
+                        MSG_LEADERBOARD_HEADER_FASTEST_ANSWERS, MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT);
+                formatInformationForPlayer(topPlayers, player);
+                return true;
+            case "average":
+                topPlayers = displayTopPlayers(leaderboard.getAverageBest(),
+                        MSG_LEADERBOARD_HEADER_AVERAGE_BEST_ANSWERS, MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT);
+                formatInformationForPlayer(topPlayers, player);
+                return true;
+            case "answers":
+                topPlayers = displayTopPlayers(leaderboard.getMostAnswers(),
+                        MSG_LEADERBOARD_HEADER_MOST_ANSWERS, MSG_LEADERBOARD_BODY_MOST_ANSWERS_FORMAT);
+                formatInformationForPlayer(topPlayers, player);
+                return true;
             }
-
-            return true;
         }
 
         if (args[0].equals("peko")) {
@@ -139,7 +168,6 @@ public class PlayerCmds implements CommandExecutor {
         }
         return false;
     }
-
 
     private String[] obtainQuestionInfo(boolean adminInfoRequired) {
         if (timedTask.isStopped()) {
@@ -202,6 +230,24 @@ public class PlayerCmds implements CommandExecutor {
         String playerNameBorder = String.format(MSG_PLAYER_NAME_FORMAT, playerData.getPlayerName());
         String[] information = {playerNameBorder, playerStats};
         formatInformationForPlayer(information, player);
+    }
+
+    private String[] displayTopPlayers(ArrayList<PlayerData> topPlayers, String headerFormat, String bodyFormat) {
+        int size = leaderboard.getAmountOfPlayersToShow();
+        if(size > topPlayers.size()) {
+            size = topPlayers.size();
+        }
+        String [] info = new String[size + 1];
+        info[0] = String.format(headerFormat, size);
+        for(int i = 0; i < size; i ++) {
+            PlayerData currentPlayerData = topPlayers.get(i);
+            String playerName = currentPlayerData.getPlayerName();;
+            String bestTime = currentPlayerData.getBestTimeInSeconds3DP();
+            String averageTime = currentPlayerData.getAverageTimeInSeconds3DP();
+            int totalAnswers = currentPlayerData.getQuestionsAnswered();
+            info[i+1] = String.format(bodyFormat,i+1, playerName,totalAnswers,bestTime,averageTime);
+        }
+        return info;
     }
 
     private void formatInformationForPlayer(String[] message, Player player) {

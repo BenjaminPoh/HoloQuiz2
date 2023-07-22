@@ -53,14 +53,14 @@ public class AverageBestTime {
 
     static class sortByAverageTime implements Comparator<PlayerData> {
         public int compare (PlayerData player1, PlayerData player2) {
-            double determinant = player2.getBestTime() - player1.getBestTime(); //Note inversion!
+            double determinant = player1.getAverageTime() - player2.getAverageTime(); //Note inversion!
             if(determinant > 0) {
                 return 1;
             }
             if (determinant < 0) {
                 return -1;
             }
-            return (player1.getQuestionsAnswered() - player2.getQuestionsAnswered());
+            return (player2.getQuestionsAnswered() - player1.getQuestionsAnswered());
         }
     }
 }

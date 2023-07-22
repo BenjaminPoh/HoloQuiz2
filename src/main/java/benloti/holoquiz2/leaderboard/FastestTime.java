@@ -38,11 +38,11 @@ public class FastestTime {
 
     static class sortByBestTime implements Comparator<PlayerData> {
         public int compare(PlayerData player1, PlayerData player2) {
-            int determinant = player2.getBestTime() - player1.getBestTime(); //Note inversion!
+            int determinant = player1.getBestTime() - player2.getBestTime(); //Note inversion!
             if (determinant != 0) {
                 return determinant;
             }
-            return (player1.getQuestionsAnswered() - player2.getQuestionsAnswered());
+            return (player2.getQuestionsAnswered() - player1.getQuestionsAnswered());
         }
     }
 }

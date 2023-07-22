@@ -23,6 +23,10 @@ public class Leaderboard {
         initialiseLeaderboard(databaseManager);
     }
 
+    public int getAmountOfPlayersToShow() {
+        return amountOfPlayersToShow;
+    }
+
     public void initialiseLeaderboard(DatabaseManager databaseManager) {
         ArrayList<PlayerData> allPlayerData = databaseManager.loadAllPlayerData();
         for(PlayerData peko : allPlayerData) {
@@ -59,6 +63,18 @@ public class Leaderboard {
             return;
         }
         averageBestTime.removeNewAverageBestAnswers(playerData.getPlayerName());
+    }
+
+    public ArrayList<PlayerData> getFastest() {
+        return fastestTime.getTopPlayers();
+    }
+
+    public ArrayList<PlayerData> getMostAnswers() {
+        return mostAnswers.getTopPlayers();
+    }
+
+    public ArrayList<PlayerData> getAverageBest() {
+        return averageBestTime.getTopPlayers();
     }
 }
 

@@ -9,12 +9,13 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*; //Blasphemy
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 public class DatabaseManager {
     private static final String DB_NAME = "HoloQuiz";
     private static final String ERROR_MSG_DB_FILE = "Yabe peko, what happened to the db peko";
 
-    private static Connection connection;
+    private Connection connection;
     private final JavaPlugin plugin;
     private final File dataFile;
     private final HoloQuizStats holoQuizStats;
@@ -25,7 +26,7 @@ public class DatabaseManager {
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.dataFile = checkFile();
-        getConnection();
+        this.connection = getConnection();
         this.holoQuizStats = new HoloQuizStats(connection);
         this.answersLogs = new AnswersLogs(connection);
         this.userInfo = new UserInfo(connection);
@@ -53,7 +54,7 @@ public class DatabaseManager {
                 connection = DriverManager.getConnection("jdbc:sqlite:" + dataFile);
             }
             if (connection == null || connection.isClosed()) {
-                Bukkit.getLogger().info("This ain't right peko");
+                Bukkit.getLogger().log( Level.SEVERE,"This ain't right peko");
                 return null;
             }
             return connection;
@@ -76,6 +77,9 @@ public class DatabaseManager {
 
     public PlayerData loadPlayerData(String playerName) {
         int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
+        if(playerHoloQuizID == 0) {
+            return null;
+        }
         return holoQuizStats.loadPlayerData(connection,playerHoloQuizID,playerName);
     }
 
