@@ -9,3 +9,6 @@ Interval: 10
 LeaderboardSize: 10
 LeaderboardMinQuestionsNeeded: 3
 
+# Easter Eggs!
+EasterEggs: true
+

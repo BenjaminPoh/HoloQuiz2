@@ -1,5 +1,6 @@
 package benloti.holoquiz2.commands;
 
+import benloti.holoquiz2.files.ConfigFile;
 import benloti.holoquiz2.structs.PlayerData;
 import benloti.holoquiz2.leaderboard.Leaderboard;
 import net.md_5.bungee.api.ChatColor;
@@ -51,11 +52,13 @@ public class PlayerCmds implements CommandExecutor {
     private final TimedTask timedTask;
     private final DatabaseManager databaseManager;
     private final Leaderboard leaderboard;
+    private final boolean easterEggs;
 
-    public PlayerCmds(TimedTask timedTask, DatabaseManager databaseManager, Leaderboard leaderboard) {
+    public PlayerCmds(TimedTask timedTask, DatabaseManager databaseManager, Leaderboard leaderboard, ConfigFile configFile) {
         this.databaseManager = databaseManager;
         this.timedTask = timedTask;
         this.leaderboard = leaderboard;
+        this.easterEggs = configFile.isEasterEggsEnabled();
     }
 
     @Override
@@ -82,7 +85,10 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        return runEasterEggCommands(player, args);
+        if(easterEggs) {
+            return runEasterEggCommands(player, args);
+        }
+        return false;
     }
 
     private boolean runAdminCommand(Player player, String[] args) {
@@ -170,7 +176,7 @@ public class PlayerCmds implements CommandExecutor {
     }
 
     private boolean runEasterEggCommands(Player player, String[] args) {
-        if (args[0].equals("peko")) {
+        if (args[0].equals("pekofy")) {
             player.sendMessage("Peko Peko Peko!!!");
             return true;
         }

@@ -26,7 +26,7 @@ public final class HoloQuiz2 extends JavaPlugin {
         Leaderboard leaderboard = new Leaderboard(configFile, database);
         new QuizAnswerHandler(this, triviaTask, database, leaderboard);
         new PlayerActivityHandler(this, database, leaderboard);
-        getCommand("HoloQuiz").setExecutor(new PlayerCmds(triviaTask, database, leaderboard));
+        getCommand("HoloQuiz").setExecutor(new PlayerCmds(triviaTask, database, leaderboard, configFile));
         triviaTask.firstStart();
     }
 
