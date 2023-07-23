@@ -18,11 +18,11 @@ public class AverageBestTime {
         return topPlayers;
     }
 
-    public void updateTopPlayers(PlayerData playerData, int minimumQuestionsRequired) {
-        if(playerData.getQuestionsAnswered() < minimumQuestionsRequired) {
-            return;
-        }
+    public void addToTopPlayers(PlayerData playerData) {
+        topPlayers.add(playerData);
+    }
 
+    public void updateTopPlayers(PlayerData playerData) {
         String playerName = playerData.getPlayerName();
         for(int i = 0; i < topPlayers.size(); i++) {
             PlayerData currentTop = topPlayers.get(i);
@@ -35,21 +35,6 @@ public class AverageBestTime {
         Bukkit.getLogger().log(Level.SEVERE, "Player not found in DS for Average Answer Time");
     }
 
-    public void addNewAverageBestAnswers(PlayerData playerData) {
-        topPlayers.add(playerData);
-        topPlayers.sort(new sortByAverageTime());
-    }
-
-    public void removeNewAverageBestAnswers(String playerName) {
-        for (int i = 0; i < topPlayers.size(); i++) {
-            PlayerData currentPlayer = topPlayers.get(i);
-            if (currentPlayer.getPlayerName().equals(playerName)) {
-                topPlayers.remove(i);
-                return;
-            }
-            Bukkit.getLogger().log(Level.SEVERE, "Player not found in DS for Average Answer Time");
-        }
-    }
 
     static class sortByAverageTime implements Comparator<PlayerData> {
         public int compare (PlayerData player1, PlayerData player2) {
