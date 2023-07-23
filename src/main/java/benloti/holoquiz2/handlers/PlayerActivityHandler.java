@@ -12,14 +12,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerActivityHandler implements Listener {
-
-    private final HoloQuiz2 plugin;
     private final Leaderboard leaderboard;
     private final DatabaseManager database;
 
     public PlayerActivityHandler(HoloQuiz2 plugin, DatabaseManager database, Leaderboard leaderboard) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        this.plugin = plugin;
         this.database = database;
         this.leaderboard = leaderboard;
     }

@@ -2,9 +2,9 @@ package benloti.holoquiz2.structs;
 
 public class PlayerData {
     private final String playerName;
-    private double averageTime;
-    private int bestTime;
-    private int questionsAnswered;
+    private final double averageTime;
+    private final int bestTime;
+    private final int questionsAnswered;
 
     public PlayerData(String name, int bestTime, long totalTime, int answers) {
         this.playerName = name;

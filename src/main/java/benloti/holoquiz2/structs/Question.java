@@ -1,8 +1,5 @@
 package benloti.holoquiz2.structs;
 
-import org.bukkit.configuration.ConfigurationSection;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class Question {

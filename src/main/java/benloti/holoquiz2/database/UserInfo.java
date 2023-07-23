@@ -3,8 +3,6 @@ package benloti.holoquiz2.database;
 import org.bukkit.Bukkit;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class UserInfo {
     private static final String SQL_STATEMENT_CREATE_USERINFO_TABLE =
@@ -16,8 +14,6 @@ public class UserInfo {
             "INSERT INTO user_info (user_id, player_uuid, username) VALUES (?, ?, ?)";
     private static final String SQL_STATEMENT_FIND_SIZE =
             "SELECT COUNT (user_id) FROM user_info";
-    private static final String SQL_STATEMENT_OBTAIN_USER_NAME =
-            "SELECT * FROM user_info WHERE user_id = '%s'";
     private static final String SQL_STATEMENT_OBTAIN_ALL_USER_NAME =
             "SELECT * FROM user_info";
 
@@ -90,7 +86,7 @@ public class UserInfo {
             }
             return resultSet.getInt("user_id");
         } catch (SQLException e) {
-            e.printStackTrace();;
+            e.printStackTrace();
         }
         return 0;
     }

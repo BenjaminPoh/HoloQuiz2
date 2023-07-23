@@ -1,6 +1,5 @@
 package benloti.holoquiz2.database;
 
-import benloti.holoquiz2.leaderboard.Leaderboard;
 import benloti.holoquiz2.structs.PlayerData;
 import org.bukkit.Bukkit;
 
