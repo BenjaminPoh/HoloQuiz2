@@ -56,9 +56,8 @@ public class Leaderboard {
             return;
         }
 
-        mostAnswers.updateTopPlayers(playerData);
-        fastestTime.updateTopPlayers(playerData);
-
+        mostAnswers.updateTopPlayers(playerData, amountOfPlayersToShow);
+        fastestTime.updateTopPlayers(playerData, amountOfPlayersToShow);
 
         if(playerData.getQuestionsAnswered() == minimumQuestionsRequired) {
             averageBestTime.addToTopPlayers(playerData);

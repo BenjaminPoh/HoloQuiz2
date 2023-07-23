@@ -16,7 +16,7 @@ public class FastestTime {
         return topPlayers;
     }
 
-    public void updateTopPlayers(PlayerData playerData) {
+    public void updateTopPlayers(PlayerData playerData, int limit) {
         String playerName = playerData.getPlayerName();
         //Check if already in leaderboards
         for (int i = 0; i < topPlayers.size(); i++) {
@@ -26,6 +26,12 @@ public class FastestTime {
                 topPlayers.sort(new sortByBestTime());
                 return;
             }
+        }
+        //Check if there is space to just insert
+        if (topPlayers.size() < limit) {
+            topPlayers.add(playerData);
+            topPlayers.sort(new sortByBestTime());
+            return;
         }
         //Check if overtook the slowest person on leaderboards
         int lastPlacePosition = topPlayers.size() - 1;

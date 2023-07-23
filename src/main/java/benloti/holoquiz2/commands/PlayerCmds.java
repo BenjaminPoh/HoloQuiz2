@@ -44,11 +44,11 @@ public class PlayerCmds implements CommandExecutor {
     public static final String MSG_LEADERBOARD_HEADER_AVERAGE_BEST_ANSWERS =
             "&9=-=-=-=-=-=-=[ &bLeaderboard for &aTop %s Fastest on Average&9 ]=-=-=-=-=-=-=";
     public static final String MSG_LEADERBOARD_BODY_MOST_ANSWERS_FORMAT =
-            "&3%s. &6%s&3: &6%s &3Best Time: &2%s &3| Average Time: &2%s";
+            "&3%s. &e%s&3: &6%s &3Best Time: &2%s &3| Average Time: &2%s";
     public static final String MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT =
-            "&3%s. &6%s&3: &2%s &eBest Time: &6%s &3| Average Time: &2%s";
+            "&3%s. &e%s&3: &2%s &eBest Time: &6%s &3| Average Time: &2%s";
     public static final String MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT =
-            "&3%s. &6%s&3: &2%s &3Best Time: &2%s &3| &eAverage Time: &6%s";
+            "&3%s. &e%s&3: &2%s &3Best Time: &2%s &3| &eAverage Time: &6%s";
 
     private final GameManager gameManager;
     private final DatabaseManager databaseManager;

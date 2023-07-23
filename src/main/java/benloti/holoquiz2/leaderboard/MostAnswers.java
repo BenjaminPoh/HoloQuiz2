@@ -16,15 +16,22 @@ public class MostAnswers {
         return topPlayers;
     }
 
-    public void updateTopPlayers(PlayerData playerData) {
+    public void updateTopPlayers(PlayerData playerData, int limit) {
         String playerName = playerData.getPlayerName();
         //Check if already in leaderboards
         for(int i = 0; i < topPlayers.size() ; i++) {
             PlayerData currentTop = topPlayers.get(i);
             if(currentTop.getPlayerName().equals(playerName)) {
                 topPlayers.set(i, playerData);
+                topPlayers.sort(new sortByMostAnswers());
                 return;
             }
+        }
+        //Check if there is space to just insert
+        if (topPlayers.size() < limit) {
+            topPlayers.add(playerData);
+            topPlayers.sort(new sortByMostAnswers());
+            return;
         }
         //Check if able to replace last person in leaderboards
         int lastPlacePosition = topPlayers.size() - 1;
