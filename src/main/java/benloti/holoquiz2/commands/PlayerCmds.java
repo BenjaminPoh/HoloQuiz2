@@ -1,11 +1,12 @@
 package benloti.holoquiz2.commands;
 
 import benloti.holoquiz2.files.ConfigFile;
+import benloti.holoquiz2.games.GameManager;
 import benloti.holoquiz2.structs.PlayerData;
 import benloti.holoquiz2.leaderboard.Leaderboard;
 import net.md_5.bungee.api.ChatColor;
 import benloti.holoquiz2.database.DatabaseManager;
-import benloti.holoquiz2.files.TimedTask;
+import benloti.holoquiz2.games.Trivia;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,6 +26,7 @@ public class PlayerCmds implements CommandExecutor {
     public static final String ERROR_NO_PERMS = "&cYou do not have permissions to do this!";
     public static final String ERROR_NO_PLAYER_FOUND = "&cNo such player found!";
     public static final String ERROR_HOLOQUIZ_IS_STOPPED = "&bYou can't do that, HoloQuiz &cis stopped!";
+    public static final String ERROR_HOLOQUIZ_IS_ALREADY_RUNNING = "&bYou can't do that, HoloQuiz &cis already running!";
     public static final String ERROR_INCORRECT_COMMAND = "&bWhat are you doing peko";
 
     public static final String MSG_PLAYER_STATS_FORMAT = "&b|Answers: &6%s &b| Best Time: &6%ss &b| Average Time: &6%ss &b|";
@@ -49,14 +51,14 @@ public class PlayerCmds implements CommandExecutor {
     public static final String MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT =
             "&3%s. &6%s&3: &2%s &3Best Time: &2%s &3| &eAverage Time: &6%s";
 
-    private final TimedTask timedTask;
+    private final GameManager gameManager;
     private final DatabaseManager databaseManager;
     private final Leaderboard leaderboard;
     private final boolean easterEggs;
 
-    public PlayerCmds(TimedTask timedTask, DatabaseManager databaseManager, Leaderboard leaderboard, ConfigFile configFile) {
+    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, Leaderboard leaderboard, ConfigFile configFile) {
         this.databaseManager = databaseManager;
-        this.timedTask = timedTask;
+        this.gameManager = gameManager;
         this.leaderboard = leaderboard;
         this.easterEggs = configFile.isEasterEggsEnabled();
     }
@@ -103,24 +105,34 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equals("next")) { //BROKEN
-            if (timedTask.isStopped()) {
+        if (args[0].equals("next")) {
+            if (!gameManager.getGameStatus()) {
                 formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, player);
                 return true;
             }
 
-            timedTask.nextQuestion();
+            gameManager.nextQuestion();
             return true;
         }
 
         if (args[0].equals("stop")) {
-            timedTask.stop();
+            if (!gameManager.getGameStatus()) {
+                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, player);
+                return true;
+            }
+
+            gameManager.stopGame();
             formatInformationForPlayer(NOTIFY_HOLOQUIZ_STOPPED, player);
             return true;
         }
 
         if (args[0].equals("start")) {
-            timedTask.start();
+            if(gameManager.getGameStatus()) {
+                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_ALREADY_RUNNING, player);
+                return true;
+            }
+
+            gameManager.startGame();
             formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, player);
             return true;
         }
@@ -185,18 +197,18 @@ public class PlayerCmds implements CommandExecutor {
     }
 
     private String[] obtainQuestionInfo(boolean adminInfoRequired) {
-        if (timedTask.isStopped()) {
+        if (!gameManager.getGameStatus()) {
             return new String[]{ERROR_HOLOQUIZ_IS_STOPPED};
         }
 
-        String currentQuestion = timedTask.showQuestion().getQuestion();
+        String currentQuestion = gameManager.getCurrentQuestion().getQuestion();
         long currentTime = System.currentTimeMillis();
         //Simple calculations for later
-        long timeQuestionSent = timedTask.getTimeQuestionSent();
-        long questionInterval = timedTask.getInterval();
+        long timeQuestionSent = gameManager.getTimeQuestionSent();
+        long questionInterval = gameManager.getInterval();
         int timeLeft = (int) (timeQuestionSent - currentTime + questionInterval * 1000);
         double timeLeftInSeconds = timeLeft / 1000.0;
-        boolean questionStatus = timedTask.isQuestionAnswered();
+        boolean questionStatus = gameManager.getQuestionStatus();
 
         String currentQuestionFormatted = String.format(MSG_DISPLAY_QUESTION_FORMAT, currentQuestion);
         String timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
@@ -219,7 +231,7 @@ public class PlayerCmds implements CommandExecutor {
         basicInfo[4] = MSG_ANSWER_HEADER_FORMAT;
         Collections.addAll(information, basicInfo);
 
-        List<String> answersList = timedTask.showQuestion().getAnswers();
+        List<String> answersList = gameManager.getCurrentQuestion().getAnswers();
         for (String s : answersList) {
             String formattedAnswer = String.format(MSG_ANSWER_LIST_FORMAT, s);
             information.add(formattedAnswer);

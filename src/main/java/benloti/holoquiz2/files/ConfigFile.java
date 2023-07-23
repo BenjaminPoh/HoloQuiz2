@@ -17,6 +17,7 @@ public class ConfigFile {
     private final int leaderboardSize;
     private final int leaderboardMinReq;
     private final boolean easterEggs;
+    private final String gameMode;
 
     public ConfigFile(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -30,6 +31,7 @@ public class ConfigFile {
         this.leaderboardSize = information.getInt("LeaderboardSize");
         this.leaderboardMinReq = information.getInt("LeaderboardMinQuestionsNeeded");
         this.easterEggs = information.getBoolean("EasterEggs");
+        this.gameMode = information.getString("GameMode");
     }
 
     public int getInterval() {
@@ -44,8 +46,11 @@ public class ConfigFile {
         return leaderboardMinReq;
     }
 
-
     public boolean isEasterEggsEnabled() {
         return easterEggs;
+    }
+
+    public String getGameMode() {
+        return gameMode;
     }
 }

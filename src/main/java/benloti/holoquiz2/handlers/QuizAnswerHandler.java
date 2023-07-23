@@ -1,13 +1,13 @@
 package benloti.holoquiz2.handlers;
 
 import benloti.holoquiz2.HoloQuiz2;
+import benloti.holoquiz2.games.GameManager;
 import benloti.holoquiz2.leaderboard.Leaderboard;
 import benloti.holoquiz2.structs.PlayerData;
 import benloti.holoquiz2.database.DatabaseManager;
-import benloti.holoquiz2.files.TimedTask;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.*;
+import org.bukkit.*; //Wtf blasphemy!
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -25,14 +25,14 @@ import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
 
-    private final TimedTask task;
+    private final GameManager gameManager;
     private final HoloQuiz2 plugin;
     private final DatabaseManager database;
     private final Leaderboard leaderboard;
 
-    public QuizAnswerHandler(HoloQuiz2 plugin, TimedTask task, DatabaseManager database, Leaderboard leaderboard) {
+    public QuizAnswerHandler(HoloQuiz2 plugin, GameManager gameManager, DatabaseManager database, Leaderboard leaderboard) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        this.task = task;
+        this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.leaderboard = leaderboard;
@@ -40,20 +40,21 @@ public class QuizAnswerHandler implements Listener {
 
     @EventHandler
     public void correctAnswerSent(AsyncPlayerChatEvent theEvent) {
-        if(task.isStopped()) {
+        if(!gameManager.getGameStatus() || gameManager.getQuestionStatus()) {
             return;
         }
+
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
-        List<String> answers = task.showQuestion().getAnswers();
+        List<String> answers = gameManager.getCurrentQuestion().getAnswers();
         for(String possibleAnswer : answers) {
-            if (message.equalsIgnoreCase(possibleAnswer) && !task.isQuestionAnswered()) {
+            if (message.equalsIgnoreCase(possibleAnswer)) {
                 //Time sensitive tasks
                 long timeAnswered = System.currentTimeMillis();
-                task.setQuestionAnswered(true);
+                gameManager.setQuestionStatus(true);
 
                 //Simple calculations for later
-                long startTime = task.getTimeQuestionSent();
+                long startTime = gameManager.getTimeQuestionSent();
                 int timeTaken = (int)(timeAnswered - startTime);
 
                 //The actual tasks

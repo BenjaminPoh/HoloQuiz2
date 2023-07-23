@@ -1,5 +1,6 @@
 # Plugin Config
 Interval: 10
+GameMode: Trivia
 #CheatingChecker: true
 #CheatingTimer: 0.5
 #CountAsCorrect: false
@@ -8,4 +9,8 @@ Interval: 10
 # Leaderboard Config
 LeaderboardSize: 10
 LeaderboardMinQuestionsNeeded: 3
+
+# Easter Eggs!
+EasterEggs: true
+
 
