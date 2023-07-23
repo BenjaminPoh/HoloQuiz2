@@ -1,6 +1,6 @@
-name: HoloQuiz2
+name: HoloQuiz
 version: '${project.version}'
-main: benloti.holoquiz2.HoloQuiz2
+main: benloti.holoquiz.HoloQuiz
 api-version: '1.19'
 commands:
   HoloQuiz:
