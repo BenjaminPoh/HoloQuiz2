@@ -2,6 +2,7 @@ name: HoloQuiz
 version: '${project.version}'
 main: benloti.holoquiz.HoloQuiz
 api-version: '1.19'
+softdepend: [Vault]
 commands:
   HoloQuiz:
     info:

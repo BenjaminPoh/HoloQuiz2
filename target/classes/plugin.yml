@@ -1,7 +1,8 @@
-name: HoloQuiz2
+name: HoloQuiz
 version: '1.0-SNAPSHOT'
-main: benloti.holoquiz2.HoloQuiz2
+main: benloti.holoquiz.HoloQuiz
 api-version: '1.19'
+softdepend: [Vault]
 commands:
   HoloQuiz:
     info:

@@ -1,7 +1,8 @@
-package benloti.holoquiz.handlers;
+package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
-import benloti.holoquiz.games.GameManager;
+import benloti.holoquiz.dependencies.DependencyHandler;
+import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.database.DatabaseManager;
@@ -25,17 +26,20 @@ import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
 
+    private final VaultDep economy;
     private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
     private final Leaderboard leaderboard;
 
-    public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database, Leaderboard leaderboard) {
+    public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
+                             Leaderboard leaderboard, DependencyHandler dependencyHandler ) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.leaderboard = leaderboard;
+        this.economy = dependencyHandler.getVaultDep();
     }
 
     @EventHandler
@@ -60,7 +64,8 @@ public class QuizAnswerHandler implements Listener {
                 //The actual tasks
                 sendAnnouncement(possibleAnswer, player.getName(), timeTaken);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
-                //giveReward(player, timeAnswered);
+                giveReward(player, timeAnswered);
+                addBalance(player,timeAnswered);
                 displayTitle(player);
                 new BukkitRunnable() {
                     public void run() {
@@ -148,7 +153,6 @@ public class QuizAnswerHandler implements Listener {
         }
         assert meta != null;
 
-
         meta.setLore(coloredLoreList);
 
         item.setItemMeta(meta);
@@ -156,4 +160,10 @@ public class QuizAnswerHandler implements Listener {
         inv.addItem(item);
     }
 
+    private void addBalance(Player player, double amount) {
+        if(economy == null) {
+            return;
+        }
+        economy.addBalance(player.getName(), amount);
+    }
 }

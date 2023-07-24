@@ -1,5 +1,6 @@
 package benloti.holoquiz.games;
 
+import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.structs.Question;
 import org.bukkit.configuration.ConfigurationSection;
