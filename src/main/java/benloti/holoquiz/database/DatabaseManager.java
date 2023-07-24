@@ -21,6 +21,7 @@ public class DatabaseManager {
     private final HoloQuizStats holoQuizStats;
     private final AnswersLogs answersLogs;
     private final UserInfo userInfo;
+    private final UserPersonalisation userPersonalisation;
     private final int numberOfEntries;
 
     public DatabaseManager(JavaPlugin plugin) {
@@ -30,6 +31,7 @@ public class DatabaseManager {
         this.holoQuizStats = new HoloQuizStats(connection);
         this.answersLogs = new AnswersLogs(connection);
         this.userInfo = new UserInfo(connection);
+        this.userPersonalisation = new UserPersonalisation(connection);
         this.numberOfEntries = userInfo.getSize(connection);
     }
 
@@ -86,5 +88,9 @@ public class DatabaseManager {
     public ArrayList<PlayerData> loadAllPlayerData() {
         String[] allPlayerNames = userInfo.getAllPlayerNames(connection, numberOfEntries);
         return holoQuizStats.getAllPlayerData(connection, allPlayerNames);
+    }
+
+    public UserPersonalisation getUserPersonalisation() {
+        return this.userPersonalisation;
     }
 }

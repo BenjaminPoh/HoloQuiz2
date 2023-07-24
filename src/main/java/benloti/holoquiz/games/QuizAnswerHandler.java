@@ -1,11 +1,13 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
+import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.database.DatabaseManager;
+import benloti.holoquiz.structs.PlayerSettings;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*; //Wtf blasphemy!
@@ -31,15 +33,17 @@ public class QuizAnswerHandler implements Listener {
     private final HoloQuiz plugin;
     private final DatabaseManager database;
     private final Leaderboard leaderboard;
+    private final UserPersonalisation userPersonalisation;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             Leaderboard leaderboard, DependencyHandler dependencyHandler ) {
+                             Leaderboard leaderboard, DependencyHandler dependencyHandler) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.leaderboard = leaderboard;
         this.economy = dependencyHandler.getVaultDep();
+        this.userPersonalisation = database.getUserPersonalisation();
     }
 
     @EventHandler
@@ -62,9 +66,9 @@ public class QuizAnswerHandler implements Listener {
                 int timeTaken = (int)(timeAnswered - startTime);
 
                 //The actual tasks
-                sendAnnouncement(possibleAnswer, player.getName(), timeTaken);
+                sendAnnouncement(possibleAnswer, player, timeTaken);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
-                giveReward(player, timeAnswered);
+                giveReward(player,timeAnswered);
                 addBalance(player,timeAnswered);
                 displayTitle(player);
                 new BukkitRunnable() {
@@ -78,17 +82,28 @@ public class QuizAnswerHandler implements Listener {
 
                 //update leaderboards
                 leaderboard.updateLeaderBoard(playerData);
+                return;
             }
         }
     }
 
-    private void sendAnnouncement(String possibleAnswer, String playerName, long timeTaken) {
+    private void sendAnnouncement(String possibleAnswer, Player answerer, long timeTaken) {
+        String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
         String message = "&6" + playerName + "&e wins after &6" + timeTakenInSeconds +
                 "&e seconds! The answer was &6" + possibleAnswer;
         String announcement = ChatColor.translateAlternateColorCodes('&', message);
+
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            player.sendMessage(announcement);
+            String playerUUID = player.getUniqueId().toString();
+            PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+            if(playerSettings == null) {
+                player.sendMessage(announcement);
+                return;
+            }
+            if(playerSettings.isNotificationEnabled()) {
+                player.sendMessage(announcement + playerSettings.getSuffix());
+            }
         }
     }
 

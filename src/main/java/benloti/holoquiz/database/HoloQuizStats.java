@@ -43,7 +43,6 @@ public class HoloQuizStats {
             boolean isNotFirstAnswer = resultSet.next();
 
             if (isNotFirstAnswer) {
-                Bukkit.getLogger().info("Player has answered before!");
                 totalAnswers = resultSet.getInt("answers");
                 totalTimeTaken = resultSet.getLong("total");
                 bestTime = resultSet.getInt("best");
@@ -56,7 +55,6 @@ public class HoloQuizStats {
 
                 statsStatement = SQL_STATEMENT_UPDATE_STATS;
             } else {
-                Bukkit.getLogger().info("Player has never answered before!");
                 totalAnswers = 1;
                 totalTimeTaken = timeTaken;
                 bestTime = timeTaken;
@@ -76,7 +74,6 @@ public class HoloQuizStats {
         }
         return null;
     }
-
 
     public PlayerData loadPlayerData(Connection connection, int holoQuizID, String playerName) {
         try {

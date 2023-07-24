@@ -1,9 +1,11 @@
 package benloti.holoquiz.commands;
 
+import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.leaderboard.Leaderboard;
+import benloti.holoquiz.structs.PlayerSettings;
 import net.md_5.bungee.api.ChatColor;
 import benloti.holoquiz.database.DatabaseManager;
 import org.bukkit.Bukkit;
@@ -50,16 +52,21 @@ public class PlayerCmds implements CommandExecutor {
     public static final String MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT =
             "&3%s. &e%s&3: &2%s &3Best Time: &2%s &3| &eAverage Time: &6%s";
 
+    public static final String MSG_HOLOQUIZ_MESSAGES_ENABLED = "&bHoloQuiz will now be&a shown to you%s!";
+    public static final String MSG_HOLOQUIZ_MESSAGES_DISABLED = "&bHoloQuiz will&c no longer be shown to you%s!";
+
     private final GameManager gameManager;
     private final DatabaseManager databaseManager;
     private final Leaderboard leaderboard;
     private final boolean easterEggs;
+    private final UserPersonalisation userPersonalisation;
 
     public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, Leaderboard leaderboard, ConfigFile configFile) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
         this.leaderboard = leaderboard;
         this.easterEggs = configFile.isEasterEggsEnabled();
+        this.userPersonalisation = databaseManager.getUserPersonalisation();
     }
 
     @Override
@@ -160,6 +167,11 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
+        if(args[0].equals("toggle")) {
+            toggleHoloquizNotification(player);
+            return true;
+        }
+
         if (args[0].equals("top") && args.length > 1) {
             switch (args[1]) {
             default:
@@ -182,7 +194,6 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -191,8 +202,30 @@ public class PlayerCmds implements CommandExecutor {
             player.sendMessage("Peko Peko Peko!!!");
             return true;
         }
-
         return false;
+    }
+
+    private void toggleHoloquizNotification(Player player) {
+        String playerUUID = player.getUniqueId().toString();
+        String holoQuizNotificationFormatted;
+        PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+
+        if(playerSettings == null) {
+            userPersonalisation.setNotificationSetting(playerUUID, false);
+            holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_DISABLED, "");
+            formatInformationForPlayer(holoQuizNotificationFormatted, player);
+            return;
+        }
+        boolean newNotificationSetting = !playerSettings.isNotificationEnabled();
+        String playerSuffix = playerSettings.getSuffix();
+        userPersonalisation.setNotificationSetting(playerUUID, newNotificationSetting);
+
+        if(newNotificationSetting) {
+            holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_ENABLED, playerSuffix);
+        } else {
+            holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_DISABLED, playerSuffix);
+        }
+        formatInformationForPlayer(holoQuizNotificationFormatted, player);
     }
 
     private String[] obtainQuestionInfo(boolean adminInfoRequired) {

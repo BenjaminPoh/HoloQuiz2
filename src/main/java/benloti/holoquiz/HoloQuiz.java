@@ -11,7 +11,15 @@ import org.bukkit.Bukkit;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.xml.crypto.Data;
+
 public final class HoloQuiz extends JavaPlugin {
+
+    private ConfigFile configFile;
+    private DependencyHandler dependencyHandler;
+    private DatabaseManager database;
+    private GameManager gameManager;
+    private Leaderboard leaderboard;
 
     @Override
     public void onEnable() {
@@ -22,11 +30,11 @@ public final class HoloQuiz extends JavaPlugin {
             getDataFolder().mkdirs();
         }
 
-        ConfigFile configFile = new ConfigFile(this);
-        DependencyHandler dependencyHandler = new DependencyHandler(this);
-        DatabaseManager database = new DatabaseManager(this);
-        GameManager gameManager = new GameManager(this, configFile);
-        Leaderboard leaderboard = new Leaderboard(configFile, database);
+        this.configFile = new ConfigFile(this);
+        this.dependencyHandler = new DependencyHandler(this);
+        this.database = new DatabaseManager(this);
+        this.gameManager = new GameManager(this, configFile, database.getUserPersonalisation());
+        this.leaderboard = new Leaderboard(configFile, database);
         new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile));
         gameManager.startGame();
@@ -34,7 +42,7 @@ public final class HoloQuiz extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        database.getUserPersonalisation().savePlayerSettings();
         Bukkit.getLogger().info("Shutting Down Peko");
     }
 }

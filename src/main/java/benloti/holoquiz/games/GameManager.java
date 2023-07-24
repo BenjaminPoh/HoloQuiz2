@@ -1,6 +1,6 @@
 package benloti.holoquiz.games;
 
-import benloti.holoquiz.dependencies.DependencyHandler;
+import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.structs.Question;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,6 +15,7 @@ import java.util.List;
 
 public class GameManager {
     private final JavaPlugin plugin;
+    private final UserPersonalisation userPersonalisation;
     private final long interval;
     private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
     private boolean gameRunning;
@@ -22,18 +23,19 @@ public class GameManager {
     private Trivia trivia;
     private final List<Question> triviaQuestionBank;
 
-    public GameManager(JavaPlugin plugin, ConfigFile configFile) {
+    public GameManager(JavaPlugin plugin, ConfigFile configFile, UserPersonalisation userPersonalisation) {
         this.plugin = plugin;
         this.interval = configFile.getInterval();
         this.gameMode = configFile.getGameMode();
         this.triviaQuestionBank = getTriviaQuestions();
+        this.userPersonalisation = userPersonalisation;
     }
 
     public void startGame() {
         if(gameRunning) {
             return;
         }
-        this.trivia = new Trivia(triviaQuestionBank, plugin);
+        this.trivia = new Trivia(triviaQuestionBank, plugin, userPersonalisation);
         this.gameRunning = true;
         trivia.runTaskTimer(plugin, 0, interval * 20);
     }
