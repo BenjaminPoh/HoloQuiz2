@@ -87,7 +87,9 @@ public class QuizAnswerHandler implements Listener {
         String message = "&6" + playerName + "&e wins after &6" + timeTakenInSeconds +
                 "&e seconds! The answer was &6" + possibleAnswer;
         String announcement = ChatColor.translateAlternateColorCodes('&', message);
-        Bukkit.broadcastMessage(announcement);
+        for(Player player : plugin.getServer().getOnlinePlayers()) {
+            player.sendMessage(announcement);
+        }
     }
 
     private void makeFireworks(Player player) {

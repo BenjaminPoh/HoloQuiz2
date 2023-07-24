@@ -33,7 +33,7 @@ public class GameManager {
         if(gameRunning) {
             return;
         }
-        this.trivia = new Trivia(triviaQuestionBank);
+        this.trivia = new Trivia(triviaQuestionBank, plugin);
         this.gameRunning = true;
         trivia.runTaskTimer(plugin, 0, interval * 20);
     }

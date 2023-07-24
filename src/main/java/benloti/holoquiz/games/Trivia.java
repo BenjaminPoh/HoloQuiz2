@@ -1,7 +1,8 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.structs.Question;
-import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
@@ -12,9 +13,11 @@ public class Trivia extends BukkitRunnable {
     private final List<Question> allQuestions;
     private long timeQuestionSent;
     private boolean questionAnswered;
+    private final JavaPlugin plugin;
 
-    public Trivia(List<Question> questionBank) {
+    public Trivia(List<Question> questionBank, JavaPlugin plugin) {
         this.allQuestions = questionBank;
+        this.plugin = plugin;
     }
 
     @Override
@@ -26,7 +29,9 @@ public class Trivia extends BukkitRunnable {
         this.question = question;
         setQuestionAnswered(false);
         setTimeQuestionSent(System.currentTimeMillis());
-        Bukkit.broadcastMessage(question.getQuestion());
+        for(Player player : plugin.getServer().getOnlinePlayers()) {
+            player.sendMessage(question.getQuestion());
+        }
     }
 
     public Question getQuestion() {
