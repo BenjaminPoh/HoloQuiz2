@@ -32,7 +32,7 @@ public class GameManager {
         this.gameMode = configFile.getGameMode();
         this.triviaQuestionBank = getTriviaQuestions();
         this.userPersonalisation = userPersonalisation;
-        this.rewardsHandler = new RewardsHandler(plugin, dependencyHandler.isCmiPresent());
+        this.rewardsHandler = new RewardsHandler(plugin, dependencyHandler.getCMIDep());
     }
 
     public void startGame() {

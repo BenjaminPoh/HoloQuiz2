@@ -15,7 +15,7 @@ public class DependencyHandler {
         }
         if (Bukkit.getPluginManager().isPluginEnabled("CMI")) {
             Bukkit.getLogger().info("[HoloQuiz] CMI Plugin detected as Soft Dep!");
-            this.cmiDep = new CMIDep(plugin);
+            this.cmiDep = new CMIDep();
         }
     }
 
@@ -23,7 +23,7 @@ public class DependencyHandler {
         return vaultDep;
     }
 
-    public boolean isCmiPresent() {
-        return (cmiDep != null);
+    public CMIDep getCMIDep() {
+        return cmiDep;
     }
 }

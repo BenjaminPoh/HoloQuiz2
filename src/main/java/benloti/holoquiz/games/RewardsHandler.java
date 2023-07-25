@@ -1,6 +1,9 @@
 package benloti.holoquiz.games;
 
+import benloti.holoquiz.dependencies.CMIDep;
 import benloti.holoquiz.structs.RewardTier;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,13 +20,15 @@ import java.util.List;
 
 public class RewardsHandler {
 
-    private ArrayList<RewardTier> allRewards;
-    private boolean isHexSupported;
+    private final ArrayList<RewardTier> allRewards;
+    private final boolean isHexSupported;
+    private final CMIDep cmiDep;
 
-    public RewardsHandler(JavaPlugin plugin, boolean isCmiPresent) {
+    public RewardsHandler(JavaPlugin plugin, CMIDep cmiDep) {
         File rewardsYml = new File(plugin.getDataFolder(), "Rewards.yml");
         this.allRewards = new ArrayList<>();
-        this.isHexSupported = isCmiPresent;
+        this.cmiDep = cmiDep;
+        this.isHexSupported = (cmiDep != null);
 
         if (!rewardsYml.exists()) {
             try {
@@ -38,7 +43,8 @@ public class RewardsHandler {
 
         for (String key : rewardsSection.getKeys(false)) {
             ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
-            int maxTime = rewardTierSection.getInt("MaxAnswerTime");
+            double maxTime = rewardTierSection.getDouble("MaxAnswerTime");
+            int maxTimeInMilliseconds = (int) maxTime * 1000;
             int moneyReward = rewardTierSection.getInt("Money");
             List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
@@ -47,35 +53,59 @@ public class RewardsHandler {
             for (String key2 : rewardTierItemSection.getKeys(false)) {
                 ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key2);
                 String itemType = rewardTierItem.getString("Material");
+                Material itemMaterial = Material.matchMaterial(itemType);
+                if (itemMaterial == null) {
+                    itemMaterial = Material.CARROT;
+                    Bukkit.getLogger().info("Failed to load item: " + itemType);
+                }
                 int itemQty = rewardTierItem.getInt("Qty");
                 List<String> itemLore = rewardTierItem.getStringList("Lore");
-                ItemStack itemStack = new ItemStack(Material.matchMaterial(itemType), itemQty);
+                ItemStack itemStack = new ItemStack(itemMaterial, itemQty);
+
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.setLore(itemLore);
                 itemStack.setItemMeta(itemMeta);
                 itemReward.add(itemStack);
             }
 
-            allRewards.add(new RewardTier(maxTime, moneyReward, commandsExecuted, itemReward));
+            allRewards.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
         }
     }
 
     public void giveRewards(Player player, int timeTaken) {
         RewardTier rewardTier = determineRewardTier(timeTaken);
         if (rewardTier == null) {
+            Bukkit.getLogger().info("NULL WHERE IT SHOULDNT BE 1");
             return;
         }
         for(ItemStack item : rewardTier.getItemRewards()) {
-            List<String> itemLore = item.getItemMeta().getLore();
+            ItemMeta itemMeta = item.getItemMeta();
+            List<String> itemLore = itemMeta.getLore();
             if(itemLore == null) {
+                Bukkit.getLogger().info("NULL WHERE IT SHOULDNT BE 2");
                 continue;
             }
 
-            for(String lore : itemLore) {
-                //regex it up
+            List<String> itemLoreFormatted = new ArrayList<>();
+            for(String peko : itemLore) {
+                String formattedLoreLine = peko;
+                if(formattedLoreLine.contains("[player]")) {
+                    formattedLoreLine = formattedLoreLine.replace("[player]", player.getName());
+                }
+                formattedLoreLine = (ChatColor.translateAlternateColorCodes('&', formattedLoreLine));
+                if(isHexSupported) {
+                    String formattedLoreLine2= cmiDep.translateHexColors(formattedLoreLine);
+                    Bukkit.getLogger().info("hex translated?");
+                    itemLoreFormatted.add(formattedLoreLine2);
+                    continue;
+                }
+                itemLoreFormatted.add(formattedLoreLine);
             }
+            itemMeta.setLore(itemLoreFormatted);
+            item.setItemMeta(itemMeta);
+            player.getInventory().addItem(item);
+            Bukkit.getLogger().info("This should be seen and gucci");
         }
-
     }
 
     private RewardTier determineRewardTier(int timeTaken) {

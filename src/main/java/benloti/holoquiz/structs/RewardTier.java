@@ -18,7 +18,6 @@ public class RewardTier {
         this.itemRewards = items;
     }
 
-
     public int getMaxTimeInMilliseconds() {
         return maxTimeInMilliseconds;
     }

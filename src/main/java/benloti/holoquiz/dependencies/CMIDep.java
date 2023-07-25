@@ -1,11 +1,13 @@
 package benloti.holoquiz.dependencies;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import net.Zrips.CMILib.Colors.CMIChatColor;
 
 public class CMIDep {
-    private final JavaPlugin plugin;
-
-    public CMIDep(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public CMIDep() {
     }
+
+    public String translateHexColors(String string) {
+        return CMIChatColor.translate(string);
+    }
+
 }

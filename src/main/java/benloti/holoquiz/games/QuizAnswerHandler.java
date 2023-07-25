@@ -17,13 +17,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
@@ -137,54 +133,6 @@ public class QuizAnswerHandler implements Listener {
         String announcement1 = ChatColor.translateAlternateColorCodes('&', message1);
         String announcement2 = ChatColor.translateAlternateColorCodes('&', message2);
         player.sendTitle(announcement1, announcement2, 10, 60, 10);
-    }
-
-    private void giveReward(Player player, long timeTaken) {
-        String playerName = player.getName();
-        ItemStack item;
-        if(timeTaken <= 2000) {
-            item = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1);
-        } else if (timeTaken <= 5000) {
-            item = new ItemStack(Material.GOLDEN_APPLE, 1);
-        } else {
-            item = new ItemStack(Material.DIAMOND, 1);
-        }
-
-        ItemMeta meta = item.getItemMeta();
-        List<String> loreList = new ArrayList<>();
-        if(timeTaken <= 1000) {
-            loreList.add("{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}");
-            loreList.add("&5Special Prize");
-            loreList.add(String.format("&5for &a%s", playerName));
-            loreList.add("");
-            loreList.add("&bHolocraft’s Fastest Fingers");
-            loreList.add("&bA second is all you need");
-            loreList.add("{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}");
-        } else if (timeTaken <= 2000) {
-            loreList.add("{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}");
-            loreList.add("&5Special Prize");
-            loreList.add(String.format("&5for &a%s", playerName));
-            loreList.add("");
-            loreList.add("&bSpeed is your middle name");
-            loreList.add("{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}");
-        } else if (timeTaken <= 5000) {
-            loreList.add("&9Holoquiz Reward");
-            loreList.add("&9For &a" + playerName);
-         } else {
-            loreList.add("&bHoloquiz Reward");
-            loreList.add("&bFor &a" + playerName);
-        }
-        List<String> coloredLoreList = new ArrayList<>();
-        for (String s : loreList) {
-            coloredLoreList.add(ChatColor.translateAlternateColorCodes('&', s));
-        }
-        assert meta != null;
-
-        meta.setLore(coloredLoreList);
-
-        item.setItemMeta(meta);
-        Inventory inv = player.getInventory();
-        inv.addItem(item);
     }
 
     private void addBalance(Player player, double amount) {
