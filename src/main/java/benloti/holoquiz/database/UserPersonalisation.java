@@ -116,7 +116,7 @@ public class UserPersonalisation {
         }
 
         for(String key: addList.keySet()) {
-            PlayerSettings currentPlayer = updateList.get(key);
+            PlayerSettings currentPlayer = addList.get(key);
             try {
                 PreparedStatement statsSQLQuery = connection.prepareStatement(SQL_STATEMENT_ADD_INFO);
                 statsSQLQuery.setString(1, key);
