@@ -1,0 +1,54 @@
+Rewards:
+  FirstReward:
+    MaxAnswerTime: 1
+    Money: 2000
+    Commands:
+    Items:
+      1:
+        Material: MATERIAL.ENCHANTED_GOLDEN_APPLE
+        Qty: 1
+        Lore:
+          - "{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}"
+          - "&5Special Prize"
+          - "&5for &a[player]"
+          - ""
+          - "&bHolocraft’s Fastest Fingers"
+          - "&bA second is all you need"
+          - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
+    ActuallyAnyNameCanGoHere:
+      MaxAnswerTime: 2
+      Money: 1000
+      Commands:
+      Items:
+        1:
+          Material: MATERIAL.ENCHANTED_GOLDEN_APPLE
+          Qty: 1
+          Lore:
+            - "{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}"
+            - "&5Special Prize"
+            - "&5for &a[player]"
+            - ""
+            - "&bSpeed is your middle name"
+            - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
+    TheCategoryHasNoImpactWhatSoEver:
+      MaxAnswerTime: 5
+      Money: 200
+      Commands:
+      Items:
+        1:
+          Material: MATERIAL.GOLDEN_APPLE
+          Qty: 1
+          Lore:
+            - "&9Holoquiz Reward"
+            - "&9For &a[player]"
+    SuichanKyouMoKawaii:
+      MaxAnswerTime: 300
+      Money: 100
+      Commands:
+      Items:
+        1:
+          Material: MATERIAL.DIAMOND
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"

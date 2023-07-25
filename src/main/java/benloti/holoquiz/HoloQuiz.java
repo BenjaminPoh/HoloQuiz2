@@ -11,8 +11,6 @@ import org.bukkit.Bukkit;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.crypto.Data;
-
 public final class HoloQuiz extends JavaPlugin {
 
     private ConfigFile configFile;
@@ -33,7 +31,7 @@ public final class HoloQuiz extends JavaPlugin {
         this.configFile = new ConfigFile(this);
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
-        this.gameManager = new GameManager(this, configFile, database.getUserPersonalisation());
+        this.gameManager = new GameManager(this, configFile, database.getUserPersonalisation(), dependencyHandler);
         this.leaderboard = new Leaderboard(configFile, database);
         new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile));

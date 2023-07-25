@@ -34,6 +34,7 @@ public class QuizAnswerHandler implements Listener {
     private final DatabaseManager database;
     private final Leaderboard leaderboard;
     private final UserPersonalisation userPersonalisation;
+    private final RewardsHandler rewardsHandler;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
                              Leaderboard leaderboard, DependencyHandler dependencyHandler) {
@@ -44,6 +45,7 @@ public class QuizAnswerHandler implements Listener {
         this.leaderboard = leaderboard;
         this.economy = dependencyHandler.getVaultDep();
         this.userPersonalisation = database.getUserPersonalisation();
+        this.rewardsHandler = gameManager.getRewardsHandler();
     }
 
     @EventHandler
@@ -68,8 +70,9 @@ public class QuizAnswerHandler implements Listener {
                 //The actual tasks
                 sendAnnouncement(possibleAnswer, player, timeTaken);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
-                giveReward(player,timeAnswered);
-                addBalance(player,timeAnswered);
+                //giveReward(player,timeTaken);
+                //addBalance(player,timeTaken);
+                rewardsHandler.giveRewards(player, timeTaken);
                 displayTitle(player);
                 new BukkitRunnable() {
                     public void run() {
@@ -150,15 +153,22 @@ public class QuizAnswerHandler implements Listener {
         ItemMeta meta = item.getItemMeta();
         List<String> loreList = new ArrayList<>();
         if(timeTaken <= 1000) {
-            loreList.add("&bA carrot from Pekoland, for &a" + playerName);
-            loreList.add("&bAH HA HA HA HA");
-        } else if (timeTaken <= 2000) {
+            loreList.add("{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}");
             loreList.add("&5Special Prize");
-            loreList.add("&5for &a[player]");
+            loreList.add(String.format("&5for &a%s", playerName));
+            loreList.add("");
+            loreList.add("&bHolocraft’s Fastest Fingers");
+            loreList.add("&bA second is all you need");
+            loreList.add("{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}");
+        } else if (timeTaken <= 2000) {
+            loreList.add("{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}");
+            loreList.add("&5Special Prize");
+            loreList.add(String.format("&5for &a%s", playerName));
             loreList.add("");
             loreList.add("&bSpeed is your middle name");
+            loreList.add("{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}");
         } else if (timeTaken <= 5000) {
-            loreList.add("9Holoquiz Reward");
+            loreList.add("&9Holoquiz Reward");
             loreList.add("&9For &a" + playerName);
          } else {
             loreList.add("&bHoloquiz Reward");

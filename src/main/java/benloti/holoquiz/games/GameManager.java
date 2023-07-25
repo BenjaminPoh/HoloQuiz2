@@ -1,6 +1,7 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.database.UserPersonalisation;
+import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.structs.Question;
 import org.bukkit.configuration.ConfigurationSection;
@@ -19,20 +20,23 @@ public class GameManager {
     private final long interval;
     private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
     private boolean gameRunning;
+    private RewardsHandler rewardsHandler;
 
     private Trivia trivia;
     private final List<Question> triviaQuestionBank;
 
-    public GameManager(JavaPlugin plugin, ConfigFile configFile, UserPersonalisation userPersonalisation) {
+    public GameManager(JavaPlugin plugin, ConfigFile configFile, UserPersonalisation userPersonalisation,
+                       DependencyHandler dependencyHandler) {
         this.plugin = plugin;
         this.interval = configFile.getInterval();
         this.gameMode = configFile.getGameMode();
         this.triviaQuestionBank = getTriviaQuestions();
         this.userPersonalisation = userPersonalisation;
+        this.rewardsHandler = new RewardsHandler(plugin, dependencyHandler.isCmiPresent());
     }
 
     public void startGame() {
-        if(gameRunning) {
+        if (gameRunning) {
             return;
         }
         this.trivia = new Trivia(triviaQuestionBank, plugin, userPersonalisation);
@@ -41,7 +45,7 @@ public class GameManager {
     }
 
     public void stopGame() {
-        if(!gameRunning) {
+        if (!gameRunning) {
             return;
         }
         trivia.cancel();
@@ -50,7 +54,7 @@ public class GameManager {
     }
 
     public void nextQuestion() {
-        trivia.cancel();
+        stopGame();
         startGame();
     }
 
@@ -58,15 +62,15 @@ public class GameManager {
         return trivia.getQuestion();
     }
 
-    public boolean getQuestionStatus () {
+    public boolean getQuestionStatus() {
         return trivia.isQuestionAnswered();
     }
 
-    public void setQuestionStatus (boolean status) {
+    public void setQuestionStatus(boolean status) {
         trivia.setQuestionAnswered(status);
     }
 
-    public long getTimeQuestionSent () {
+    public long getTimeQuestionSent() {
         return trivia.getTimeQuestionSent();
     }
 
@@ -78,11 +82,15 @@ public class GameManager {
         return this.interval;
     }
 
+    public RewardsHandler getRewardsHandler() {
+        return this.rewardsHandler;
+    }
+
     private List<Question> getTriviaQuestions() {
         File questionYml = new File(plugin.getDataFolder(), "QuestionBank.yml");
         List<Question> questionBank = new ArrayList<>();
 
-        if(!questionYml.exists()) {
+        if (!questionYml.exists()) {
             try {
                 questionYml.createNewFile();
             } catch (IOException e) {
@@ -93,11 +101,11 @@ public class GameManager {
         FileConfiguration questionFileConfig = YamlConfiguration.loadConfiguration(questionYml);
         ConfigurationSection questionSection = questionFileConfig.getConfigurationSection("questions");
 
-        for (String key: questionSection.getKeys(false)) {
+        for (String key : questionSection.getKeys(false)) {
             ConfigurationSection questionSection2 = questionSection.getConfigurationSection(key);
             String question = questionSection2.getString("question");
             List<String> answers = questionSection2.getStringList("answer");
-            questionBank.add(new Question(question,answers));
+            questionBank.add(new Question(question, answers));
         }
 
         return questionBank;
