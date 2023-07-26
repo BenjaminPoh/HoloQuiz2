@@ -1,10 +1,12 @@
 # Plugin Config
 Interval: 10
 GameMode: Trivia
-#CheatingChecker: true
-#CheatingTimer: 0.5
-#CountAsCorrect: false
-#CommandToPerform:
+Cheats:
+  CheatingChecker: true
+  CheatingTimer: 0.5
+  CountAsCorrect: false
+  CommandToPerform:
+    - "msg [player] How did you answer so quickly? Cheats? >:("
 
 # Leaderboard Config
 LeaderboardSize: 10

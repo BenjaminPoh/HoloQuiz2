@@ -1,7 +1,6 @@
 package benloti.holoquiz.games;
 
-import benloti.holoquiz.database.UserPersonalisation;
-import benloti.holoquiz.structs.PlayerSettings;
+import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,12 +15,12 @@ public class Trivia extends BukkitRunnable {
     private long timeQuestionSent;
     private boolean questionAnswered;
     private final JavaPlugin plugin;
-    private final UserPersonalisation userPersonalisation;
+    private final UserInterface userInterface;
 
-    public Trivia(List<Question> questionBank, JavaPlugin plugin, UserPersonalisation userPersonalisation) {
+    public Trivia(List<Question> questionBank, JavaPlugin plugin, UserInterface userInterface) {
         this.allQuestions = questionBank;
         this.plugin = plugin;
-        this.userPersonalisation = userPersonalisation;
+        this.userInterface = userInterface;
     }
 
     @Override
@@ -30,23 +29,12 @@ public class Trivia extends BukkitRunnable {
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
         this.question = allQuestions.get(randomIndex);
+        String formattedQuestion = userInterface.attachLabel(question.getQuestion());
+        formattedQuestion = userInterface.formatColours(formattedQuestion);
         setQuestionAnswered(false);
         setTimeQuestionSent(System.currentTimeMillis());
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            sendQuestion(player);
-        }
-    }
-
-    public void sendQuestion(Player player) {
-        String playerUUID = player.getUniqueId().toString();
-        PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
-        if(playerSettings == null) {
-            player.sendMessage(question.getQuestion());
-            return;
-        }
-        if(playerSettings.isNotificationEnabled()) {
-            String playerSuffix = playerSettings.getSuffix();
-            player.sendMessage(question.getQuestion() + playerSuffix);
+            userInterface.sendMessageToPlayer(player, formattedQuestion);
         }
     }
 

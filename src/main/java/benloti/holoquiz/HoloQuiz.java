@@ -3,6 +3,7 @@ package benloti.holoquiz;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.commands.PlayerCmds;
 import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.database.DatabaseManager;
@@ -18,12 +19,11 @@ public final class HoloQuiz extends JavaPlugin {
     private DatabaseManager database;
     private GameManager gameManager;
     private Leaderboard leaderboard;
+    private UserInterface userInterface;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
-        Bukkit.getLogger().info("Hello World Peko");
-
         if(!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
@@ -31,9 +31,10 @@ public final class HoloQuiz extends JavaPlugin {
         this.configFile = new ConfigFile(this);
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
-        this.gameManager = new GameManager(this, configFile, database.getUserPersonalisation(), dependencyHandler);
+        this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation());
+        this.gameManager = new GameManager(this, configFile, userInterface);
         this.leaderboard = new Leaderboard(configFile, database);
-        new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler);
+        new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler, userInterface, configFile);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile));
         gameManager.startGame();
     }

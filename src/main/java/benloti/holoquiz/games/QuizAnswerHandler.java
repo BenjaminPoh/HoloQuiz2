@@ -4,10 +4,11 @@ import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.dependencies.VaultDep;
+import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.database.DatabaseManager;
-import benloti.holoquiz.structs.PlayerSettings;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*; //Wtf blasphemy!
@@ -24,24 +25,28 @@ import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
 
+    public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
     private final VaultDep economy;
     private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
     private final Leaderboard leaderboard;
-    private final UserPersonalisation userPersonalisation;
     private final RewardsHandler rewardsHandler;
+    private final UserInterface userInterface;
+    private final ConfigFile configFile;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             Leaderboard leaderboard, DependencyHandler dependencyHandler) {
+                             Leaderboard leaderboard, DependencyHandler dependencyHandler, UserInterface userInterface,
+                             ConfigFile configFile) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.leaderboard = leaderboard;
         this.economy = dependencyHandler.getVaultDep();
-        this.userPersonalisation = database.getUserPersonalisation();
         this.rewardsHandler = gameManager.getRewardsHandler();
+        this.userInterface = userInterface;
+        this.configFile = configFile;
     }
 
     @EventHandler
@@ -57,16 +62,16 @@ public class QuizAnswerHandler implements Listener {
             if (message.equalsIgnoreCase(possibleAnswer)) {
                 //Time sensitive tasks
                 long timeAnswered = System.currentTimeMillis();
-                gameManager.setQuestionStatus(true);
-
-                //Simple calculations for later
                 long startTime = gameManager.getTimeQuestionSent();
                 int timeTaken = (int)(timeAnswered - startTime);
+                if(cheatHandler(timeTaken)) {
+                    return;
+                }
+                gameManager.setQuestionStatus(true);
 
                 //The actual tasks
                 sendAnnouncement(possibleAnswer, player, timeTaken);
                 //displayActionBar(player); //Not what I want, but the bug is now a feature
-                //giveReward(player,timeTaken);
                 //addBalance(player,timeTaken);
                 rewardsHandler.giveRewards(player, timeTaken);
                 displayTitle(player);
@@ -89,20 +94,12 @@ public class QuizAnswerHandler implements Listener {
     private void sendAnnouncement(String possibleAnswer, Player answerer, long timeTaken) {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
-        String message = "&6" + playerName + "&e wins after &6" + timeTakenInSeconds +
-                "&e seconds! The answer was &6" + possibleAnswer;
-        String announcement = ChatColor.translateAlternateColorCodes('&', message);
+        String message = String.format(CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds, possibleAnswer);
+        String announcement = userInterface.attachLabel(message);
+        announcement = userInterface.formatColours(announcement);
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            String playerUUID = player.getUniqueId().toString();
-            PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
-            if(playerSettings == null) {
-                player.sendMessage(announcement);
-                return;
-            }
-            if(playerSettings.isNotificationEnabled()) {
-                player.sendMessage(announcement + playerSettings.getSuffix());
-            }
+           userInterface.sendMessageToPlayer(player, announcement);
         }
     }
 
@@ -140,5 +137,19 @@ public class QuizAnswerHandler implements Listener {
             return;
         }
         economy.addBalance(player.getName(), amount);
+    }
+
+    private boolean cheatHandler(int timeTaken) {
+        //Return true if need to skip the person caught cheating
+        if(!configFile.isCheatsDetectorEnabled()) {
+            return false;
+        }
+        if(timeTaken < configFile.getMinTimeRequired()) {
+            for(String peko : configFile.getCheatingCommands()) {
+                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), peko);
+            }
+            return !configFile.isCountAsCorrect();
+        }
+        return false;
     }
 }

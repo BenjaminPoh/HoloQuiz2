@@ -1,9 +1,8 @@
 package benloti.holoquiz.games;
 
-import benloti.holoquiz.dependencies.CMIDep;
+import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.RewardTier;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,14 +20,12 @@ import java.util.List;
 public class RewardsHandler {
 
     private final ArrayList<RewardTier> allRewards;
-    private final boolean isHexSupported;
-    private final CMIDep cmiDep;
+    private final UserInterface userInterface;
 
-    public RewardsHandler(JavaPlugin plugin, CMIDep cmiDep) {
+    public RewardsHandler(JavaPlugin plugin, UserInterface userInterface) {
         File rewardsYml = new File(plugin.getDataFolder(), "Rewards.yml");
         this.allRewards = new ArrayList<>();
-        this.cmiDep = cmiDep;
-        this.isHexSupported = (cmiDep != null);
+        this.userInterface = userInterface;
 
         if (!rewardsYml.exists()) {
             try {
@@ -75,30 +72,19 @@ public class RewardsHandler {
     public void giveRewards(Player player, int timeTaken) {
         RewardTier rewardTier = determineRewardTier(timeTaken);
         if (rewardTier == null) {
-            Bukkit.getLogger().info("NULL WHERE IT SHOULDNT BE 1");
             return;
         }
         for(ItemStack item : rewardTier.getItemRewards()) {
             ItemMeta itemMeta = item.getItemMeta();
             List<String> itemLore = itemMeta.getLore();
             if(itemLore == null) {
-                Bukkit.getLogger().info("NULL WHERE IT SHOULDNT BE 2");
                 continue;
             }
 
             List<String> itemLoreFormatted = new ArrayList<>();
             for(String peko : itemLore) {
-                String formattedLoreLine = peko;
-                if(formattedLoreLine.contains("[player]")) {
-                    formattedLoreLine = formattedLoreLine.replace("[player]", player.getName());
-                }
-                formattedLoreLine = (ChatColor.translateAlternateColorCodes('&', formattedLoreLine));
-                if(isHexSupported) {
-                    String formattedLoreLine2= cmiDep.translateHexColors(formattedLoreLine);
-                    Bukkit.getLogger().info("hex translated?");
-                    itemLoreFormatted.add(formattedLoreLine2);
-                    continue;
-                }
+                String formattedLoreLine = userInterface.attachPlayerName(peko, player);
+                formattedLoreLine = userInterface.formatColours(formattedLoreLine);
                 itemLoreFormatted.add(formattedLoreLine);
             }
             itemMeta.setLore(itemLoreFormatted);

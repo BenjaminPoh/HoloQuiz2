@@ -66,8 +66,8 @@ public class UserPersonalisation {
         //Player is guaranteed in master listing. Check if player info is in addList or updateList.
         newPlayerSettings = userSettings.get(player_uuid);
         newPlayerSettings.setSuffix(suffix);
-        userSettings.replace(player_uuid,newPlayerSettings);
 
+        userSettings.replace(player_uuid,newPlayerSettings);
         if(addList.containsKey(player_uuid)) {
             addList.replace(player_uuid,newPlayerSettings);
             return;
@@ -128,5 +128,10 @@ public class UserPersonalisation {
             }
         }
     }
+    /*
+    public String prefixAdder(String unformattedString, String suffix) {
+        return unformattedString + suffix;
+    }
+     */
 
 }

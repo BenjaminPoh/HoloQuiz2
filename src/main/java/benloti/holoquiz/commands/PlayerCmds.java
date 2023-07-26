@@ -200,6 +200,17 @@ public class PlayerCmds implements CommandExecutor {
     private boolean runEasterEggCommands(Player player, String[] args) {
         if (args[0].equals("pekofy")) {
             player.sendMessage("Peko Peko Peko!!!");
+            userPersonalisation.setSuffix(player.getUniqueId().toString(), " peko");
+            return true;
+        }
+        if (args[0].equals("nanora")) {
+            player.sendMessage("Nanoranora?");
+            userPersonalisation.setSuffix(player.getUniqueId().toString(), " nanora");
+            return true;
+        }
+        if (args[0].equals("normal")) {
+            player.sendMessage("HoloQuiz is now normal!");
+            userPersonalisation.setSuffix(player.getUniqueId().toString(), "");
             return true;
         }
         return false;
