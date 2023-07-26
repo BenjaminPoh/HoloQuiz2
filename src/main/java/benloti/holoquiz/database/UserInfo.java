@@ -41,7 +41,6 @@ public class UserInfo {
             PreparedStatement statement = connection.prepareStatement(firstStatement);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                Bukkit.getLogger().info("Player has answered before...");
                 String savedName = resultSet.getString("username");
                 if (!savedName.equals(PlayerName)) {
                     Bukkit.getLogger().info(ERROR_MSG_UUID_USERNAME_MISMATCH);
@@ -54,7 +53,6 @@ public class UserInfo {
                 infoStatement.setString(2, PlayerUUID);
                 infoStatement.setString(3, PlayerName);
                 infoStatement.executeUpdate();
-                Bukkit.getLogger().info("Player has never answered before, assigned ID: " + newUserID);
                 return newUserID;
             }
         } catch (SQLException e) {

@@ -54,7 +54,6 @@ public class QuizAnswerHandler implements Listener {
         if(!gameManager.getGameStatus() || gameManager.getQuestionStatus()) {
             return;
         }
-
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
         List<String> answers = gameManager.getCurrentQuestion().getAnswers();
@@ -64,7 +63,7 @@ public class QuizAnswerHandler implements Listener {
                 long timeAnswered = System.currentTimeMillis();
                 long startTime = gameManager.getTimeQuestionSent();
                 int timeTaken = (int)(timeAnswered - startTime);
-                if(cheatHandler(timeTaken)) {
+                if(cheatHandler(timeTaken, player)) {
                     return;
                 }
                 gameManager.setQuestionStatus(true);
@@ -139,14 +138,18 @@ public class QuizAnswerHandler implements Listener {
         economy.addBalance(player.getName(), amount);
     }
 
-    private boolean cheatHandler(int timeTaken) {
-        //Return true if need to skip the person caught cheating
+    private boolean cheatHandler(int timeTaken, Player player) {
+        //Return true if you need to skip the person caught cheating
         if(!configFile.isCheatsDetectorEnabled()) {
             return false;
         }
         if(timeTaken < configFile.getMinTimeRequired()) {
             for(String peko : configFile.getCheatingCommands()) {
-                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), peko);
+                String command = userInterface.attachPlayerName(peko, player);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                    Bukkit.getLogger().info(command);
+                });
             }
             return !configFile.isCountAsCorrect();
         }

@@ -35,7 +35,7 @@ public class ConfigFile {
         this.gameMode = configs.getString("GameMode");
         ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
         this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
-        this.minTimeRequired = (int) cheatSection.getDouble("  CheatingTimer: 0.5") * 1000;
+        this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
     }

@@ -90,7 +90,6 @@ public class RewardsHandler {
             itemMeta.setLore(itemLoreFormatted);
             item.setItemMeta(itemMeta);
             player.getInventory().addItem(item);
-            Bukkit.getLogger().info("This should be seen and gucci");
         }
     }
 
