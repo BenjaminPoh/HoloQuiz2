@@ -74,29 +74,31 @@ public class RewardsHandler {
         if (rewardTier == null) {
             return;
         }
-        for(ItemStack item : rewardTier.getItemRewards()) {
+        for (ItemStack item : rewardTier.getItemRewards()) {
             ItemMeta itemMeta = item.getItemMeta();
             List<String> itemLore = itemMeta.getLore();
-            if(itemLore == null) {
+            if (itemLore == null) {
                 continue;
             }
-
             List<String> itemLoreFormatted = new ArrayList<>();
-            for(String peko : itemLore) {
-                String formattedLoreLine = userInterface.attachPlayerName(peko, player);
-                formattedLoreLine = userInterface.formatColours(formattedLoreLine);
-                itemLoreFormatted.add(formattedLoreLine);
+            for (String peko : itemLore) {
+                peko = userInterface.attachPlayerName(peko, player);
+                peko = userInterface.formatColours(peko);
+                itemLoreFormatted.add(peko);
             }
             itemMeta.setLore(itemLoreFormatted);
             item.setItemMeta(itemMeta);
             player.getInventory().addItem(item);
+            //Stupidly reset itemMeta
+            itemMeta.setLore(itemLore);
+            item.setItemMeta(itemMeta);
         }
     }
 
     private RewardTier determineRewardTier(int timeTaken) {
-        for(RewardTier tier : allRewards) {
+        for (RewardTier tier : allRewards) {
             int limit = tier.getMaxTimeInMilliseconds();
-            if(timeTaken <= limit) {
+            if (timeTaken <= limit) {
                 return tier;
             }
         }

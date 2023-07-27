@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RewardTier {
-    private int maxTimeInMilliseconds;
+    private final int maxTimeInMilliseconds;
     private final int moneyReward;
-    private  List<String> commandsExecuted;
-    private ArrayList<ItemStack> itemRewards;
+    private final List<String> commandsExecuted;
+    private final ArrayList<ItemStack> itemRewards;
 
     public RewardTier(int time, int money, List<String> commands, ArrayList<ItemStack> items) {
         this.maxTimeInMilliseconds = time;
@@ -32,5 +32,9 @@ public class RewardTier {
 
     public ArrayList<ItemStack> getItemRewards() {
         return itemRewards;
+    }
+
+    public RewardTier cloneRewardsTemplate() {
+        return new RewardTier(maxTimeInMilliseconds,moneyReward,commandsExecuted,itemRewards);
     }
 }
