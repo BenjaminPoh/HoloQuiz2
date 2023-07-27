@@ -311,7 +311,7 @@ public class PlayerCmds implements CommandExecutor {
         info[0] = String.format(headerFormat, size);
         for(int i = 0; i < size; i ++) {
             PlayerData currentPlayerData = topPlayers.get(i);
-            String playerName = currentPlayerData.getPlayerName();;
+            String playerName = currentPlayerData.getPlayerName();
             String bestTime = currentPlayerData.getBestTimeInSeconds3DP();
             String averageTime = currentPlayerData.getAverageTimeInSeconds3DP();
             int totalAnswers = currentPlayerData.getQuestionsAnswered();

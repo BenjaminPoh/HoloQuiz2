@@ -33,8 +33,4 @@ public class RewardTier {
     public ArrayList<ItemStack> getItemRewards() {
         return itemRewards;
     }
-
-    public RewardTier cloneRewardsTemplate() {
-        return new RewardTier(maxTimeInMilliseconds,moneyReward,commandsExecuted,itemRewards);
-    }
 }

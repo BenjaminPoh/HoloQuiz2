@@ -37,7 +37,10 @@ public class UserInterface {
         }
         if(playerSettings.isNotificationEnabled()) {
             String playerSuffix = playerSettings.getSuffix();
-            player.sendMessage(formattedQuestion + playerSuffix);
+            formattedQuestion = formattedQuestion.replace("!", playerSuffix+"!");
+            formattedQuestion = formattedQuestion.replace("?", playerSuffix+"?");
+            formattedQuestion = formattedQuestion.replace(",", playerSuffix+",");
+            player.sendMessage(formattedQuestion);
         }
     }
     

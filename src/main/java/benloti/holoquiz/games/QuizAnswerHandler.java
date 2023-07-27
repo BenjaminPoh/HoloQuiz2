@@ -1,7 +1,6 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
-import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.files.ConfigFile;
