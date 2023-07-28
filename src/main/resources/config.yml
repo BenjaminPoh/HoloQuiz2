@@ -1,5 +1,5 @@
 # Plugin Config
-Interval: 3
+Interval: 300
 GameMode: Trivia
 Cheats:
   CheatingChecker: true

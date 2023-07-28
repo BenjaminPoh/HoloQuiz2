@@ -20,7 +20,7 @@ Rewards:
           - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
   ActuallyAnyNameCanGoHere:
     MaxAnswerTime: 2
-    Money: 50000
+    Money: 5000
     Commands:
       - "bta add [player] 2"
     Items:
