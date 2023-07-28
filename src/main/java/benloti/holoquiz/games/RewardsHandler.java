@@ -3,7 +3,6 @@ package benloti.holoquiz.games;
 import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.RewardTier;
-import net.milkbowl.vault.Vault;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;

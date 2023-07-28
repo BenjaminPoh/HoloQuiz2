@@ -24,6 +24,7 @@ public final class HoloQuiz extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
+        Bukkit.getLogger().info("[HoloQuiz] Starting Up HoloQuiz!");
         if(!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
@@ -33,15 +34,15 @@ public final class HoloQuiz extends JavaPlugin {
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation());
         this.leaderboard = new Leaderboard(configFile, database);
-        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler.getVaultDep());
-        new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler, userInterface, configFile);
-        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile, dependencyHandler));
+        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler);
+        new QuizAnswerHandler(this, gameManager, database, leaderboard, userInterface, configFile);
+        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile, userInterface));
         gameManager.startGame();
     }
 
     @Override
     public void onDisable() {
         database.getUserPersonalisation().savePlayerSettings();
-        Bukkit.getLogger().info("Shutting Down Peko");
+        Bukkit.getLogger().info("[HoloQuiz] Shutting Down HoloQuiz!");
     }
 }

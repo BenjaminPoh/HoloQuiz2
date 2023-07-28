@@ -31,7 +31,7 @@ public class Trivia extends BukkitRunnable {
         setQuestionAnswered(false);
         setTimeQuestionSent(System.currentTimeMillis());
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            userInterface.sendMessageToPlayer(player, formattedQuestion);
+            userInterface.attachSuffixAndSend(player, formattedQuestion);
         }
     }
 

@@ -128,10 +128,5 @@ public class UserPersonalisation {
             }
         }
     }
-    /*
-    public String prefixAdder(String unformattedString, String suffix) {
-        return unformattedString + suffix;
-    }
-     */
 
 }

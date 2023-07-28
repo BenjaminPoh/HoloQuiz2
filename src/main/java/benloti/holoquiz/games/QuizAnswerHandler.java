@@ -1,8 +1,6 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
-import benloti.holoquiz.dependencies.DependencyHandler;
-import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.leaderboard.Leaderboard;
@@ -27,7 +25,6 @@ public class QuizAnswerHandler implements Listener {
 
     public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
     public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
-    private final VaultDep economy;
     private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
@@ -37,14 +34,12 @@ public class QuizAnswerHandler implements Listener {
     private final ConfigFile configFile;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             Leaderboard leaderboard, DependencyHandler dependencyHandler, UserInterface userInterface,
-                             ConfigFile configFile) {
+                             Leaderboard leaderboard, UserInterface userInterface, ConfigFile configFile) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.leaderboard = leaderboard;
-        this.economy = dependencyHandler.getVaultDep();
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.userInterface = userInterface;
         this.configFile = configFile;
@@ -118,7 +113,7 @@ public class QuizAnswerHandler implements Listener {
         announcement = userInterface.formatColours(announcement);
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-           userInterface.sendMessageToPlayer(player, announcement);
+           userInterface.attachSuffixAndSend(player, announcement);
         }
     }
 
@@ -129,11 +124,11 @@ public class QuizAnswerHandler implements Listener {
         String announcement = userInterface.attachLabel(message);
         announcement = userInterface.formatColours(announcement);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            userInterface.sendMessageToPlayer(player, announcement);
+            userInterface.attachSuffixAndSend(player, announcement);
         }
         String secretAnnouncement = question.getSecretMessage();
         secretAnnouncement = userInterface.formatColours(secretAnnouncement);
-        userInterface.sendMessageToPlayer(answerer, secretAnnouncement);
+        userInterface.attachSuffixAndSend(answerer, secretAnnouncement);
     }
 
     private void makeFireworks(Player player) {

@@ -20,6 +20,14 @@ public class UserInterface {
         this.userPersonalisation = userPersonalisation;
     }
 
+    public String[] formatColoursArray(String[] stringArray) {
+        int size = stringArray.length;
+        for(int i = 0; i < size; i++) {
+            stringArray[i] = formatColours(stringArray[i]);
+        }
+        return stringArray;
+    }
+    
     public String formatColours(String unformattedString) {
         unformattedString = ChatColor.translateAlternateColorCodes('&', unformattedString);
         if(isHexEnabled) {
@@ -27,20 +35,20 @@ public class UserInterface {
         }
         return unformattedString;
     }
-
-    public void sendMessageToPlayer(Player player, String formattedQuestion) {
+    
+    public void attachSuffixAndSend(Player player, String message) {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
         if(playerSettings == null) {
-            player.sendMessage(formattedQuestion);
+            player.sendMessage(message);
             return;
         }
         if(playerSettings.isNotificationEnabled()) {
             String playerSuffix = playerSettings.getSuffix();
-            formattedQuestion = formattedQuestion.replace("!", playerSuffix+"!");
-            formattedQuestion = formattedQuestion.replace("?", playerSuffix+"?");
-            formattedQuestion = formattedQuestion.replace(",", playerSuffix+",");
-            player.sendMessage(formattedQuestion);
+            message = message.replace("!", playerSuffix+"!");
+            message = message.replace("?", playerSuffix+"?");
+            message = message.replace(",", playerSuffix+",");
+            player.sendMessage(message);
         }
     }
     

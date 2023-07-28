@@ -1,18 +1,15 @@
 name: HoloQuiz
-version: '${project.version}'
+version: 1.0.0
 main: benloti.holoquiz.HoloQuiz
+description: A fun little plugin designed to send Trivia questions, with some Hololive Easter Eggs
+author: Me myself and I. And ChatGPT my beloved.
+website: https://github.com/BenjaminPoh/HoloQuiz2
 api-version: '1.19'
 softdepend: [Vault, CMILib, CMI]
 commands:
   HoloQuiz:
-    info:
-      description: Displays information related to the current Question
-      usage: /HoloQuiz info
-      aliases: holoquiz info
-    peko:
-      description: PEKO PEKO PEKO
-      usage: /HoloQuiz peko
-      aliases: holoquiz peko
+    description: HoloQuiz related commands.
+    usage: "/HoloQuiz help for more information!"
 permissions:
   HoloQuiz.admin:
     description: Allow access to admin commands
