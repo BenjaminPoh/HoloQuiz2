@@ -92,7 +92,6 @@ public class QuizAnswerHandler implements Listener {
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
         }
         //displayActionBar(player); //Not what I want, but the bug is now a feature
-        //addBalance(player,timeTaken);
         rewardsHandler.giveRewards(player, timeTaken);
         displayTitle(player);
         new BukkitRunnable() {
@@ -164,13 +163,6 @@ public class QuizAnswerHandler implements Listener {
         String announcement1 = ChatColor.translateAlternateColorCodes('&', message1);
         String announcement2 = ChatColor.translateAlternateColorCodes('&', message2);
         player.sendTitle(announcement1, announcement2, 10, 60, 10);
-    }
-
-    private void addBalance(Player player, double amount) {
-        if(economy == null) {
-            return;
-        }
-        economy.addBalance(player.getName(), amount);
     }
 
     private boolean cheatHandler(int timeTaken, Player player) {

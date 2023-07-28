@@ -26,15 +26,6 @@ public class QuestionHandler {
         return questionList.get(randomIndex);
     }
 
-    public boolean secretMessageFound(String answer, Question question) {
-        for(String peko : question.getSecretAnswers()) {
-            if(peko.equals(answer)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void questionCategoryLoader(ConfigurationSection config) {
         String questionColourCode = nullReplacer(config.getString("QuestionColour"));
         String messageColourCode = nullReplacer(config.getString("MessageColour"));
@@ -55,7 +46,7 @@ public class QuestionHandler {
             }
             question = prefix + question;
             String message = nullReplacer(questionConfig.getString("message"));
-            message = msgColorCode + message;
+            message = msgColorCode + " " + message;
             List<String> secretAnswer = questionConfig.getStringList("secretAnswer");
             String secretMessage = questionConfig.getString("secretMessage");
             secretMessage = msgColorCode + secretMessage;

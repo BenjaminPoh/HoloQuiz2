@@ -1,6 +1,7 @@
 package benloti.holoquiz.commands;
 
 import benloti.holoquiz.database.UserPersonalisation;
+import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
@@ -60,13 +61,16 @@ public class PlayerCmds implements CommandExecutor {
     private final Leaderboard leaderboard;
     private final boolean easterEggs;
     private final UserPersonalisation userPersonalisation;
+    private final DependencyHandler dependencyHandler;
 
-    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, Leaderboard leaderboard, ConfigFile configFile) {
+    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, Leaderboard leaderboard,
+                      ConfigFile configFile, DependencyHandler dependencyHandler) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
         this.leaderboard = leaderboard;
         this.easterEggs = configFile.isEasterEggsEnabled();
         this.userPersonalisation = databaseManager.getUserPersonalisation();
+        this.dependencyHandler = dependencyHandler;
     }
 
     @Override
@@ -194,6 +198,7 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
         }
+
         return false;
     }
 

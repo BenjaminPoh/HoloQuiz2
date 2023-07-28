@@ -33,9 +33,9 @@ public final class HoloQuiz extends JavaPlugin {
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation());
         this.leaderboard = new Leaderboard(configFile, database);
-        this.gameManager = new GameManager(this, configFile, userInterface);
+        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler.getVaultDep());
         new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler, userInterface, configFile);
-        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile));
+        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile, dependencyHandler));
         gameManager.startGame();
     }
 

@@ -7,11 +7,11 @@ import java.util.List;
 
 public class RewardTier {
     private final int maxTimeInMilliseconds;
-    private final int moneyReward;
+    private final double moneyReward;
     private final List<String> commandsExecuted;
     private final ArrayList<ItemStack> itemRewards;
 
-    public RewardTier(int time, int money, List<String> commands, ArrayList<ItemStack> items) {
+    public RewardTier(int time, double money, List<String> commands, ArrayList<ItemStack> items) {
         this.maxTimeInMilliseconds = time;
         this.moneyReward = money;
         this.commandsExecuted = commands;
@@ -22,7 +22,7 @@ public class RewardTier {
         return maxTimeInMilliseconds;
     }
 
-    public int getMoneyReward() {
+    public double getMoneyReward() {
         return moneyReward;
     }
 

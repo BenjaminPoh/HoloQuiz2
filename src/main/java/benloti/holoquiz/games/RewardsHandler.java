@@ -1,7 +1,9 @@
 package benloti.holoquiz.games;
 
+import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.RewardTier;
+import net.milkbowl.vault.Vault;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,11 +23,15 @@ public class RewardsHandler {
 
     private final ArrayList<RewardTier> allRewards;
     private final UserInterface userInterface;
+    private final VaultDep vaultDep;
+    private final JavaPlugin plugin;
 
-    public RewardsHandler(JavaPlugin plugin, UserInterface userInterface) {
+    public RewardsHandler(JavaPlugin plugin, UserInterface userInterface, VaultDep vaultDep) {
         File rewardsYml = new File(plugin.getDataFolder(), "Rewards.yml");
         this.allRewards = new ArrayList<>();
         this.userInterface = userInterface;
+        this.vaultDep = vaultDep;
+        this.plugin = plugin;
 
         if (!rewardsYml.exists()) {
             try {
@@ -42,7 +48,7 @@ public class RewardsHandler {
             ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
             double maxTime = rewardTierSection.getDouble("MaxAnswerTime");
             int maxTimeInMilliseconds = (int) maxTime * 1000;
-            int moneyReward = rewardTierSection.getInt("Money");
+            double moneyReward = rewardTierSection.getDouble("Money");
             List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
 
@@ -53,7 +59,7 @@ public class RewardsHandler {
                 Material itemMaterial = Material.matchMaterial(itemType);
                 if (itemMaterial == null) {
                     itemMaterial = Material.CARROT;
-                    Bukkit.getLogger().info("Failed to load item: " + itemType);
+                    Bukkit.getLogger().info("Failed to load item of name: " + itemType);
                 }
                 int itemQty = rewardTierItem.getInt("Qty");
                 List<String> itemLore = rewardTierItem.getStringList("Lore");
@@ -74,6 +80,12 @@ public class RewardsHandler {
         if (rewardTier == null) {
             return;
         }
+        giveItemRewards(player, rewardTier);
+        giveMoneyRewards(player, rewardTier);
+        executeCommandRewards(player, rewardTier);
+    }
+
+    private void giveItemRewards(Player player, RewardTier rewardTier) {
         for (ItemStack item : rewardTier.getItemRewards()) {
             ItemMeta itemMeta = item.getItemMeta();
             List<String> itemLore = itemMeta.getLore();
@@ -92,6 +104,20 @@ public class RewardsHandler {
             //Stupidly reset itemMeta
             itemMeta.setLore(itemLore);
             item.setItemMeta(itemMeta);
+        }
+    }
+
+    private void giveMoneyRewards(Player player, RewardTier rewardTier) {
+        double moneyGained = rewardTier.getMoneyReward();
+        vaultDep.addBalance(player, moneyGained);
+    }
+
+    private void executeCommandRewards(Player player, RewardTier rewardTier) {
+        for(String peko : rewardTier.getCommandsExecuted()) {
+            String command = userInterface.attachPlayerName(peko, player);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            });
         }
     }
 

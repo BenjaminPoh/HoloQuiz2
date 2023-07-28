@@ -2,7 +2,9 @@ package benloti.holoquiz.dependencies;
 
 import net.milkbowl.vault.economy.Economy;
 
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,12 +22,11 @@ public class VaultDep {
         }
     }
 
-    public void addBalance(String playerName, double amount) {
+    public void addBalance(Player player, double amount) {
         if(economy == null) {
-            Bukkit.getLogger().info("No economy, dont gae");
             return;
         }
-        economy.bankDeposit(playerName,amount);
+        economy.depositPlayer(player, amount);
     }
 
     private boolean setupEconomy() {

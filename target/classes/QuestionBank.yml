@@ -41,6 +41,7 @@ SuiseiQuestions:
       secretAnswer:
         - "Me"
       secretMessage: "&dVery funny!"
+#Example section of things that break.
 MissingInfoArea:
   QuestionColour:
   CategoryLabel:

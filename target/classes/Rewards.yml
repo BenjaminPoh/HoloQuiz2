@@ -1,9 +1,11 @@
 #Note that time is in seconds!!!
+#Peko-ing up the Material field will give a carrot instead.
 Rewards:
   FirstReward:
     MaxAnswerTime: 1
-    Money: 2000
+    Money: 10000
     Commands:
+      - "bta add [player] 2"
     Items:
       1:
         Material: enchanted_golden_apple
@@ -18,8 +20,9 @@ Rewards:
           - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
   ActuallyAnyNameCanGoHere:
     MaxAnswerTime: 2
-    Money: 1000
+    Money: 50000
     Commands:
+      - "bta add [player] 2"
     Items:
       1:
         Material: enchanted_golden_apple
@@ -33,8 +36,9 @@ Rewards:
           - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
   TheCategoryHasNoImpactWhatSoEver:
     MaxAnswerTime: 5
-    Money: 200
+    Money: 2000
     Commands:
+      - "bta add [player] 2"
     Items:
       1:
         Material: golden_apple
@@ -44,8 +48,9 @@ Rewards:
           - "&9For &a[player]"
   SuichanKyouMoKawaii:
     MaxAnswerTime: 300
-    Money: 100
+    Money: 1000
     Commands:
+      - "bta add [player] 2"
     Items:
       1:
         Material: diamond
