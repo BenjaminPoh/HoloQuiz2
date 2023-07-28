@@ -38,17 +38,17 @@ public class QuestionHandler {
     private void questionListLoader(ConfigurationSection config, String prefix, String msgColorCode) {
         for (String key : config.getKeys(false)) {
             ConfigurationSection questionConfig = config.getConfigurationSection(key);
-            String question = questionConfig.getString("question");
-            List<String> answers = questionConfig.getStringList("answer");
+            String question = questionConfig.getString("Question");
+            List<String> answers = questionConfig.getStringList("Answers");
             if(question == null || answers.size() == 0) {
                 Bukkit.getLogger().info("[HoloQuiz] Error with loading question: " + question);
                 continue;
             }
             question = prefix + question;
-            String message = nullReplacer(questionConfig.getString("message"));
+            String message = nullReplacer(questionConfig.getString("Message"));
             message = msgColorCode + " " + message;
-            List<String> secretAnswer = questionConfig.getStringList("secretAnswer");
-            String secretMessage = questionConfig.getString("secretMessage");
+            List<String> secretAnswer = questionConfig.getStringList("SecretAnswers");
+            String secretMessage = questionConfig.getString("SecretMessage");
             secretMessage = msgColorCode + secretMessage;
             Question newQuestion = new Question(question, answers, message, secretAnswer, secretMessage);
 
