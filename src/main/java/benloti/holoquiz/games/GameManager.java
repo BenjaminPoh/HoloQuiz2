@@ -3,32 +3,29 @@ package benloti.holoquiz.games;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GameManager {
     private final JavaPlugin plugin;
     private final UserInterface userInterface;
     private final long interval;
-    private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
     private boolean gameRunning;
-    private RewardsHandler rewardsHandler;
+    private final RewardsHandler rewardsHandler;
+    private final QuestionHandler questionHandler;
 
     private Trivia trivia;
-    private final List<Question> triviaQuestionBank;
+    private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
 
     public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface) {
         this.plugin = plugin;
         this.interval = configFile.getInterval();
         this.gameMode = configFile.getGameMode();
-        this.triviaQuestionBank = getTriviaQuestions();
+        this.questionHandler = getTriviaQuestions();
         this.userInterface = userInterface;
         this.rewardsHandler = new RewardsHandler(plugin, userInterface);
     }
@@ -37,7 +34,7 @@ public class GameManager {
         if (gameRunning) {
             return;
         }
-        this.trivia = new Trivia(triviaQuestionBank, plugin, userInterface);
+        this.trivia = new Trivia(questionHandler, plugin, userInterface);
         this.gameRunning = true;
         trivia.runTaskTimer(plugin, 0, interval * 20);
     }
@@ -84,9 +81,8 @@ public class GameManager {
         return this.rewardsHandler;
     }
 
-    private List<Question> getTriviaQuestions() {
+    private QuestionHandler getTriviaQuestions() {
         File questionYml = new File(plugin.getDataFolder(), "QuestionBank.yml");
-        List<Question> questionBank = new ArrayList<>();
 
         if (!questionYml.exists()) {
             try {
@@ -97,15 +93,11 @@ public class GameManager {
         }
 
         FileConfiguration questionFileConfig = YamlConfiguration.loadConfiguration(questionYml);
-        ConfigurationSection questionSection = questionFileConfig.getConfigurationSection("questions");
-
-        for (String key : questionSection.getKeys(false)) {
-            ConfigurationSection questionSection2 = questionSection.getConfigurationSection(key);
-            String question = questionSection2.getString("question");
-            List<String> answers = questionSection2.getStringList("answer");
-            questionBank.add(new Question(question, answers));
-        }
-
-        return questionBank;
+        return new QuestionHandler(questionFileConfig);
     }
+
+    public QuestionHandler getQuestionHandler() {
+        return this.questionHandler;
+    }
+
 }

@@ -8,6 +8,7 @@ import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.database.DatabaseManager;
+import benloti.holoquiz.structs.Question;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*; //Wtf blasphemy!
@@ -25,6 +26,7 @@ import java.util.List;
 public class QuizAnswerHandler implements Listener {
 
     public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
+    public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
     private final VaultDep economy;
     private final GameManager gameManager;
     private final HoloQuiz plugin;
@@ -49,56 +51,90 @@ public class QuizAnswerHandler implements Listener {
     }
 
     @EventHandler
-    public void correctAnswerSent(AsyncPlayerChatEvent theEvent) {
+    public void checkAnswerSent(AsyncPlayerChatEvent theEvent) {
         if(!gameManager.getGameStatus() || gameManager.getQuestionStatus()) {
             return;
         }
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
         List<String> answers = gameManager.getCurrentQuestion().getAnswers();
+        List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
         for(String possibleAnswer : answers) {
             if (message.equalsIgnoreCase(possibleAnswer)) {
-                //Time sensitive tasks
-                long timeAnswered = System.currentTimeMillis();
-                long startTime = gameManager.getTimeQuestionSent();
-                int timeTaken = (int)(timeAnswered - startTime);
-                if(cheatHandler(timeTaken, player)) {
-                    return;
-                }
-                gameManager.setQuestionStatus(true);
-
-                //The actual tasks
-                sendAnnouncement(possibleAnswer, player, timeTaken);
-                //displayActionBar(player); //Not what I want, but the bug is now a feature
-                //addBalance(player,timeTaken);
-                rewardsHandler.giveRewards(player, timeTaken);
-                displayTitle(player);
-                new BukkitRunnable() {
-                    public void run() {
-                        makeFireworks(player);
-                    }
-                }.runTask(plugin);
-
-                //Update database
-                PlayerData playerData = database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
-
-                //update leaderboards
-                leaderboard.updateLeaderBoard(playerData);
+                executeCorrectAnswerTasks(player, false, possibleAnswer);
+                return;
+            }
+        }
+        for(String possibleAnswer : secretAnswers) {
+            if (message.equalsIgnoreCase(possibleAnswer)) {
+                theEvent.setCancelled(true);
+                executeCorrectAnswerTasks(player, true, possibleAnswer);
                 return;
             }
         }
     }
 
-    private void sendAnnouncement(String possibleAnswer, Player answerer, long timeTaken) {
+    private void executeCorrectAnswerTasks(Player player, Boolean secretAnswerTriggered, String answer) {
+        //Time sensitive tasks
+        long timeAnswered = System.currentTimeMillis();
+        long startTime = gameManager.getTimeQuestionSent();
+        int timeTaken = (int)(timeAnswered - startTime);
+        if(cheatHandler(timeTaken, player)) {
+            return;
+        }
+        gameManager.setQuestionStatus(true);
+
+        Question answeredQuestion = gameManager.getCurrentQuestion();
+        //The actual tasks
+        if(secretAnswerTriggered) {
+            sendSecretAnnouncement(player, timeTaken, answeredQuestion);
+        } else {
+            sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
+        }
+        //displayActionBar(player); //Not what I want, but the bug is now a feature
+        //addBalance(player,timeTaken);
+        rewardsHandler.giveRewards(player, timeTaken);
+        displayTitle(player);
+        new BukkitRunnable() {
+            public void run() {
+                makeFireworks(player);
+            }
+        }.runTask(plugin);
+
+        //Update database
+        PlayerData playerData = database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
+
+        //update leaderboards
+        leaderboard.updateLeaderBoard(playerData);
+    }
+
+    private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question) {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
         String message = String.format(CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds, possibleAnswer);
+        if(question.getExtraMessage() != null) {
+            message = message + question.getExtraMessage();
+        }
         String announcement = userInterface.attachLabel(message);
         announcement = userInterface.formatColours(announcement);
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
            userInterface.sendMessageToPlayer(player, announcement);
         }
+    }
+
+    private void sendSecretAnnouncement(Player answerer, long timeTaken, Question question) {
+        String playerName = answerer.getName();
+        double timeTakenInSeconds = timeTaken / 1000.0;
+        String message = String.format(SECRET_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
+        String announcement = userInterface.attachLabel(message);
+        announcement = userInterface.formatColours(announcement);
+        for(Player player : plugin.getServer().getOnlinePlayers()) {
+            userInterface.sendMessageToPlayer(player, announcement);
+        }
+        String secretAnnouncement = question.getSecretMessage();
+        secretAnnouncement = userInterface.formatColours(secretAnnouncement);
+        userInterface.sendMessageToPlayer(answerer, secretAnnouncement);
     }
 
     private void makeFireworks(Player player) {

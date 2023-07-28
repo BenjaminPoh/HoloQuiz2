@@ -32,8 +32,8 @@ public final class HoloQuiz extends JavaPlugin {
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation());
-        this.gameManager = new GameManager(this, configFile, userInterface);
         this.leaderboard = new Leaderboard(configFile, database);
+        this.gameManager = new GameManager(this, configFile, userInterface);
         new QuizAnswerHandler(this, gameManager, database, leaderboard, dependencyHandler, userInterface, configFile);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile));
         gameManager.startGame();

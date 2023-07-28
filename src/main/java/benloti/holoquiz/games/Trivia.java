@@ -2,33 +2,30 @@ package benloti.holoquiz.games;
 
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-import java.util.Random;
-
 public class Trivia extends BukkitRunnable {
-    private Question question;
-    private final List<Question> allQuestions;
-    private long timeQuestionSent;
-    private boolean questionAnswered;
     private final JavaPlugin plugin;
+    private final QuestionHandler questionHandler;
     private final UserInterface userInterface;
 
-    public Trivia(List<Question> questionBank, JavaPlugin plugin, UserInterface userInterface) {
-        this.allQuestions = questionBank;
+    private Question question;
+    private long timeQuestionSent;
+    private boolean questionAnswered;
+
+    public Trivia(QuestionHandler questionHandler, JavaPlugin plugin, UserInterface userInterface) {
+        this.questionHandler = questionHandler;
         this.plugin = plugin;
         this.userInterface = userInterface;
     }
 
     @Override
     public void run() {
-        int size = allQuestions.size();
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(size);
-        this.question = allQuestions.get(randomIndex);
+        this.question = questionHandler.getRandomQuestion();
+        Bukkit.getLogger().info("Question Sent: " + question.getQuestion());
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
         setQuestionAnswered(false);

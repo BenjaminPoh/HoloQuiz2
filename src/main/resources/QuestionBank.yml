@@ -1,14 +1,54 @@
-questions:
-  1:
-    question: "What is 1 + 1"
-    answer:
-    - "2"
-    - "two"
-  2:
-    question: "peko peko peko"
-    answer:
-    - "peko"
-  3:
-    question: "Is Djikstra a greedy algorithm"
-    answer:
-    - "Yes"
+CodingQns:
+  QuestionColour: "&6"
+  CategoryLabel: "&aCoding: "
+  MessageColour: "&b"
+  QuestionList:
+    1:
+      question: "What is 1 + 1?"
+      answer:
+        - "2"
+        - "two"
+    2:
+      question: "Is Djikstra a greedy algorithm?"
+      answer:
+        - "Yes"
+    3:
+      question: "Can an MST can be obtained from Prims Algorithm regardless of the starting vertex?"
+      answer:
+        - "Yes"
+    4:
+      question: "Does Quick-Sort which picks the leftmost element as the pivot always run in O(n log n)?"
+      answer:
+        - "No"
+      message: "This is false! An array inversely sorted will result in O(n^2) running time!"
+SuiseiQuestions:
+  QuestionColour: "&6"
+  CategoryLabel: "&bSuisei: "
+  MessageColour: "&3"
+  QuestionList:
+    1:
+      question: "Suichan wa?"
+      answer:
+        - "Kyou mo kawaii"
+    2:
+      question: "Name people that form a good pairing with Suisei!"
+      answer:
+        - "Inui Toko"
+        - "Tokoyami Towa"
+        - "Minato Aqua"
+        - "Taku Inoue"
+      message: "Good Choice!"
+      secretAnswer:
+        - "Me"
+      secretMessage: "&dVery funny!"
+MissingInfoArea:
+  QuestionColour:
+  CategoryLabel:
+  QuestionList:
+    1:
+      question:
+      answer:
+        - "Kyou mo kawaii"
+    2:
+      question: "Name people that form a good pairing with Suisei!"
+      answer:
