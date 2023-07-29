@@ -36,12 +36,12 @@ public class ConfigFile {
         this.leaderboardOptimisation = configs.getBoolean("LeaderboardOptimisation");
         this.easterEggsEnabled = configs.getBoolean("EasterEggs");
         this.gameMode = configs.getString("GameMode");
+        this.enableOnStart = configs.getBoolean("EnableOnStart");
         ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
         this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
-        this.enableOnStart = cheatSection.getBoolean("EnableOnStart");
     }
 
     public int getInterval() {
