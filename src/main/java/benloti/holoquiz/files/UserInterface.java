@@ -48,6 +48,20 @@ public class UserInterface {
             message = message.replace("!", playerSuffix+"!");
             message = message.replace("?", playerSuffix+"?");
             message = message.replace(",", playerSuffix+",");
+            message = message.replace(".", playerSuffix+".");
+            player.sendMessage(message);
+        }
+    }
+
+    public void attachFixedSuffixAndSend(Player player, String message) {
+        String playerUUID = player.getUniqueId().toString();
+        PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+        if(playerSettings == null) {
+            player.sendMessage(message);
+        }
+        if(playerSettings.isNotificationEnabled()) {
+            String playerSuffix = playerSettings.getSuffix();
+            message = message.replace("[suffix]", playerSuffix);
             player.sendMessage(message);
         }
     }

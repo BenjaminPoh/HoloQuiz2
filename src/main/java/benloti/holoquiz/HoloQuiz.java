@@ -45,8 +45,9 @@ public final class HoloQuiz extends JavaPlugin {
         database.getUserPersonalisation().savePlayerSettings();
         Bukkit.getLogger().info("[HoloQuiz] Shutting Down HoloQuiz!");
     }
+}
 
-    // Let us pray
+// Let us pray
 //                       _oo0oo_
 //                      o8888888o
 //                      88" . "88
@@ -71,4 +72,3 @@ public final class HoloQuiz extends JavaPlugin {
 //
 //               佛祖保佑         永无BUG
 //
-}

@@ -58,7 +58,7 @@ public class RewardsHandler {
                 Material itemMaterial = Material.matchMaterial(itemType);
                 if (itemMaterial == null) {
                     itemMaterial = Material.CARROT;
-                    Bukkit.getLogger().info("Failed to load item of name: " + itemType);
+                    Bukkit.getLogger().info("[HoloQuiz] Error! Failed to load item of name: " + itemType);
                 }
                 int itemQty = rewardTierItem.getInt("Qty");
                 List<String> itemLore = rewardTierItem.getStringList("Lore");

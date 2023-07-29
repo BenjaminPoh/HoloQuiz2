@@ -6,16 +6,16 @@ CodingQns:
     1:
       Question: "What is 1 + 1?"
       Answers:
-        - "2"
+        - "2 "
         - "two"
     2:
       Question: "Is Djikstra a greedy algorithm?"
       Answers:
-        - "Yes"
+        - "Yes "
     3:
       Question: "Can an MST can be obtained from Prims Algorithm regardless of the starting vertex?"
       Answers:
-        - "Yes"
+        - "Yes "
     4:
       Question: "Does Quick-Sort which picks the leftmost element as the pivot always run in O(n log n)?"
       Answers:

@@ -47,10 +47,13 @@ public class QuestionHandler {
             question = prefix + question;
             String message = nullReplacer(questionConfig.getString("Message"));
             message = msgColorCode + " " + message;
-            List<String> secretAnswer = questionConfig.getStringList("SecretAnswers");
+            List<String> secretAnswers = questionConfig.getStringList("SecretAnswers");
             String secretMessage = questionConfig.getString("SecretMessage");
             secretMessage = msgColorCode + secretMessage;
-            Question newQuestion = new Question(question, answers, message, secretAnswer, secretMessage);
+
+            secretAnswers.replaceAll(String::trim);
+            answers.replaceAll(String::trim);
+            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage);
 
             questionList.add(newQuestion);
         }
@@ -62,5 +65,4 @@ public class QuestionHandler {
         }
         return x;
     }
-
 }

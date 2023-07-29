@@ -14,12 +14,14 @@ public class ConfigFile {
     private final int interval;
     private final int leaderboardSize;
     private final int leaderboardMinReq;
+    private final boolean leaderboardOptimisation;
     private final boolean easterEggsEnabled;
     private final String gameMode;
     private final boolean cheatsDetectorEnabled;
     private final int minTimeRequired;
     private final boolean countAsCorrect;
     private final List<String> cheatingCommands;
+    private final boolean enableOnStart;
 
     public ConfigFile(JavaPlugin plugin) {
         File configFile = new File(plugin.getDataFolder(), "config.yml");
@@ -31,6 +33,7 @@ public class ConfigFile {
         this.interval = configs.getInt("Interval");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
+        this.leaderboardOptimisation = configs.getBoolean("LeaderboardOptimisation");
         this.easterEggsEnabled = configs.getBoolean("EasterEggs");
         this.gameMode = configs.getString("GameMode");
         ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
@@ -38,6 +41,7 @@ public class ConfigFile {
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
+        this.enableOnStart = cheatSection.getBoolean("EnableOnStart");
     }
 
     public int getInterval() {
@@ -74,5 +78,13 @@ public class ConfigFile {
 
     public List<String> getCheatingCommands() {
         return cheatingCommands;
+    }
+
+    public boolean isEnableOnStart() {
+        return enableOnStart;
+    }
+
+    public boolean isLeaderboardOptimisation() {
+        return leaderboardOptimisation;
     }
 }
