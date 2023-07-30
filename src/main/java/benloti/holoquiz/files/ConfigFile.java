@@ -84,7 +84,7 @@ public class ConfigFile {
         return enableOnStart;
     }
 
-    public boolean isLeaderboardOptimisation() {
+    public boolean isLeaderboardOptimisationEnabled() {
         return leaderboardOptimisation;
     }
 }

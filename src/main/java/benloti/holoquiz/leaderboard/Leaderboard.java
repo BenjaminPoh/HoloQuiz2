@@ -20,7 +20,7 @@ public class Leaderboard {
         this.minimumQuestionsRequired = configFile.getLeaderboardMinReq();
         this.mostAnswers = new MostAnswers();
         this.fastestTime = new FastestTime();
-        this.averageBestTime = new AverageBestTime();
+        this.averageBestTime = new AverageBestTime(configFile.isLeaderboardOptimisationEnabled());
         initialiseLeaderboard(databaseManager);
     }
 
@@ -38,6 +38,9 @@ public class Leaderboard {
             processStartUpInformation(peko, mostAnswers.getTopPlayers(), new MostAnswers.sortByMostAnswers());
             processStartUpInformation(peko, fastestTime.getTopPlayers(), new FastestTime.sortByBestTime());
             averageBestTime.addToTopPlayers(peko);
+        }
+        if(averageBestTime.isLeaderboardOptimised()) {
+            averageBestTime.executeOptimisation(amountOfPlayersToShow);
         }
         averageBestTime.getTopPlayers().sort(new AverageBestTime.sortByAverageTime());
     }
