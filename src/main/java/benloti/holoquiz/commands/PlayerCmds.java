@@ -167,7 +167,6 @@ public class PlayerCmds implements CommandExecutor {
             formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, player);
             return true;
         }
-
         return false;
     }
 

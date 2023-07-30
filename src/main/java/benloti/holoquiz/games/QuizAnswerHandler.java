@@ -23,8 +23,8 @@ import java.util.List;
 
 public class QuizAnswerHandler implements Listener {
 
-    public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds[suffix]! The answer was &6%s[suffix]!";
-    public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds[suffix]!";
+    public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
+    public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
     private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
@@ -113,7 +113,7 @@ public class QuizAnswerHandler implements Listener {
         announcement = userInterface.formatColours(announcement);
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-           userInterface.attachFixedSuffixAndSend(player, announcement);
+           userInterface.attachSuffixAndSend(player, announcement);
         }
     }
 
@@ -124,7 +124,7 @@ public class QuizAnswerHandler implements Listener {
         String announcement = userInterface.attachLabel(message);
         announcement = userInterface.formatColours(announcement);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            userInterface.attachFixedSuffixAndSend(player, announcement);
+            userInterface.attachSuffixAndSend(player, announcement);
         }
         String secretAnnouncement = question.getSecretMessage();
         secretAnnouncement = userInterface.formatColours(secretAnnouncement);

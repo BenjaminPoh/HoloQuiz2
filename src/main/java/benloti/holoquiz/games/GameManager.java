@@ -97,5 +97,4 @@ public class GameManager {
         FileConfiguration questionFileConfig = YamlConfiguration.loadConfiguration(questionYml);
         return new QuestionHandler(questionFileConfig);
     }
-
 }

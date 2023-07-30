@@ -3,8 +3,12 @@ package benloti.holoquiz.files;
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.CMIDep;
 import benloti.holoquiz.structs.PlayerSettings;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserInterface {
 
@@ -45,23 +49,19 @@ public class UserInterface {
         }
         if(playerSettings.isNotificationEnabled()) {
             String playerSuffix = playerSettings.getSuffix();
-            message = message.replace("!", playerSuffix+"!");
-            message = message.replace("?", playerSuffix+"?");
-            message = message.replace(",", playerSuffix+",");
-            message = message.replace(".", playerSuffix+".");
-            player.sendMessage(message);
-        }
-    }
-
-    public void attachFixedSuffixAndSend(Player player, String message) {
-        String playerUUID = player.getUniqueId().toString();
-        PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
-        if(playerSettings == null) {
-            player.sendMessage(message);
-        }
-        if(playerSettings.isNotificationEnabled()) {
-            String playerSuffix = playerSettings.getSuffix();
-            message = message.replace("[suffix]", playerSuffix);
+            String regexString = "(\\w|-|_)([.,!?])(\\s|$)+";
+            Pattern regexPattern = Pattern.compile(regexString);
+            Matcher regexMatcher = regexPattern.matcher(message);
+            int guard = 0;
+            while(regexMatcher.find() && guard < 100) {
+                String original = regexMatcher.group(0);
+                String newString = regexMatcher.group(1) + playerSuffix + regexMatcher.group(2) + regexMatcher.group(3);
+                message = message.replace(original, newString);
+                guard += 1;
+            }
+            if(guard == 100) {
+                Bukkit.getLogger().info("[HoloQuiz] Suffix Regex broke. Yabe peko!");
+            }
             player.sendMessage(message);
         }
     }

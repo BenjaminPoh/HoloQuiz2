@@ -41,6 +41,10 @@ SuiseiQuestions:
       SecretAnswers:
         - "Me"
       SecretMessage: "&dVery funny!"
+    3:
+      Question: "Test question... Suisei sang The Last Frontier with ----?"
+      Answers:
+        - "AZKi"
 #Example section of things that break.
 MissingInfoArea:
   QuestionColour:
