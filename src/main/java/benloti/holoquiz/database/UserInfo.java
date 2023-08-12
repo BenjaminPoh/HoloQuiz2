@@ -16,9 +16,11 @@ public class UserInfo {
             "SELECT COUNT (user_id) FROM user_info";
     private static final String SQL_STATEMENT_OBTAIN_ALL_USER_NAME =
             "SELECT * FROM user_info";
-
-    private static final String ERROR_MSG_UUID_USERNAME_MISMATCH =
-            "Supposed to update table. Not important at this point given how minecraft works and this is intended for HoloCraft, which is a cracked server";
+    private static final String SQL_STATEMENT_UPDATE_USER_NAME =
+            "UPDATE user_info SET username = ? WHERE player_uuid = ?";
+    private static final String LOG_MSG_UUID_USERNAME_MISMATCH =
+            "If this message appears, HoloQuiz found someone with a mismatch of playername and UUID. " +
+                    "We dealt wit it, but did they change their name?";
     public static final String SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID = "SELECT * FROM user_info WHERE username = '%s'";
 
 
@@ -43,7 +45,11 @@ public class UserInfo {
             if (resultSet.next()) {
                 String savedName = resultSet.getString("username");
                 if (!savedName.equals(PlayerName)) {
-                    Bukkit.getLogger().info(ERROR_MSG_UUID_USERNAME_MISMATCH);
+                    PreparedStatement updateStatement = connection.prepareStatement(SQL_STATEMENT_UPDATE_USER_NAME);
+                    updateStatement.setString(1, PlayerName);
+                    updateStatement.setString(2, PlayerUUID);
+                    updateStatement.executeUpdate();
+                    Bukkit.getLogger().info(LOG_MSG_UUID_USERNAME_MISMATCH);
                 }
                 return resultSet.getInt("user_id");
             } else {
