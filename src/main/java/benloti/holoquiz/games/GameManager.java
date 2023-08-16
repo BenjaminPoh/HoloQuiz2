@@ -2,14 +2,13 @@ package benloti.holoquiz.games;
 
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class GameManager {
     private final JavaPlugin plugin;
@@ -17,28 +16,38 @@ public class GameManager {
     private final long interval;
     private boolean gameRunning;
     private final RewardsHandler rewardsHandler;
-    private final QuestionHandler questionHandler;
+
+    //private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
 
     private Trivia trivia;
-    private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
+    private final ArrayList<Question> triviaQuestionList;
+
 
     public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
-                       DependencyHandler dependencyHandler) {
+                       DependencyHandler dependencyHandler, ExternalFiles externalFiles) {
         this.plugin = plugin;
         this.interval = configFile.getInterval();
-        this.gameMode = configFile.getGameMode();
-        this.questionHandler = getTriviaQuestions();
+        //this.gameMode = configFile.getGameMode();
+        this.triviaQuestionList = externalFiles.getAllQuestions();
         this.userInterface = userInterface;
-        this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep());
+        this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep(),
+                externalFiles.getAllRewards());
     }
 
     public void startGame() {
         if (gameRunning) {
             return;
         }
-        this.trivia = new Trivia(questionHandler, plugin, userInterface);
+        this.trivia = new Trivia(getRandomQuestion(), plugin, userInterface);
         this.gameRunning = true;
         trivia.runTaskTimer(plugin, 0, interval * 20);
+    }
+
+    private Question getRandomQuestion() {
+        int size = triviaQuestionList.size();
+        Random rand = new Random();
+        int randomIndex = rand.nextInt(size);
+        return triviaQuestionList.get(randomIndex);
     }
 
     public void stopGame() {
@@ -81,20 +90,5 @@ public class GameManager {
 
     public RewardsHandler getRewardsHandler() {
         return this.rewardsHandler;
-    }
-
-    private QuestionHandler getTriviaQuestions() {
-        File questionYml = new File(plugin.getDataFolder(), "QuestionBank.yml");
-
-        if (!questionYml.exists()) {
-            try {
-                questionYml.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        FileConfiguration questionFileConfig = YamlConfiguration.loadConfiguration(questionYml);
-        return new QuestionHandler(questionFileConfig);
     }
 }

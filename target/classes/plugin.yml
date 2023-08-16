@@ -1,5 +1,5 @@
 name: HoloQuiz
-version: 1.0.0
+version: 1.1.1
 main: benloti.holoquiz.HoloQuiz
 description: A fun little plugin designed to send Trivia questions, with some Hololive Easter Eggs
 author: Me myself and I. And ChatGPT my beloved.

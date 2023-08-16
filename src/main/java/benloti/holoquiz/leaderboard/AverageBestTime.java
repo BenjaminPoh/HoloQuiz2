@@ -75,6 +75,9 @@ public class AverageBestTime {
     }
 
     public void executeOptimisation(int limit) {
+        if(topPlayers.size() <= limit) {
+            return;
+        }
         ArrayList<PlayerData> optimisedList = new ArrayList<>();
         Comparator<PlayerData> comparator = new sortByAverageTime();
         for (PlayerData peko : topPlayers) {

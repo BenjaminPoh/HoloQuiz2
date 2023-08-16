@@ -17,7 +17,6 @@ public class VaultDep {
         this.plugin = plugin;
         if (!setupEconomy()) {
             Bukkit.getLogger().info("Disabled due to no Vault dependency found!");
-            //plugin.getServer().getPluginManager().disablePlugin(plugin);
         }
     }
 

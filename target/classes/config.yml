@@ -2,7 +2,7 @@
 EnableOnStart: true
 
 # Trivia Config
-Interval: 3
+Interval: 300
 GameMode: Trivia
 Cheats:
   CheatingChecker: true
@@ -13,8 +13,9 @@ Cheats:
 
 # Leaderboard Config
 LeaderboardSize: 10
-LeaderboardMinQuestionsNeeded: 3
-#This flag triggers the Monte Carlo Algorithm. This works well only after HoloQuiz has been running for an extended period of time.
+LeaderboardMinQuestionsNeeded: 50
+#This flag triggers the Approximation Algorithm
+#This works well only after HoloQuiz has been running for an extended period of time.
 LeaderboardOptimisation: true
 
 # Easter Eggs!

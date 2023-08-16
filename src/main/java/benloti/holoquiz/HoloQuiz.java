@@ -3,17 +3,18 @@ package benloti.holoquiz;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.commands.PlayerCmds;
 import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.QuizAnswerHandler;
-import org.bukkit.Bukkit;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class HoloQuiz extends JavaPlugin {
 
+    private ExternalFiles externalFiles;
     private ConfigFile configFile;
     private DependencyHandler dependencyHandler;
     private DatabaseManager database;
@@ -23,18 +24,18 @@ public final class HoloQuiz extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
-        Bukkit.getLogger().info("[HoloQuiz] Starting Up HoloQuiz!");
-        if(!getDataFolder().exists()) {
+        //Bukkit.getLogger().info("[HoloQuiz] Starting Up HoloQuiz!");
+        if(getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
 
-        this.configFile = new ConfigFile(this);
+        this.externalFiles = new ExternalFiles(this);
+        this.configFile = externalFiles.getConfigFile();
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation());
         this.leaderboard = new Leaderboard(configFile, database);
-        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler);
+        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles);
         new QuizAnswerHandler(this, gameManager, database, leaderboard, userInterface, configFile);
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile, userInterface));
         if(configFile.isEnableOnStart()) {
@@ -45,7 +46,7 @@ public final class HoloQuiz extends JavaPlugin {
     @Override
     public void onDisable() {
         database.getUserPersonalisation().savePlayerSettings();
-        Bukkit.getLogger().info("[HoloQuiz] Shutting Down HoloQuiz!");
+        //Bukkit.getLogger().info("[HoloQuiz] Shutting Down HoloQuiz!");
     }
 }
 

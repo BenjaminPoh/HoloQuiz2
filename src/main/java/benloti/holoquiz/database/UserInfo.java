@@ -20,7 +20,7 @@ public class UserInfo {
             "UPDATE user_info SET username = ? WHERE player_uuid = ?";
     private static final String LOG_MSG_UUID_USERNAME_MISMATCH =
             "If this message appears, HoloQuiz found someone with a mismatch of playername and UUID. " +
-                    "We dealt wit it, but did they change their name?";
+                    "We dealt with it, but did they change their name?";
     public static final String SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID = "SELECT * FROM user_info WHERE username = '%s'";
 
 

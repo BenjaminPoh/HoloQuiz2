@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 
 public class DatabaseManager {
-    private static final String DB_NAME = "HoloQuiz";
+    private static final String DB_NAME = "HoloQuiz.db";
     private static final String ERROR_MSG_DB_FILE = "Yabe peko, what happened to the db peko";
 
     private Connection connection;
@@ -36,7 +36,7 @@ public class DatabaseManager {
     }
 
     public File checkFile() {
-        File dataFolder = new File(plugin.getDataFolder(), DB_NAME + ".db");
+        File dataFolder = new File(plugin.getDataFolder(), DB_NAME);
         if (!dataFolder.exists()) {
             try {
                 dataFolder.createNewFile();
@@ -51,7 +51,7 @@ public class DatabaseManager {
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                Bukkit.getLogger().info("Making new connection!");
+                Bukkit.getLogger().info("[HoloQuiz] Making new SQL connection!");
                 // Establish a database connection
                 connection = DriverManager.getConnection("jdbc:sqlite:" + dataFile);
             }

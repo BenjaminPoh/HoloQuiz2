@@ -1,6 +1,5 @@
 package benloti.holoquiz.files;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -8,7 +7,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
 
 public class ConfigFile {
     private final int interval;
@@ -23,11 +21,8 @@ public class ConfigFile {
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
 
-    public ConfigFile(JavaPlugin plugin) {
-        File configFile = new File(plugin.getDataFolder(), "config.yml");
-        if(!configFile.exists()) {
-            Bukkit.getLogger().log(Level.SEVERE, "Yabe peko");
-        }
+    public ConfigFile(JavaPlugin plugin, String fileName) {
+        File configFile = new File(plugin.getDataFolder(), fileName);
 
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
         this.interval = configs.getInt("Interval");
