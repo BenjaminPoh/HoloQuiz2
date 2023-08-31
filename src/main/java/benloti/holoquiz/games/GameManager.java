@@ -1,7 +1,6 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.dependencies.DependencyHandler;
-import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
@@ -20,13 +19,12 @@ public class GameManager {
     //private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
 
     private Trivia trivia;
-    private final ArrayList<Question> triviaQuestionList;
+    private ArrayList<Question> triviaQuestionList;
 
-
-    public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
+    public GameManager(JavaPlugin plugin, UserInterface userInterface,
                        DependencyHandler dependencyHandler, ExternalFiles externalFiles) {
         this.plugin = plugin;
-        this.interval = configFile.getInterval();
+        this.interval = externalFiles.getConfigFile().getInterval();
         //this.gameMode = configFile.getGameMode();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.userInterface = userInterface;
@@ -86,6 +84,10 @@ public class GameManager {
 
     public long getInterval() {
         return this.interval;
+    }
+
+    public void updateQuestionList(ArrayList<Question> questionList) {
+        this.triviaQuestionList = questionList;
     }
 
     public RewardsHandler getRewardsHandler() {

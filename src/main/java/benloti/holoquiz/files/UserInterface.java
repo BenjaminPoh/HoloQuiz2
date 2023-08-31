@@ -15,13 +15,13 @@ public class UserInterface {
     private final boolean isHexEnabled;
     private final CMIDep cmiDep;
     private final UserPersonalisation userPersonalisation;
+    private final String label;
 
-    private static final String HOLOQUIZ_LABEL = "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] ";
-
-    public UserInterface(CMIDep cmiDep, UserPersonalisation userPersonalisation) {
+    public UserInterface(CMIDep cmiDep, UserPersonalisation userPersonalisation, String prefix) {
         this.cmiDep = cmiDep;
         this.isHexEnabled = (cmiDep != null);
         this.userPersonalisation = userPersonalisation;
+        this.label = prefix;
     }
 
     public String[] formatColoursArray(String[] stringArray) {
@@ -67,7 +67,7 @@ public class UserInterface {
     }
     
     public String attachLabel(String message) {
-        return (HOLOQUIZ_LABEL + message);
+        return (label + message);
     }
     
     public String attachPlayerName(String message, Player player) {

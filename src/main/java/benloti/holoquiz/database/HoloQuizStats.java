@@ -30,6 +30,19 @@ public class HoloQuizStats {
         }
     }
 
+    /**
+     * Updates a player's all-time statistics.
+     * First, the player's information is fetched from the database.
+     * Next, the player's best time, total answers and total time taken is updated.
+     * If the player is not found in the database, they will be added into it.
+     * Finally, the updated information is then returned in the form of a PlayerData class
+     *
+     * @param connection the Connection to the database
+     * @param userID the player's HoloQuiz ID
+     * @param timeTaken the time the player took to answer
+     * @param playerName the player's name, used to return the PlayerData class
+     * @return a PlayerData class with the player's updated statistics, null if something goes wrong.
+     */
     public PlayerData updateStatsRecord(Connection connection, int userID, int timeTaken, String playerName) {
         String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, userID);
         String statsStatement;
@@ -74,6 +87,15 @@ public class HoloQuizStats {
         return null;
     }
 
+    /**
+     * Returns the player's all-time statistics
+     * Given a HoloQuiz ID, fetches the player's information
+     *
+     * @param connection The connection to the database
+     * @param holoQuizID A Valid ID matching the player's name
+     * @param playerName The player's name
+     * @return The player's statistics in a PlayerData class, null if something goes wrong.
+     */
     public PlayerData loadPlayerData(Connection connection, int holoQuizID, String playerName) {
         try {
             String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, holoQuizID);

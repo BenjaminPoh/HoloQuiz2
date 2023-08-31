@@ -14,7 +14,7 @@ public class DataMigrator {
 
     public DataMigrator(JavaPlugin plugin) {
         HashMap<Integer, Long> uuidToTotalTime = new HashMap<>();
-        File dataFolder = new File(plugin.getDataFolder(), "Old.db");
+        File dataFolder = new File(plugin.getDataFolder(), "benloti/holoquiz/archive/Old.db");
         try {
             Bukkit.getLogger().info("Let us begin peko");
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);

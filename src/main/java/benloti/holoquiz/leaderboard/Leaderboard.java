@@ -54,6 +54,13 @@ public class Leaderboard {
         }
     }
 
+    /**
+     * Called when a player's answer is accepted to update the leaderboards.
+     * First checks if the player has met the minimum requirements to qualify for the leaderboards.
+     * Next, update the respective leaderboards.
+     *
+     * @param playerData The player's information that needs to be updated.
+     */
     public void updateLeaderBoard(PlayerData playerData) {
         if(playerData.getQuestionsAnswered() < minimumQuestionsRequired) {
             return;

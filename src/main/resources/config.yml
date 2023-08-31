@@ -1,5 +1,6 @@
 # Plugin Config
 EnableOnStart: true
+PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 
 # Trivia Config
 Interval: 300

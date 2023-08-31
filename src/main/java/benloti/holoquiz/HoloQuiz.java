@@ -24,20 +24,15 @@ public final class HoloQuiz extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        //Bukkit.getLogger().info("[HoloQuiz] Starting Up HoloQuiz!");
-        if(getDataFolder().exists()) {
-            getDataFolder().mkdirs();
-        }
-
         this.externalFiles = new ExternalFiles(this);
         this.configFile = externalFiles.getConfigFile();
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
-        this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation());
+        this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
         this.leaderboard = new Leaderboard(configFile, database);
-        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles);
+        this.gameManager = new GameManager(this, userInterface, dependencyHandler, externalFiles);
         new QuizAnswerHandler(this, gameManager, database, leaderboard, userInterface, configFile);
-        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, configFile, userInterface));
+        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, externalFiles, userInterface));
         if(configFile.isEnableOnStart()) {
             gameManager.startGame();
         }

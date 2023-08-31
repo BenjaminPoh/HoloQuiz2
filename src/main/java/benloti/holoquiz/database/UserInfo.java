@@ -23,7 +23,6 @@ public class UserInfo {
                     "We dealt with it, but did they change their name?";
     public static final String SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID = "SELECT * FROM user_info WHERE username = '%s'";
 
-
     public UserInfo(Connection connection) {
         createTable(connection);
     }

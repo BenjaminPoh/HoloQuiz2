@@ -66,6 +66,16 @@ public class DatabaseManager {
         return null;
     }
 
+    /**
+     * Is called after players give an accepted answer.
+     * Begins by obtaining the player's HoloQuiz ID given their name.
+     * Next, updates the answer logs and the players stats in the database.
+     *
+     * @param player The player who answered correctly
+     * @param timeAnswered UNIX timestamp of when the player answered
+     * @param timeTaken Time taken for player to answer, in milliseconds
+     * @return The player's PlayerData, to update the leaderboards
+     */
     public PlayerData updateAfterCorrectAnswer (Player player, long timeAnswered, int timeTaken) {
         String playerName = player.getName();
         String playerUUID = player.getUniqueId().toString();
@@ -77,6 +87,14 @@ public class DatabaseManager {
         return holoQuizStats.updateStatsRecord(connection, playerHoloQuizID, timeTaken, playerName);
     }
 
+    /**
+     * Fetches the player's PlayerData from the database
+     * Begins by obtaining the player's HoloQuiz ID given their name.
+     * Next, obtains the player's information from the database
+     *
+     * @param playerName The player's name
+     * @return The player's PlayerData
+     */
     public PlayerData loadPlayerData(String playerName) {
         int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
         if(playerHoloQuizID == 0) {

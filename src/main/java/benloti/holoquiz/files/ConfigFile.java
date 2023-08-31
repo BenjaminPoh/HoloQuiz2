@@ -20,6 +20,7 @@ public class ConfigFile {
     private final boolean countAsCorrect;
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
+    private final String pluginPrefix;
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
@@ -37,6 +38,7 @@ public class ConfigFile {
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
+        this.pluginPrefix = configs.getString("PluginPrefix");
     }
 
     public int getInterval() {
@@ -81,5 +83,9 @@ public class ConfigFile {
 
     public boolean isLeaderboardOptimisationEnabled() {
         return leaderboardOptimisation;
+    }
+
+    public String getPluginPrefix() {
+        return pluginPrefix;
     }
 }

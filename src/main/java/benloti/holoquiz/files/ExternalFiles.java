@@ -22,23 +22,34 @@ public class ExternalFiles {
     private static final String REWARDS_FILE_NAME = "Rewards.yml";
     private static final String BACKUP_DIRECTORY_PATH = "backup/";
 
+    private final JavaPlugin plugin;
     private ConfigFile configFile;
     private final ArrayList<RewardTier> allRewards;
-    private final ArrayList<Question> allQuestions;
+    private ArrayList<Question> allQuestions;
 
     public ExternalFiles(JavaPlugin plugin) {
+        this.plugin = plugin;
+        //If plugin's data folder exists, all the necessary files are fetched from the resource section.
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
-            loadFromResource(plugin, CONFIG_FILE_NAME);
-            loadFromResource(plugin, QUESTION_BANK_FILE_NAME);
-            loadFromResource(plugin, REWARDS_FILE_NAME);
-            loadFromResource(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
-            loadFromResource(plugin, BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
-            loadFromResource(plugin, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+            loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
+            loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
+            loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         }
+        File backupDir = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH);
+        if(!backupDir.exists()) {
+            backupDir.mkdirs();
+            loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
+            loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
+            loadFromResource(REWARDS_FILE_NAME  ,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+        }
+
+        //Tries to load all the external files. If successful, the backup is updated with the most recent version.
+        //If unsuccessful, an error message is logged, and the backup file is used.
+        //The backup file is assumed correct as people should not touch it. If they do, too bad!
         try {
             this.configFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
-            updateFile(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
+            updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your config.yml file is broken! Loading from backups...");
             this.configFile = new ConfigFile(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
@@ -46,75 +57,33 @@ public class ExternalFiles {
 
         this.allRewards = new ArrayList<>();
         try {
-            loadRewards (plugin, REWARDS_FILE_NAME);
-            updateFile(plugin, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
+            File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
+            loadRewards (rewardsYml);
+            updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken! Loading from backups...");
-            loadRewards(plugin, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+            File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+            loadRewards (rewardsYml);
         }
 
-        this.allQuestions = new ArrayList<>();
         try {
-            loadQuestions(plugin, QUESTION_BANK_FILE_NAME);
-            updateFile(plugin, BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
+            File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
+            this.allQuestions = loadQuestions(questionsYml);
+            updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml file is broken! Loading from backups...");
-            loadQuestions(plugin, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+            File questionsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+            this.allQuestions = loadQuestions(questionsYml);
         }
     }
+    /**
+     * Used to create the ArrayList of Questions used for the Trivia Mode
+     * Invalid materials are replaced with a carrot. I don't know why a carrot.
+     *
+     * @param rewardsYml The file that has all the rewards.
+     */
 
-    private void loadQuestions(JavaPlugin plugin, String fileName) {
-        File questionYml = new File(plugin.getDataFolder(), fileName);
-        FileConfiguration config = YamlConfiguration.loadConfiguration(questionYml);
-        for (String key : config.getKeys(false)) {
-            ConfigurationSection configSection = config.getConfigurationSection(key);
-            questionCategoryLoader(configSection);
-        }
-    }
-
-    private void questionCategoryLoader(ConfigurationSection config) {
-        String questionColourCode = nullReplacer(config.getString("QuestionColour"));
-        String messageColourCode = nullReplacer(config.getString("MessageColour"));
-        String categoryLabel = nullReplacer(config.getString("CategoryLabel"));
-        String categoryPrefix = categoryLabel + questionColourCode;
-        ConfigurationSection questionListSection = config.getConfigurationSection("QuestionList");
-        questionListLoader(questionListSection, categoryPrefix, messageColourCode);
-    }
-
-    private void questionListLoader(ConfigurationSection config, String prefix, String msgColorCode) {
-        for (String key : config.getKeys(false)) {
-            ConfigurationSection questionConfig = config.getConfigurationSection(key);
-            String question = questionConfig.getString("Question");
-            List<String> answers = questionConfig.getStringList("Answers");
-            if(question == null || answers.size() == 0) {
-                Bukkit.getLogger().info("[HoloQuiz] Error with loading question: " + question);
-                continue;
-            }
-            question = prefix + question;
-            String message = nullReplacer(questionConfig.getString("Message"));
-            message = msgColorCode + " " + message;
-            List<String> secretAnswers = questionConfig.getStringList("SecretAnswers");
-            String secretMessage = questionConfig.getString("SecretMessage");
-            secretMessage = msgColorCode + secretMessage;
-
-            secretAnswers.replaceAll(String::trim);
-            answers.replaceAll(String::trim);
-            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage);
-
-            allQuestions.add(newQuestion);
-        }
-    }
-
-    private String nullReplacer(String x) {
-        if(x == null) {
-            return "";
-        }
-        return x;
-    }
-
-
-    private void loadRewards(JavaPlugin plugin, String fileName) {
-        File rewardsYml = new File(plugin.getDataFolder(), fileName);
+    private void loadRewards(File rewardsYml) {
         FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
         ConfigurationSection rewardsSection = rewardsFile.getConfigurationSection("Rewards");
 
@@ -149,6 +118,74 @@ public class ExternalFiles {
         }
     }
 
+    /**
+     * Used to create the ArrayList of Questions used for the Trivia Mode
+     * Missing fields are replaced with an empty string
+     *
+     * @param questionYml The file that has all the questions.
+     */
+    private ArrayList<Question> loadQuestions(File questionYml) {
+        ArrayList<Question> questionList = new ArrayList<>();
+        FileConfiguration config = YamlConfiguration.loadConfiguration(questionYml);
+        for (String key : config.getKeys(false)) {
+            ConfigurationSection configSection = config.getConfigurationSection(key);
+            String questionColourCode = nullReplacer(configSection.getString("QuestionColour"));
+            String messageColourCode = nullReplacer(configSection.getString("MessageColour"));
+            String categoryLabel = nullReplacer(configSection.getString("CategoryLabel"));
+            String categoryPrefix = categoryLabel + questionColourCode;
+            ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
+            questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
+        }
+        return questionList;
+    }
+
+    /**
+     * Helper function used to load the ArrayList of Questions in a specific category.
+     * Question and Answer cannot be empty, and hence will be skipped and logged if so.
+     */
+    private void questionListLoader(ArrayList<Question> questionList, ConfigurationSection config,
+                                    String prefix, String msgColorCode) {
+        for (String key : config.getKeys(false)) {
+            ConfigurationSection questionConfig = config.getConfigurationSection(key);
+            String question = questionConfig.getString("Question");
+            List<String> answers = questionConfig.getStringList("Answers");
+            if(question == null || answers.size() == 0) {
+                Bukkit.getLogger().info("[HoloQuiz] Error with loading question: " + question);
+                continue;
+            }
+            question = prefix + question;
+            String message = nullReplacer(questionConfig.getString("Message"));
+            message = msgColorCode + " " + message;
+            List<String> secretAnswers = questionConfig.getStringList("SecretAnswers");
+            String secretMessage = questionConfig.getString("SecretMessage");
+            secretMessage = msgColorCode + secretMessage;
+
+            secretAnswers.replaceAll(String::trim);
+            answers.replaceAll(String::trim);
+            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage);
+
+            questionList.add(newQuestion);
+        }
+    }
+
+    private String nullReplacer(String x) {
+        if(x == null) {
+            return "";
+        }
+        return x;
+    }
+
+    public boolean reloadQuestions() {
+        File newQuestionFile = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
+        try {
+            this.allQuestions = loadQuestions(newQuestionFile);
+            updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     public ConfigFile getConfigFile() {
         return this.configFile;
     }
@@ -161,10 +198,10 @@ public class ExternalFiles {
         return this.allRewards;
     }
 
-    private void loadFromResource(JavaPlugin plugin, String fileName) {
+    private void loadFromResource(String fileName, String dest) {
         InputStream inputStream = plugin.getResource(fileName);
         assert inputStream != null;
-        File createdFile = new File(plugin.getDataFolder(), fileName);
+        File createdFile = new File(plugin.getDataFolder(), dest);
         try {
             FileOutputStream outputStream = new FileOutputStream(createdFile);
             byte[] buffer = new byte[1024];
@@ -179,7 +216,7 @@ public class ExternalFiles {
         }
     }
 
-    private void updateFile(JavaPlugin plugin, String oldFile, String newFile) {
+    private void updateFile(String oldFile, String newFile) {
         File backupFile = new File(plugin.getDataFolder(), oldFile);
         File brokenFile = new File(plugin.getDataFolder(), newFile);
         try {

@@ -1,7 +1,7 @@
 package benloti.holoquiz.commands;
 
 import benloti.holoquiz.database.UserPersonalisation;
-import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
@@ -23,7 +23,10 @@ public class PlayerCmds implements CommandExecutor {
 
     public static final String NOTIFY_HOLOQUIZ_STARTED = "&bHoloQuiz &ahas started!";
     public static final String NOTIFY_HOLOQUIZ_STOPPED = "&bHoloQuiz &chas been stopped!";
+    public static final String NOTIFY_RELOADING_QUESTIONS = "&bHoloQuiz &cis reloading...";
+    public static final String NOTIFY_RELOADED_QUESTIONS = "&bHoloQuiz &a has reloaded!";
 
+    public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_NO_PLAYER_FOUND = "&cNo such player found!";
     public static final String ERROR_HOLOQUIZ_IS_STOPPED = "&bYou can't do that, HoloQuiz &cis stopped!";
     public static final String ERROR_HOLOQUIZ_IS_ALREADY_RUNNING = "&bYou can't do that, HoloQuiz &cis already running!";
@@ -82,15 +85,17 @@ public class PlayerCmds implements CommandExecutor {
     private final boolean easterEggs;
     private final UserPersonalisation userPersonalisation;
     private final UserInterface userInterface;
+    private final ExternalFiles externalFiles;
 
     public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, Leaderboard leaderboard,
-                      ConfigFile configFile, UserInterface userInterface) {
+                      ExternalFiles externalFiles, UserInterface userInterface) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
         this.leaderboard = leaderboard;
-        this.easterEggs = configFile.isEasterEggsEnabled();
+        this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userPersonalisation = databaseManager.getUserPersonalisation();
         this.userInterface = userInterface;
+        this.externalFiles = externalFiles;
     }
 
     @Override
@@ -126,7 +131,6 @@ public class PlayerCmds implements CommandExecutor {
 
     private boolean runAdminCommand(Player player, String[] args) {
         if (!player.hasPermission("HoloQuiz.admin")) {
-            //formatInformationForPlayer(ERROR_NO_PERMS, player); //Yes, this is incorrectly set up lmaoo
             return false;
         }
 
@@ -167,6 +171,12 @@ public class PlayerCmds implements CommandExecutor {
             formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, player);
             return true;
         }
+
+        if(args[0].equalsIgnoreCase("reload")) {
+            updateQuestionBank(player);
+            return true;
+        }
+
         return false;
     }
 
@@ -322,6 +332,18 @@ public class PlayerCmds implements CommandExecutor {
             finalInfoArray[i] = information.get(i);
         }
         return finalInfoArray;
+    }
+
+    private void updateQuestionBank(Player player) {
+        formatInformationForPlayer(NOTIFY_RELOADING_QUESTIONS, player);
+        if(externalFiles.reloadQuestions()) {
+            gameManager.stopGame();
+            gameManager.updateQuestionList(externalFiles.getAllQuestions());
+            gameManager.startGame();
+            formatInformationForPlayer(NOTIFY_RELOADED_QUESTIONS, player);
+        } else {
+            formatInformationForPlayer(ERROR_QUESTION_FILE_BROKEN, player);
+        }
     }
 
     private void displayPlayerStats(Player player, String playerName) {

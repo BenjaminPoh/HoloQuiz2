@@ -13,4 +13,4 @@ We have
 6) A trivia plugin with thousands of Hololive questions! (By yours truly once again)
 7) HoshimachiSuisei (Real)
 
-SilverFraust i know you are seeing this, when are you and I going to sing Turing Love together
+SilverFraust I know you are seeing this, when are you and I going to sing Turing Love together
