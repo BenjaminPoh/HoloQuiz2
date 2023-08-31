@@ -8,6 +8,7 @@ import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerSettings;
 import benloti.holoquiz.database.DatabaseManager;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,8 +24,8 @@ public class PlayerCmds implements CommandExecutor {
 
     public static final String NOTIFY_HOLOQUIZ_STARTED = "&bHoloQuiz &ahas started!";
     public static final String NOTIFY_HOLOQUIZ_STOPPED = "&bHoloQuiz &chas been stopped!";
-    public static final String NOTIFY_RELOADING_QUESTIONS = "&bHoloQuiz &cis reloading...";
-    public static final String NOTIFY_RELOADED_QUESTIONS = "&bHoloQuiz &a has reloaded!";
+    public static final String NOTIFY_RELOADING = "&bHoloQuiz &cis reloading...";
+    public static final String NOTIFY_RELOADED = "&bHoloQuiz &a has reloaded!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_NO_PLAYER_FOUND = "&cNo such player found!";
@@ -174,6 +175,14 @@ public class PlayerCmds implements CommandExecutor {
 
         if(args[0].equalsIgnoreCase("reload")) {
             updateQuestionBank(player);
+            return true;
+        }
+
+        if(args[0].equalsIgnoreCase("repairDB")) {
+            formatInformationForPlayer(NOTIFY_RELOADING, player);
+            int size = databaseManager.reloadDatabase();
+            formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + "players!", player);
+            formatInformationForPlayer(NOTIFY_RELOADED, player);
             return true;
         }
 
@@ -335,12 +344,12 @@ public class PlayerCmds implements CommandExecutor {
     }
 
     private void updateQuestionBank(Player player) {
-        formatInformationForPlayer(NOTIFY_RELOADING_QUESTIONS, player);
+        formatInformationForPlayer(NOTIFY_RELOADING, player);
         if(externalFiles.reloadQuestions()) {
             gameManager.stopGame();
             gameManager.updateQuestionList(externalFiles.getAllQuestions());
             gameManager.startGame();
-            formatInformationForPlayer(NOTIFY_RELOADED_QUESTIONS, player);
+            formatInformationForPlayer(NOTIFY_RELOADED, player);
         } else {
             formatInformationForPlayer(ERROR_QUESTION_FILE_BROKEN, player);
         }

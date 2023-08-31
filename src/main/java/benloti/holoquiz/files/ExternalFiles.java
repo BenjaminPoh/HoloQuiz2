@@ -31,6 +31,7 @@ public class ExternalFiles {
         this.plugin = plugin;
         //If plugin's data folder exists, all the necessary files are fetched from the resource section.
         if (!plugin.getDataFolder().exists()) {
+            Bukkit.getLogger().info("[HoloQuiz] Plugin Folder Missing! Loading from Resource...");
             plugin.getDataFolder().mkdirs();
             loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
             loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
@@ -38,6 +39,7 @@ public class ExternalFiles {
         }
         File backupDir = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH);
         if(!backupDir.exists()) {
+            Bukkit.getLogger().info("[HoloQuiz] Backup Folder Missing! Loading from Resource...");
             backupDir.mkdirs();
             loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
             loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
@@ -48,6 +50,7 @@ public class ExternalFiles {
         //If unsuccessful, an error message is logged, and the backup file is used.
         //The backup file is assumed correct as people should not touch it. If they do, too bad!
         try {
+            Bukkit.getLogger().info("[HoloQuiz] Loading config.yml ...");
             this.configFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
             updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
         } catch (Exception e) {
@@ -57,6 +60,7 @@ public class ExternalFiles {
 
         this.allRewards = new ArrayList<>();
         try {
+            Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
             loadRewards (rewardsYml);
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
@@ -67,6 +71,7 @@ public class ExternalFiles {
         }
 
         try {
+            Bukkit.getLogger().info("[HoloQuiz] Loading QuestionBank.yml ...");
             File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
             this.allQuestions = loadQuestions(questionsYml);
             updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
@@ -216,12 +221,13 @@ public class ExternalFiles {
         }
     }
 
-    private void updateFile(String oldFile, String newFile) {
-        File backupFile = new File(plugin.getDataFolder(), oldFile);
-        File brokenFile = new File(plugin.getDataFolder(), newFile);
+    private void updateFile(String oldFileName, String newFileName) {
+        Bukkit.getLogger().info("[HoloQuiz] Replacing " + oldFileName + " with " + newFileName);
+        File oldFile = new File(plugin.getDataFolder(), oldFileName);
+        File newFile = new File(plugin.getDataFolder(), newFileName);
         try {
-            FileInputStream inputStream = new FileInputStream(backupFile);
-            FileOutputStream outputStream = new FileOutputStream(brokenFile);
+            FileInputStream inputStream = new FileInputStream(newFile);
+            FileOutputStream outputStream = new FileOutputStream(oldFile);
             byte[] buffer = new byte[1024];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {

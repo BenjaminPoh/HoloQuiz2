@@ -7,7 +7,6 @@ import benloti.holoquiz.structs.Question;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class GameManager {
     private final JavaPlugin plugin;
@@ -36,16 +35,9 @@ public class GameManager {
         if (gameRunning) {
             return;
         }
-        this.trivia = new Trivia(getRandomQuestion(), plugin, userInterface);
+        this.trivia = new Trivia(triviaQuestionList, plugin, userInterface);
         this.gameRunning = true;
         trivia.runTaskTimer(plugin, 0, interval * 20);
-    }
-
-    private Question getRandomQuestion() {
-        int size = triviaQuestionList.size();
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(size);
-        return triviaQuestionList.get(randomIndex);
     }
 
     public void stopGame() {
