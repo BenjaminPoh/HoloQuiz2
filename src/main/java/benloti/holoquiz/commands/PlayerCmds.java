@@ -8,7 +8,6 @@ import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerSettings;
 import benloti.holoquiz.database.DatabaseManager;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
