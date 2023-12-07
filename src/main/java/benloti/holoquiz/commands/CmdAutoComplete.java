@@ -37,7 +37,6 @@ public class CmdAutoComplete implements TabCompleter {
         if (easterEggs) {
             autoCompleteSuggestions.add("pekofy");
             autoCompleteSuggestions.add("normal");
-            autoCompleteSuggestions.add("GlassesAreReallyVersatile");
         }
 
         List<String> result = new ArrayList<>();
