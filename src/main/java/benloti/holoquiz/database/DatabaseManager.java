@@ -15,12 +15,12 @@ import java.util.logging.Level;
 
 public class DatabaseManager {
     private static final String DB_NAME = "HoloQuiz.db";
-    private static final String ERROR_MSG_DB_FILE = "Yabe peko, what happened to the db peko";
+    private static final String ERROR_MSG_DB_FILE = "[HoloQuiz] Database File is bugged!";
 
     private static final String SQL_STATEMENT_FETCH_ALL_LOGS =
             "SELECT * FROM answers_logs";
     private static final String SQL_STATEMENT_UPDATE_STATS =
-            "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
+            "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ?, average = ? WHERE user_id = ?";
 
     private Connection connection;
     private final JavaPlugin plugin;
@@ -35,7 +35,7 @@ public class DatabaseManager {
         this.plugin = plugin;
         this.dataFile = checkFile();
         this.connection = getConnection();
-        this.holoQuizStats = new HoloQuizStats(connection);
+        this.holoQuizStats = new HoloQuizStats(connection, this);
         this.answersLogs = new AnswersLogs(connection);
         this.userInfo = new UserInfo(connection);
         this.userPersonalisation = new UserPersonalisation(connection);
@@ -43,16 +43,16 @@ public class DatabaseManager {
     }
 
     public File checkFile() {
-        File dataFolder = new File(plugin.getDataFolder(), DB_NAME);
-        if (!dataFolder.exists()) {
+        File dataFile = new File(plugin.getDataFolder(), DB_NAME);
+        if (!dataFile.exists()) {
             try {
-                dataFolder.createNewFile();
+                dataFile.createNewFile();
             } catch (IOException e) {
                 Bukkit.getLogger().info(ERROR_MSG_DB_FILE);
                 e.printStackTrace();
             }
         }
-        return dataFolder;
+        return dataFile;
     }
 
     public Connection getConnection() {
@@ -61,10 +61,11 @@ public class DatabaseManager {
                 Bukkit.getLogger().info("[HoloQuiz] Making new SQL connection!");
                 // Establish a database connection
                 connection = DriverManager.getConnection("jdbc:sqlite:" + dataFile);
-            }
-            if (connection == null || connection.isClosed()) {
-                Bukkit.getLogger().log(Level.SEVERE, "This ain't right peko");
-                return null;
+                if (connection == null || connection.isClosed()) {
+                    Bukkit.getLogger().log(Level.SEVERE, ERROR_MSG_DB_FILE);
+                    return null;
+                }
+                Bukkit.getLogger().info("[HoloQuiz] New SQL connection established!");
             }
             return connection;
         } catch (SQLException e) {
@@ -86,8 +87,10 @@ public class DatabaseManager {
     public PlayerData updateAfterCorrectAnswer(Player player, long timeAnswered, int timeTaken) {
         String playerName = player.getName();
         String playerUUID = player.getUniqueId().toString();
-        int playerHoloQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName, numberOfEntries);
+        connection = getConnection();
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName);
         if (playerHoloQuizID == 0) {
+            Bukkit.getLogger().info("[HoloQuiz] Error: Player doesn't exist. You should NOT see this.");
             return null;
         }
         answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken);
@@ -120,9 +123,7 @@ public class DatabaseManager {
     }
 
     /**
-     * In Version 1.1.3, a bug was created which caused the same question to be broadcast.
-     * This function is now added to fix that. Once illegitimate answers are removed from answers_logs,
-     * This function will recompute holoquiz_stats
+     * Recomputes holoquiz_stats based on the information in answers_logs.
      */
     public int reloadDatabase() {
         HashMap<Integer, Long> timeRecord = new HashMap<>();
@@ -152,11 +153,15 @@ public class DatabaseManager {
             int size = 0;
             for(Map.Entry<Integer, Long> keyValueSet : timeRecord.entrySet()) {
                 size++;
+                int totalAnswers = totalAnsRecord.get(keyValueSet.getKey());
+                long totalTimeTaken = keyValueSet.getValue();
+                int averageTimeTaken = (int)(totalTimeTaken / totalAnswers);
                 PreparedStatement insertStatsQuery = connection.prepareStatement(SQL_STATEMENT_UPDATE_STATS);
                 insertStatsQuery.setInt(1, bestRecord.get(keyValueSet.getKey()));
-                insertStatsQuery.setInt(2, totalAnsRecord.get(keyValueSet.getKey()));
-                insertStatsQuery.setLong(3, keyValueSet.getValue());
-                insertStatsQuery.setInt(4, keyValueSet.getKey());
+                insertStatsQuery.setInt(2, totalAnswers);
+                insertStatsQuery.setLong(3,totalTimeTaken);
+                insertStatsQuery.setInt(4, averageTimeTaken);
+                insertStatsQuery.setInt(5, keyValueSet.getKey());
                 insertStatsQuery.executeUpdate();
             }
             return size;
@@ -164,5 +169,25 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    /**
+     * In version 1.3.0, Database was completely rewritten
+     * This allowed for leaderboards to be maintained without funny tricks.
+     */
+    public ArrayList<PlayerData> loadLeaderboard(int size, String column, boolean order) {
+        ArrayList<PlayerData> leaderboardList = new ArrayList<>();
+        String formattedColumn = column;
+        if(order) {
+            formattedColumn += " ASC";
+        } else {
+            formattedColumn += " DESC";
+        }
+        holoQuizStats.getLeaderboardForColumn(connection, formattedColumn, size, leaderboardList);
+        return leaderboardList;
+    }
+
+    public String getPlayerNameByHoloQuizID (Connection connection, int holoQuizID) {
+        return userInfo.getPlayerNameByHoloQuizID(connection, holoQuizID);
     }
 }

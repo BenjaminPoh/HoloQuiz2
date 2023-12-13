@@ -7,18 +7,23 @@ import java.util.ArrayList;
 
 public class HoloQuizStats {
     private static final String SQL_STATEMENT_CREATE_STATS_TABLE =
-            "CREATE TABLE IF NOT EXISTS holoquiz_stats (user_id INT , best INT, total LONG, answers INT)";
+            "CREATE TABLE IF NOT EXISTS holoquiz_stats (user_id INT PRIMARY KEY , best INT, total BIGINT, answers INT, average INT)";
     private static final String SQL_STATEMENT_UPDATE_STATS =
-            "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ? WHERE user_id = ?";
+            "UPDATE holoquiz_stats SET best = ?, total = ?, answers = ?, average = ? WHERE user_id = ?";
     private static final String SQL_STATEMENT_INSERT_NEW_STATS =
-            "INSERT INTO holoquiz_stats (best, answers, total, user_id) VALUES (?, ?, ?, ?)";
+            "INSERT INTO holoquiz_stats (best, total, answers, average, user_id) VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_STATEMENT_FETCH_STATS =
-            "SELECT * FROM holoquiz_stats WHERE user_id = '%s'";
+            "SELECT * FROM holoquiz_stats WHERE user_id = ?";
     private static final String SQL_STATEMENT_FETCH_ALL_STATS =
             "SELECT * FROM holoquiz_stats";
+    private static final String SQL_STATEMENT_FETCH_LEADERBOARD =
+            "SELECT * FROM holoquiz_stats ORDER BY %s LIMIT %d";
 
-    public HoloQuizStats(Connection connection) {
+    private final DatabaseManager databaseManager;
+
+    public HoloQuizStats(Connection connection, DatabaseManager databaseManager) {
         createTable(connection);
+        this.databaseManager = databaseManager;
     }
 
     public void createTable(Connection connection) {
@@ -44,13 +49,13 @@ public class HoloQuizStats {
      * @return a PlayerData class with the player's updated statistics, null if something goes wrong.
      */
     public PlayerData updateStatsRecord(Connection connection, int userID, int timeTaken, String playerName) {
-        String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, userID);
-        String statsStatement;
-        int totalAnswers, bestTime;
+        int totalAnswers, bestTime, averageTime;
         long totalTimeTaken;
 
         try {
-            PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
+            String nextStatement;
+            PreparedStatement fetchStatsQuery = connection.prepareStatement(SQL_STATEMENT_FETCH_STATS);
+            fetchStatsQuery.setInt(1, userID);
             ResultSet resultSet = fetchStatsQuery.executeQuery();
             boolean isNotFirstAnswer = resultSet.next();
 
@@ -64,23 +69,27 @@ public class HoloQuizStats {
                 }
                 totalTimeTaken += timeTaken;
                 totalAnswers += 1;
+                averageTime = (int)(totalTimeTaken / totalAnswers);
 
-                statsStatement = SQL_STATEMENT_UPDATE_STATS;
+                nextStatement = SQL_STATEMENT_UPDATE_STATS;
             } else {
                 totalAnswers = 1;
                 totalTimeTaken = timeTaken;
                 bestTime = timeTaken;
-                statsStatement = SQL_STATEMENT_INSERT_NEW_STATS;
+                averageTime = timeTaken;
+
+                nextStatement = SQL_STATEMENT_INSERT_NEW_STATS;
             }
 
-            PreparedStatement statsSQLQuery = connection.prepareStatement(statsStatement);
-            statsSQLQuery.setLong(1, bestTime);
-            statsSQLQuery.setLong(2, totalAnswers);
-            statsSQLQuery.setLong(3, totalTimeTaken);
-            statsSQLQuery.setInt(4, userID);
+            PreparedStatement statsSQLQuery = connection.prepareStatement(nextStatement);
+            statsSQLQuery.setInt(1, bestTime);
+            statsSQLQuery.setLong(2, totalTimeTaken);
+            statsSQLQuery.setInt(3, totalAnswers);
+            statsSQLQuery.setInt(4, averageTime);
+            statsSQLQuery.setInt(5, userID);
             statsSQLQuery.executeUpdate();
 
-            return new PlayerData(playerName,bestTime,totalTimeTaken,totalAnswers);
+            return new PlayerData(playerName,bestTime,totalAnswers, averageTime);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -98,14 +107,14 @@ public class HoloQuizStats {
      */
     public PlayerData loadPlayerData(Connection connection, int holoQuizID, String playerName) {
         try {
-            String fetchStatsStatement = String.format(SQL_STATEMENT_FETCH_STATS, holoQuizID);
-            PreparedStatement fetchStatsQuery = connection.prepareStatement(fetchStatsStatement);
+            PreparedStatement fetchStatsQuery = connection.prepareStatement(SQL_STATEMENT_FETCH_STATS);
+            fetchStatsQuery.setInt(1, holoQuizID);
             ResultSet resultSet = fetchStatsQuery.executeQuery();
             resultSet.next();
             int totalAnswers = resultSet.getInt("answers");
-            long totalTimeTaken = resultSet.getLong("total");
             int bestTime = resultSet.getInt("best");
-            return new PlayerData(playerName, bestTime, totalTimeTaken, totalAnswers);
+            int averageTime = resultSet.getInt("average");
+            return new PlayerData(playerName,bestTime,totalAnswers, averageTime);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -119,11 +128,11 @@ public class HoloQuizStats {
             ResultSet resultSet = fetchPlayerStatsQuery.executeQuery();
             while(resultSet.next()) {
                 int totalAnswers = resultSet.getInt("answers");
-                long totalTimeTaken = resultSet.getLong("total");
+                int averageTime = resultSet.getInt("average");
                 int bestTime = resultSet.getInt("best");
                 int holoQuizID = resultSet.getInt("user_id");
                 String playerName = allPlayerNames[holoQuizID - 1];
-                PlayerData playerData = new PlayerData(playerName, bestTime, totalTimeTaken, totalAnswers);
+                PlayerData playerData = new PlayerData(playerName,bestTime,totalAnswers, averageTime);
                 allPlayerData.add(playerData);
             }
             return allPlayerData;
@@ -133,5 +142,23 @@ public class HoloQuizStats {
         return null;
     }
 
+    public void getLeaderboardForColumn(Connection connection, String columnAndOrder, int size, ArrayList<PlayerData> list) {
+        String sqlQuery = String.format(SQL_STATEMENT_FETCH_LEADERBOARD, columnAndOrder, size);
+        try {
+            PreparedStatement statement = connection.prepareStatement(sqlQuery);
+            ResultSet resultSet = statement.executeQuery();
+            while(resultSet.next()) {
+                int totalAnswers = resultSet.getInt("answers");
+                int averageTime = resultSet.getInt("average");
+                int bestTime = resultSet.getInt("best");
+                int holoQuizID = resultSet.getInt("user_id");
+                String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
+                PlayerData leaderboardEntry = new PlayerData(playerName, bestTime, totalAnswers, averageTime);
+                list.add(leaderboardEntry);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
+    }
 }

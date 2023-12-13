@@ -12,7 +12,6 @@ public class ConfigFile {
     private final int interval;
     private final int leaderboardSize;
     private final int leaderboardMinReq;
-    private final boolean leaderboardOptimisation;
     private final boolean easterEggsEnabled;
     private final String gameMode;
     private final boolean cheatsDetectorEnabled;
@@ -29,7 +28,6 @@ public class ConfigFile {
         this.interval = configs.getInt("Interval");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
-        this.leaderboardOptimisation = configs.getBoolean("LeaderboardOptimisation");
         this.easterEggsEnabled = configs.getBoolean("EasterEggs");
         this.gameMode = configs.getString("GameMode");
         this.enableOnStart = configs.getBoolean("EnableOnStart");
@@ -79,10 +77,6 @@ public class ConfigFile {
 
     public boolean isEnableOnStart() {
         return enableOnStart;
-    }
-
-    public boolean isLeaderboardOptimisationEnabled() {
-        return leaderboardOptimisation;
     }
 
     public String getPluginPrefix() {

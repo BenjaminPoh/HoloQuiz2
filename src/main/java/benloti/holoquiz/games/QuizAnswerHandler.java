@@ -3,8 +3,6 @@ package benloti.holoquiz.games;
 import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.UserInterface;
-import benloti.holoquiz.leaderboard.Leaderboard;
-import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.structs.Question;
 import net.md_5.bungee.api.ChatMessageType;
@@ -25,21 +23,21 @@ public class QuizAnswerHandler implements Listener {
 
     public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
     public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
+    public static final String CORRECT_ANSWER_LOG = "[HoloQuiz] %s answered correctly in %s time.";
+
     private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
-    private final Leaderboard leaderboard;
     private final RewardsHandler rewardsHandler;
     private final UserInterface userInterface;
     private final ConfigFile configFile;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             Leaderboard leaderboard, UserInterface userInterface, ConfigFile configFile) {
+                             UserInterface userInterface, ConfigFile configFile) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
-        this.leaderboard = leaderboard;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.userInterface = userInterface;
         this.configFile = configFile;
@@ -96,10 +94,12 @@ public class QuizAnswerHandler implements Listener {
         }.runTask(plugin);
 
         //Update database
-        PlayerData playerData = database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
+        database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
 
-        //update leaderboards
-        leaderboard.updateLeaderBoard(playerData);
+        //Log it
+        String logInfo = String.format(CORRECT_ANSWER_LOG, player.getName(), timeTaken);
+        Bukkit.getLogger().info(logInfo);
+
     }
 
     private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question) {

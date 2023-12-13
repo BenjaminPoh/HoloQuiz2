@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 public class AnswersLogs {
     private static final String SQL_STATEMENT_CREATE_LOGS_TABLE =
-            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp LONG, took INT)";
+            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp BIGINT, took INT)";
     private static final String SQL_STATEMENT_UPDATE_LOGS =
             "INSERT INTO answers_logs (user_id, timestamp, took) VALUES (?, ?, ?)";
 

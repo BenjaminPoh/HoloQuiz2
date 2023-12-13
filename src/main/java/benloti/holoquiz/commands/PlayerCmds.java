@@ -5,7 +5,6 @@ import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
-import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.structs.PlayerSettings;
 import benloti.holoquiz.database.DatabaseManager;
 import org.bukkit.command.Command;
@@ -81,17 +80,15 @@ public class PlayerCmds implements CommandExecutor {
 
     private final GameManager gameManager;
     private final DatabaseManager databaseManager;
-    private final Leaderboard leaderboard;
     private final boolean easterEggs;
     private final UserPersonalisation userPersonalisation;
     private final UserInterface userInterface;
     private final ExternalFiles externalFiles;
 
-    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, Leaderboard leaderboard,
+    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager,
                       ExternalFiles externalFiles, UserInterface userInterface) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
-        this.leaderboard = leaderboard;
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userPersonalisation = databaseManager.getUserPersonalisation();
         this.userInterface = userInterface;
@@ -124,8 +121,6 @@ public class PlayerCmds implements CommandExecutor {
         if(easterEggs) {
             return runEasterEggCommands(player, args);
         }
-        String error_message = userInterface.formatColours(ERROR_NO_SUCH_COMMAND);
-        userInterface.attachSuffixAndSend(player, error_message);
         return false;
     }
 
@@ -180,7 +175,7 @@ public class PlayerCmds implements CommandExecutor {
         if(args[0].equalsIgnoreCase("repairDB")) {
             formatInformationForPlayer(NOTIFY_RELOADING, player);
             int size = databaseManager.reloadDatabase();
-            formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + "players!", player);
+            formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + " players!", player);
             formatInformationForPlayer(NOTIFY_RELOADED, player);
             return true;
         }
@@ -215,22 +210,26 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         if (args[0].equalsIgnoreCase("top") && args.length > 1) {
+            int size = externalFiles.getConfigFile().getLeaderboardSize();
             switch (args[1]) {
             default:
                 formatInformationForPlayer(ERROR_INCORRECT_COMMAND, player);
                 return false;
             case "best":
-                String [] topPlayers = displayTopPlayers(leaderboard.getFastest(),
+                ArrayList<PlayerData> topPlayersList = databaseManager.loadLeaderboard(size, "best", true);
+                String [] topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_FASTEST_ANSWERS, MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
             case "average":
-                topPlayers = displayTopPlayers(leaderboard.getAverageBest(),
+                topPlayersList = databaseManager.loadLeaderboard(size, "average", true);
+                topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_AVERAGE_BEST_ANSWERS, MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
             case "answers":
-                topPlayers = displayTopPlayers(leaderboard.getMostAnswers(),
+                topPlayersList = databaseManager.loadLeaderboard(size, "answers", false);
+                topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_MOST_ANSWERS, MSG_LEADERBOARD_BODY_MOST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
@@ -267,6 +266,8 @@ public class PlayerCmds implements CommandExecutor {
         if (args[0].equalsIgnoreCase("PekoPasta")) {
             player.sendMessage("So as a joke...");
         }
+        String error_message = userInterface.formatColours(ERROR_NO_SUCH_COMMAND);
+        userInterface.attachSuffixAndSend(player, error_message);
         return false;
     }
 
@@ -354,6 +355,8 @@ public class PlayerCmds implements CommandExecutor {
         }
     }
 
+
+    //Warning: Only for player-query purposes and not for database Maintenance.
     private void displayPlayerStats(Player player, String playerName) {
         PlayerData playerData = databaseManager.loadPlayerData(playerName);
         if (playerData == null) {
@@ -369,7 +372,7 @@ public class PlayerCmds implements CommandExecutor {
     }
 
     private String[] displayTopPlayers(ArrayList<PlayerData> topPlayers, String headerFormat, String bodyFormat) {
-        int size = leaderboard.getAmountOfPlayersToShow();
+        int size = externalFiles.getConfigFile().getLeaderboardSize();
         if(size > topPlayers.size()) {
             size = topPlayers.size();
         }

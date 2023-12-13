@@ -7,7 +7,6 @@ import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
-import benloti.holoquiz.leaderboard.Leaderboard;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.QuizAnswerHandler;
 
@@ -20,7 +19,6 @@ public final class HoloQuiz extends JavaPlugin {
     private DependencyHandler dependencyHandler;
     private DatabaseManager database;
     private GameManager gameManager;
-    private Leaderboard leaderboard;
     private UserInterface userInterface;
 
     @Override
@@ -30,10 +28,9 @@ public final class HoloQuiz extends JavaPlugin {
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
-        this.leaderboard = new Leaderboard(configFile, database);
         this.gameManager = new GameManager(this, userInterface, dependencyHandler, externalFiles);
-        new QuizAnswerHandler(this, gameManager, database, leaderboard, userInterface, configFile);
-        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, leaderboard, externalFiles, userInterface));
+        new QuizAnswerHandler(this, gameManager, database, userInterface, configFile);
+        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, externalFiles, userInterface));
         getCommand("HoloQuiz").setTabCompleter(new CmdAutoComplete(externalFiles, this));
         if(configFile.isEnableOnStart()) {
             gameManager.startGame();
