@@ -17,7 +17,7 @@ public class HoloQuizStats {
     private static final String SQL_STATEMENT_FETCH_ALL_STATS =
             "SELECT * FROM holoquiz_stats";
     private static final String SQL_STATEMENT_FETCH_LEADERBOARD =
-            "SELECT * FROM holoquiz_stats ORDER BY %s LIMIT %d";
+            "SELECT * FROM holoquiz_stats WHERE answers >= %d ORDER BY %s LIMIT %d";
 
     private final DatabaseManager databaseManager;
 
@@ -121,6 +121,27 @@ public class HoloQuizStats {
         return null;
     }
 
+    public void getLeaderboardForColumn(Connection connection, String columnAndOrder, int size, int minReq, ArrayList<PlayerData> list) {
+        String sqlQuery = String.format(SQL_STATEMENT_FETCH_LEADERBOARD, minReq, columnAndOrder, size);
+        try {
+            PreparedStatement statement = connection.prepareStatement(sqlQuery);
+            ResultSet resultSet = statement.executeQuery();
+            while(resultSet.next()) {
+                int totalAnswers = resultSet.getInt("answers");
+                int averageTime = resultSet.getInt("average");
+                int bestTime = resultSet.getInt("best");
+                int holoQuizID = resultSet.getInt("user_id");
+                String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
+                PlayerData leaderboardEntry = new PlayerData(playerName, bestTime, totalAnswers, averageTime);
+                list.add(leaderboardEntry);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Deprecated
     public ArrayList<PlayerData> getAllPlayerData(Connection connection, String[] allPlayerNames) {
         ArrayList<PlayerData> allPlayerData = new ArrayList<>();
         try {
@@ -140,25 +161,5 @@ public class HoloQuizStats {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public void getLeaderboardForColumn(Connection connection, String columnAndOrder, int size, ArrayList<PlayerData> list) {
-        String sqlQuery = String.format(SQL_STATEMENT_FETCH_LEADERBOARD, columnAndOrder, size);
-        try {
-            PreparedStatement statement = connection.prepareStatement(sqlQuery);
-            ResultSet resultSet = statement.executeQuery();
-            while(resultSet.next()) {
-                int totalAnswers = resultSet.getInt("answers");
-                int averageTime = resultSet.getInt("average");
-                int bestTime = resultSet.getInt("best");
-                int holoQuizID = resultSet.getInt("user_id");
-                String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerData leaderboardEntry = new PlayerData(playerName, bestTime, totalAnswers, averageTime);
-                list.add(leaderboardEntry);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
     }
 }

@@ -29,7 +29,6 @@ public class DatabaseManager {
     private final AnswersLogs answersLogs;
     private final UserInfo userInfo;
     private final UserPersonalisation userPersonalisation;
-    private final int numberOfEntries;
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -39,7 +38,6 @@ public class DatabaseManager {
         this.answersLogs = new AnswersLogs(connection);
         this.userInfo = new UserInfo(connection);
         this.userPersonalisation = new UserPersonalisation(connection);
-        this.numberOfEntries = userInfo.getSize(connection);
     }
 
     public File checkFile() {
@@ -106,16 +104,12 @@ public class DatabaseManager {
      * @return The player's PlayerData
      */
     public PlayerData loadPlayerData(String playerName) {
+        connection = getConnection();
         int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
         if (playerHoloQuizID == 0) {
             return null;
         }
         return holoQuizStats.loadPlayerData(connection, playerHoloQuizID, playerName);
-    }
-
-    public ArrayList<PlayerData> loadAllPlayerData() {
-        String[] allPlayerNames = userInfo.getAllPlayerNames(connection, numberOfEntries);
-        return holoQuizStats.getAllPlayerData(connection, allPlayerNames);
     }
 
     public UserPersonalisation getUserPersonalisation() {
@@ -126,6 +120,7 @@ public class DatabaseManager {
      * Recomputes holoquiz_stats based on the information in answers_logs.
      */
     public int reloadDatabase() {
+        connection = getConnection();
         HashMap<Integer, Long> timeRecord = new HashMap<>();
         HashMap<Integer, Integer> bestRecord = new HashMap<>();
         HashMap<Integer, Integer> totalAnsRecord = new HashMap<>();
@@ -175,7 +170,7 @@ public class DatabaseManager {
      * In version 1.3.0, Database was completely rewritten
      * This allowed for leaderboards to be maintained without funny tricks.
      */
-    public ArrayList<PlayerData> loadLeaderboard(int size, String column, boolean order) {
+    public ArrayList<PlayerData> loadLeaderboard(int size, int minReq, String column, boolean order) {
         ArrayList<PlayerData> leaderboardList = new ArrayList<>();
         String formattedColumn = column;
         if(order) {
@@ -183,7 +178,7 @@ public class DatabaseManager {
         } else {
             formattedColumn += " DESC";
         }
-        holoQuizStats.getLeaderboardForColumn(connection, formattedColumn, size, leaderboardList);
+        holoQuizStats.getLeaderboardForColumn(connection, formattedColumn, size, minReq, leaderboardList);
         return leaderboardList;
     }
 

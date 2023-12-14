@@ -211,24 +211,25 @@ public class PlayerCmds implements CommandExecutor {
 
         if (args[0].equalsIgnoreCase("top") && args.length > 1) {
             int size = externalFiles.getConfigFile().getLeaderboardSize();
+            int minReq = externalFiles.getConfigFile().getLeaderboardMinReq();
             switch (args[1]) {
             default:
                 formatInformationForPlayer(ERROR_INCORRECT_COMMAND, player);
                 return false;
             case "best":
-                ArrayList<PlayerData> topPlayersList = databaseManager.loadLeaderboard(size, "best", true);
+                ArrayList<PlayerData> topPlayersList = databaseManager.loadLeaderboard(size, minReq, "best", true);
                 String [] topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_FASTEST_ANSWERS, MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
             case "average":
-                topPlayersList = databaseManager.loadLeaderboard(size, "average", true);
+                topPlayersList = databaseManager.loadLeaderboard(size, minReq, "average", true);
                 topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_AVERAGE_BEST_ANSWERS, MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
             case "answers":
-                topPlayersList = databaseManager.loadLeaderboard(size, "answers", false);
+                topPlayersList = databaseManager.loadLeaderboard(size, minReq, "answers", false);
                 topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_MOST_ANSWERS, MSG_LEADERBOARD_BODY_MOST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
