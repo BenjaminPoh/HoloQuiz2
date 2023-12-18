@@ -94,12 +94,11 @@ public class QuizAnswerHandler implements Listener {
         }.runTask(plugin);
 
         //Update database
-        database.updateAfterCorrectAnswer(player, timeAnswered,timeTaken);
+        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken);
 
         //Log it
         String logInfo = String.format(CORRECT_ANSWER_LOG, player.getName(), timeTaken);
         Bukkit.getLogger().info(logInfo);
-
     }
 
     private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question) {

@@ -7,29 +7,26 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.Random;
-
-public class Trivia extends BukkitRunnable {
+public class QuestionHandler extends BukkitRunnable {
     private final JavaPlugin plugin;
     private final UserInterface userInterface;
+    private final GameManager gameManager;
 
     private Question question;
-    private final ArrayList<Question> questionList;
     private long timeQuestionSent;
     private boolean questionAnswered;
 
-    public Trivia(ArrayList<Question> questionList, JavaPlugin plugin, UserInterface userInterface) {
-        this.questionList = questionList;
-        this.question = getRandomQuestion();
+    public QuestionHandler(JavaPlugin plugin, UserInterface userInterface, GameManager gameManager) {
+        this.gameManager = gameManager;
+        this.question = gameManager.getRandomQuestion();
         this.plugin = plugin;
         this.userInterface = userInterface;
     }
 
     @Override
     public void run() {
-        this.question = getRandomQuestion();
-        Bukkit.getLogger().info("Question Sent: " + question.getQuestion());
+        this.question = gameManager.getRandomQuestion();
+        Bukkit.getLogger().info("[HoloQuiz] Question Sent: " + question.getQuestion());
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
         setQuestionAnswered(false);
@@ -37,13 +34,6 @@ public class Trivia extends BukkitRunnable {
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             userInterface.attachSuffixAndSend(player, formattedQuestion);
         }
-    }
-
-    private Question getRandomQuestion() {
-        int size = questionList.size();
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(size);
-        return questionList.get(randomIndex);
     }
 
     public Question getQuestion() {

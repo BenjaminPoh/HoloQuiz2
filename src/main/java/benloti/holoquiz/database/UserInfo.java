@@ -55,6 +55,7 @@ public class UserInfo {
             } else {
                 PreparedStatement infoStatement = connection.prepareStatement(SQL_STATEMENT_ADD_NEW_USER_INFO);
                 int newId = getSize(connection) + 1;
+                Bukkit.getLogger().info("[HoloQuiz] Assigning new player with ID:" + newId);
                 if(newId == 0) {
                     Bukkit.getLogger().info("[HoloQuiz] Error: If you see this, I retire from coding");
                 }

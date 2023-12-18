@@ -20,6 +20,11 @@ public class ConfigFile {
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
     private final String pluginPrefix;
+    private final int mathDifficulty;
+    private final String mathDistribution;
+    private final boolean mathDivisorLimit;
+    private final int mathOperationLimit;
+    private final boolean mathChaosMode;
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
@@ -36,6 +41,12 @@ public class ConfigFile {
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
+        ConfigurationSection mathSection = configs.getConfigurationSection("QuickMath");
+        this.mathDifficulty = mathSection.getInt("MathDifficulty");
+        this.mathDistribution = mathSection.getString("Distribution");
+        this.mathDivisorLimit = mathSection.getBoolean("DivisorLimit");
+        this.mathOperationLimit = mathSection.getInt("OperationsLimit");
+        this.mathChaosMode = mathSection.getBoolean("ChaosMode");
         this.pluginPrefix = configs.getString("PluginPrefix");
     }
 
@@ -81,5 +92,25 @@ public class ConfigFile {
 
     public String getPluginPrefix() {
         return pluginPrefix;
+    }
+
+    public int getMathDifficulty() {
+        return mathDifficulty;
+    }
+
+    public String getMathDistribution() {
+        return mathDistribution;
+    }
+
+    public boolean isMathDivisorLimit() {
+        return mathDivisorLimit;
+    }
+
+    public int getMathOperationLimit() {
+        return mathOperationLimit;
+    }
+
+    public boolean isMathChaosMode() {
+        return mathChaosMode;
     }
 }

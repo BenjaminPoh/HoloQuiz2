@@ -1,31 +1,36 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.dependencies.DependencyHandler;
+import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class GameManager {
     private final JavaPlugin plugin;
     private final UserInterface userInterface;
     private final long interval;
-    private boolean gameRunning;
     private final RewardsHandler rewardsHandler;
+    private final MathQuestionGenerator mathQuestionGenerator;
 
-    //private String gameMode; //currently pointless because we only have 1 gameMode. will add more... 1 day.
+    private boolean gameRunning;
+    private String gameMode;
+    private QuestionHandler questionHandler;
 
-    private Trivia trivia;
     private ArrayList<Question> triviaQuestionList;
 
-    public GameManager(JavaPlugin plugin, UserInterface userInterface,
+    public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
                        DependencyHandler dependencyHandler, ExternalFiles externalFiles) {
         this.plugin = plugin;
         this.interval = externalFiles.getConfigFile().getInterval();
-        //this.gameMode = configFile.getGameMode();
+        this.gameMode = configFile.getGameMode();
         this.triviaQuestionList = externalFiles.getAllQuestions();
+        this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
         this.userInterface = userInterface;
         this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep(),
                 externalFiles.getAllRewards());
@@ -35,17 +40,30 @@ public class GameManager {
         if (gameRunning) {
             return;
         }
-        this.trivia = new Trivia(triviaQuestionList, plugin, userInterface);
+        this.questionHandler = new QuestionHandler(plugin, userInterface, this);
         this.gameRunning = true;
-        trivia.runTaskTimer(plugin, 0, interval * 20);
+        //Note to future self: runTaskTimer is the one that loops the task on interval.
+        //If you are thinking to move the randomisation function here, it won't work.
+        questionHandler.runTaskTimer(plugin, 0, interval * 20);
+    }
+
+    public Question getRandomQuestion() {
+        if(gameMode.equals("Math")) {
+            return getRandomMathQuestion();
+        }
+        if(gameMode.equals("Trivia")) {
+            return getRandomTriviaQuestion();
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error: There is no way you ever see this message.");
+        return null;
     }
 
     public void stopGame() {
         if (!gameRunning) {
             return;
         }
-        trivia.cancel();
-        this.trivia = null;
+        questionHandler.cancel();
+        this.questionHandler = null;
         this.gameRunning = false;
     }
 
@@ -55,19 +73,19 @@ public class GameManager {
     }
 
     public Question getCurrentQuestion() {
-        return trivia.getQuestion();
+        return questionHandler.getQuestion();
     }
 
     public boolean getQuestionStatus() {
-        return trivia.isQuestionAnswered();
+        return questionHandler.isQuestionAnswered();
     }
 
     public void setQuestionStatus(boolean status) {
-        trivia.setQuestionAnswered(status);
+        questionHandler.setQuestionAnswered(status);
     }
 
     public long getTimeQuestionSent() {
-        return trivia.getTimeQuestionSent();
+        return questionHandler.getTimeQuestionSent();
     }
 
     public boolean getGameStatus() {
@@ -85,4 +103,22 @@ public class GameManager {
     public RewardsHandler getRewardsHandler() {
         return this.rewardsHandler;
     }
+
+    public String getGameMode() {
+        return gameMode;
+    }
+
+    private Question getRandomTriviaQuestion() {
+        int size = triviaQuestionList.size();
+        Random rand = new Random();
+        int randomIndex = rand.nextInt(size);
+        return triviaQuestionList.get(randomIndex);
+    }
+
+    private Question getRandomMathQuestion() {
+        String question = mathQuestionGenerator.getMathQuestion();
+        double answer = mathQuestionGenerator.solver(question);
+        return mathQuestionGenerator.parser(question, answer);
+    }
+
 }

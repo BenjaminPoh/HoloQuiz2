@@ -2,15 +2,23 @@
 EnableOnStart: true
 PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 
-# Trivia Config
-Interval: 300
-GameMode: Trivia
+# Game Config
+Interval: 300 #In Seconds
+GameMode: Trivia #Available: Trivia / Math
 Cheats:
   CheatingChecker: true
   CheatingTimer: 0.5
   CountAsCorrect: false
   CommandToPerform:
     - "msg [player] How did you answer so quickly? Cheats? >:("
+
+QuickMath:
+  #Uses ceil(|X~N(Diff, Diff/2)|) to generate numbers for Diff <=10, and X~U(0, diff) otherwise.
+  MathDifficulty: 10
+  Distribution: Default  #Overrides the above if you wish. Available: Default/Normal/Uniform
+  DivisorLimit: true #Ensures divisor <= 10
+  OperationsLimit: 4 #Min(ceil(|X~N(Limit, 1)|),4) taken.
+  ChaosMode: false #I am not liable for what you see next
 
 # Leaderboard Config
 LeaderboardSize: 10
