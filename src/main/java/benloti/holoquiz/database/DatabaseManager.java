@@ -82,7 +82,7 @@ public class DatabaseManager {
      * @param timeTaken    Time taken for player to answer, in milliseconds
      * @return The player's PlayerData, to update the leaderboards
      */
-    public PlayerData updateAfterCorrectAnswer(Player player, long timeAnswered, int timeTaken) {
+    public PlayerData updateAfterCorrectAnswer(Player player, long timeAnswered, int timeTaken, String gameMode) {
         String playerName = player.getName();
         String playerUUID = player.getUniqueId().toString();
         connection = getConnection();
@@ -91,7 +91,7 @@ public class DatabaseManager {
             Bukkit.getLogger().info("[HoloQuiz] Error: Player doesn't exist. You should NOT see this.");
             return null;
         }
-        answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken);
+        answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken, gameMode);
         return holoQuizStats.updateStatsRecord(connection, playerHoloQuizID, timeTaken, playerName);
     }
 

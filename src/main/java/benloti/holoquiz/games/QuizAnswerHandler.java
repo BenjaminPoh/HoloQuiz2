@@ -78,6 +78,7 @@ public class QuizAnswerHandler implements Listener {
         gameManager.setQuestionStatus(true);
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
+        String gameMode = gameManager.getGameModeIdentifier();
         //The actual tasks
         if(secretAnswerTriggered) {
             sendSecretAnnouncement(player, timeTaken, answeredQuestion);
@@ -94,7 +95,7 @@ public class QuizAnswerHandler implements Listener {
         }.runTask(plugin);
 
         //Update database
-        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken);
+        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);
 
         //Log it
         String logInfo = String.format(CORRECT_ANSWER_LOG, player.getName(), timeTaken);

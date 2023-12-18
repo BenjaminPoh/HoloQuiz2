@@ -104,8 +104,15 @@ public class GameManager {
         return this.rewardsHandler;
     }
 
-    public String getGameMode() {
-        return gameMode;
+    public String getGameModeIdentifier() {
+        if(gameMode.equals("Math")) {
+            return "M";
+        }
+        if(gameMode.equals("Trivia")) {
+            return "T";
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error: There is no way you ever see this message.");
+        return null;
     }
 
     private Question getRandomTriviaQuestion() {
