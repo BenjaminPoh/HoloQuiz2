@@ -31,7 +31,7 @@ public class CmdAutoComplete implements TabCompleter {
             autoCompleteSuggestions.add("next");
             autoCompleteSuggestions.add("start");
             autoCompleteSuggestions.add("stop");
-            autoCompleteSuggestions.add("reload");
+            autoCompleteSuggestions.add("reloadQns");
             autoCompleteSuggestions.add("repairDB");
         }
         if (easterEggs) {

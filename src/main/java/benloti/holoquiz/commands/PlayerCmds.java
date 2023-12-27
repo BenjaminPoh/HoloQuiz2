@@ -167,7 +167,7 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if(args[0].equalsIgnoreCase("reload")) {
+        if(args[0].equalsIgnoreCase("reloadQns")) {
             updateQuestionBank(player);
             return true;
         }
