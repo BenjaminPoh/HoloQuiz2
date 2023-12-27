@@ -1,5 +1,5 @@
 # Plugin Config
-EnableOnStart: true
+EnableOnStart: false
 PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 
 # Game Config
