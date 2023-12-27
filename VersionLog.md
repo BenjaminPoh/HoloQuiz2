@@ -1,7 +1,8 @@
 ## Version Log!
 For my own entertainment I suppose.
 
-- v 2.0.0 - ?? Dec 2023 - New Math Mode!
+- v 2.0.1 - 27 Dec 2023 - Fixed issue with loading files from Resource/Backup
+- v 2.0.0 - 19 Dec 2023 - New Math Mode!
 - v 1.3.1 - 14 Dec 2023 - Leaderboard bug fix
 - v 1.3.0 - 13 Dec 2023 - Improved Database Systems
 - v 1.2.0 - 07 Dec 2023 - TabCompletion finally implemented

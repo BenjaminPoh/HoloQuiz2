@@ -112,7 +112,7 @@ public class GameManager {
             return "T";
         }
         Bukkit.getLogger().info("[HoloQuiz] Error: There is no way you ever see this message.");
-        return null;
+        return gameMode.substring(0, 1);
     }
 
     private Question getRandomTriviaQuestion() {
@@ -123,7 +123,7 @@ public class GameManager {
     }
 
     private Question getRandomMathQuestion() {
-        String question = mathQuestionGenerator.getMathQuestion();
+        String question = mathQuestionGenerator.getMathQuestionColour() + mathQuestionGenerator.getMathQuestion();
         double answer = mathQuestionGenerator.solver(question);
         return mathQuestionGenerator.parser(question, answer);
     }

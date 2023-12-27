@@ -25,6 +25,7 @@ public class ConfigFile {
     private final boolean mathDivisorLimit;
     private final int mathOperationLimit;
     private final boolean mathChaosMode;
+    private final String mathQuestionColour;
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
@@ -47,6 +48,7 @@ public class ConfigFile {
         this.mathDivisorLimit = mathSection.getBoolean("DivisorLimit");
         this.mathOperationLimit = mathSection.getInt("OperationsLimit");
         this.mathChaosMode = mathSection.getBoolean("ChaosMode");
+        this.mathQuestionColour = mathSection.getString("QuestionColour");
         this.pluginPrefix = configs.getString("PluginPrefix");
     }
 
@@ -112,5 +114,9 @@ public class ConfigFile {
 
     public boolean isMathChaosMode() {
         return mathChaosMode;
+    }
+
+    public String getMathQuestionColour() {
+        return mathQuestionColour;
     }
 }

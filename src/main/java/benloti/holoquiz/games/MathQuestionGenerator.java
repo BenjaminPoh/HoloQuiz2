@@ -20,6 +20,7 @@ public class MathQuestionGenerator {
     private final boolean mathDivisorLimit;
     private final int mathOperationLimit;
     private final boolean mathChaosMode;
+    private final String questionColour;
     private final String[] operationMap = {"+", "-", "*", "/"};
 
     public MathQuestionGenerator(ConfigFile configFile) {
@@ -35,6 +36,11 @@ public class MathQuestionGenerator {
         this.mathDivisorLimit = configFile.isMathDivisorLimit();
         this.mathOperationLimit = configFile.getMathOperationLimit();
         this.mathChaosMode = configFile.isMathChaosMode();
+        this.questionColour = configFile.getMathQuestionColour();
+    }
+
+    public String getMathQuestionColour() {
+        return this.questionColour;
     }
 
     public String getMathQuestion() {

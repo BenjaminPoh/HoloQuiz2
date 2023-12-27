@@ -47,15 +47,23 @@ public class ExternalFiles {
         }
 
         //Tries to load all the external files. If successful, the backup is updated with the most recent version.
-        //If unsuccessful, an error message is logged, and the backup file is used.
-        //The backup file is assumed correct as people should not touch it. If they do, too bad!
+        //If unsuccessful, the backup file is used. Broken files are replaced.
+        //If still unsuccessful, the resource file is used.
         try {
             Bukkit.getLogger().info("[HoloQuiz] Loading config.yml ...");
             this.configFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
             updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your config.yml file is broken! Loading from backups...");
-            this.configFile = new ConfigFile(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
+            try {
+                this.configFile = new ConfigFile(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
+                updateFile(CONFIG_FILE_NAME, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
+            } catch (Exception e2) {
+                Bukkit.getLogger().info("[HoloQuiz] Your config.yml backup file is also broken! Loading from Resource...");
+                loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
+                loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
+                this.configFile = new ConfigFile(plugin,CONFIG_FILE_NAME);
+            }
         }
 
         this.allRewards = new ArrayList<>();
@@ -66,8 +74,17 @@ public class ExternalFiles {
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken! Loading from backups...");
-            File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
-            loadRewards (rewardsYml);
+            try {
+                File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+                loadRewards(rewardsYml);
+                updateFile(REWARDS_FILE_NAME, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+            } catch (Exception e2) {
+                Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml backup file is also broken! Loading from Resource...");
+                loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+                loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
+                File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
+                loadRewards (rewardsYml);
+            }
         }
 
         try {
@@ -77,8 +94,17 @@ public class ExternalFiles {
             updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml file is broken! Loading from backups...");
-            File questionsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
-            this.allQuestions = loadQuestions(questionsYml);
+            try {
+                File questionsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
+                this.allQuestions = loadQuestions(questionsYml);
+                updateFile(QUESTION_BANK_FILE_NAME, BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
+            } catch (Exception e2) {
+                Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml backup file is also broken! Loading from Resource...");
+                loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
+                loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
+                File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
+                this.allQuestions = loadQuestions(questionsYml);
+            }
         }
     }
     /**

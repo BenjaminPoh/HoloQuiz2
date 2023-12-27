@@ -14,11 +14,12 @@ Cheats:
 
 QuickMath:
   #Uses ceil(|X~N(Diff, Diff/2)|) to generate numbers for Diff <=10, and X~U(0, diff) otherwise.
-  MathDifficulty: 10
+  MathDifficulty: 20
   Distribution: Default  #Overrides the above if you wish. Available: Default/Normal/Uniform
   DivisorLimit: true #Ensures divisor <= 10
   OperationsLimit: 4 #Min(ceil(|X~N(Limit, 1)|),4) taken.
   ChaosMode: false #I am not liable for what you see next
+  QuestionColour: &6
 
 # Leaderboard Config
 LeaderboardSize: 10
