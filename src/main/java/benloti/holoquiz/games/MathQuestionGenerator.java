@@ -121,24 +121,24 @@ public class MathQuestionGenerator {
         return numStack.pop();
     }
 
-    public Question parser(String question, double answer) {
+    public Question parser(String questionColour, String question, double answer) {
         List<String> finalAnswer = new ArrayList<>();
         long temp = Math.round(answer * 100);
 
         if(temp % 100 == 0) {
             long tempAnswer = temp/100;
             finalAnswer.add(String.valueOf(tempAnswer));
-            return new Question(question, finalAnswer, null  , null, null);
+            return new Question(questionColour + question, finalAnswer, null  , null, null);
         }
 
         double tempAnswer = temp/ 100.0;
         finalAnswer.add(String.valueOf(tempAnswer));
         if(temp % 10 == 0) {
-            question = ROUND_1DP_INST + question;
+            question = questionColour + ROUND_1DP_INST + question;
             return new Question(question, finalAnswer, null  , null, null);
         }
         if(!mathChaosMode) {
-            question = ROUND_2DP_INST + question;
+            question = questionColour + ROUND_2DP_INST + question;
             return new Question(question, finalAnswer, null  , null, null);
         }
 
@@ -148,10 +148,10 @@ public class MathQuestionGenerator {
         double tempAnswerChaos = temp/ 1000.0;
         finalAnswerChaos.add(String.valueOf(tempAnswerChaos));
         if(temp % 100 == 0) {
-            question = ROUND_2DP_INST + question;
+            question = questionColour + ROUND_2DP_INST + question;
             return new Question(question, finalAnswerChaos, null  , null, null);
         }
-        question = ROUND_3DP_INST + question;
+        question = questionColour + ROUND_3DP_INST + question;
         return new Question(question, finalAnswerChaos, null  , null, null);
     }
 

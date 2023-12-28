@@ -263,9 +263,11 @@ public class PlayerCmds implements CommandExecutor {
         }
         if (args[0].equalsIgnoreCase("GlassesAreReallyVersatile")) {
             player.sendMessage(EASTER_EGG_FBK_GLASSES);
+            return true;
         }
         if (args[0].equalsIgnoreCase("PekoPasta")) {
             player.sendMessage("So as a joke...");
+            return true;
         }
         String error_message = userInterface.formatColours(ERROR_NO_SUCH_COMMAND);
         userInterface.attachSuffixAndSend(player, error_message);

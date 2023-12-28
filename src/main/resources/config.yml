@@ -19,7 +19,7 @@ QuickMath:
   DivisorLimit: true #Ensures divisor <= 10
   OperationsLimit: 4 #Min(ceil(|X~N(Limit, 1)|),4) taken.
   ChaosMode: false #I am not liable for what you see next
-  QuestionColour: &6
+  QuestionColour: "&6"
 
 # Leaderboard Config
 LeaderboardSize: 10

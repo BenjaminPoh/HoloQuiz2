@@ -123,9 +123,9 @@ public class GameManager {
     }
 
     private Question getRandomMathQuestion() {
-        String question = mathQuestionGenerator.getMathQuestionColour() + mathQuestionGenerator.getMathQuestion();
+        String question = mathQuestionGenerator.getMathQuestion();
         double answer = mathQuestionGenerator.solver(question);
-        return mathQuestionGenerator.parser(question, answer);
+        return mathQuestionGenerator.parser(mathQuestionGenerator.getMathQuestionColour(), question, answer);
     }
 
 }

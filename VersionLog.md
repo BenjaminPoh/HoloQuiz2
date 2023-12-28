@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 2.0.2 - 28 Dec 2023 - Fixed bug disallowing items to be omitted from Rewards.yml
 - v 2.0.1 - 27 Dec 2023 - Fixed issue with loading files from Resource/Backup
 - v 2.0.0 - 19 Dec 2023 - New Math Mode!
 - v 1.3.1 - 14 Dec 2023 - Leaderboard bug fix

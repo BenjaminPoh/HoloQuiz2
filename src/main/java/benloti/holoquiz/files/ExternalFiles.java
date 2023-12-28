@@ -125,8 +125,11 @@ public class ExternalFiles {
             double moneyReward = rewardTierSection.getDouble("Money");
             List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
-
             ArrayList<ItemStack> itemReward = new ArrayList<>();
+            if(rewardTierItemSection == null) {
+                allRewards.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
+                continue;
+            }
             for (String key2 : rewardTierItemSection.getKeys(false)) {
                 ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key2);
                 String itemType = rewardTierItem.getString("Material");
@@ -160,9 +163,9 @@ public class ExternalFiles {
         FileConfiguration config = YamlConfiguration.loadConfiguration(questionYml);
         for (String key : config.getKeys(false)) {
             ConfigurationSection configSection = config.getConfigurationSection(key);
-            String questionColourCode = nullReplacer(configSection.getString("QuestionColour"));
-            String messageColourCode = nullReplacer(configSection.getString("MessageColour"));
-            String categoryLabel = nullReplacer(configSection.getString("CategoryLabel"));
+            String questionColourCode = configSection.getString("QuestionColour", "");
+            String messageColourCode = configSection.getString("MessageColour", "");
+            String categoryLabel = configSection.getString("CategoryLabel", "");
             String categoryPrefix = categoryLabel + questionColourCode;
             ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
             questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
@@ -185,7 +188,7 @@ public class ExternalFiles {
                 continue;
             }
             question = prefix + question;
-            String message = nullReplacer(questionConfig.getString("Message"));
+            String message = questionConfig.getString("Message", "");
             message = msgColorCode + " " + message;
             List<String> secretAnswers = questionConfig.getStringList("SecretAnswers");
             String secretMessage = questionConfig.getString("SecretMessage");
@@ -197,13 +200,6 @@ public class ExternalFiles {
 
             questionList.add(newQuestion);
         }
-    }
-
-    private String nullReplacer(String x) {
-        if(x == null) {
-            return "";
-        }
-        return x;
     }
 
     public boolean reloadQuestions() {
