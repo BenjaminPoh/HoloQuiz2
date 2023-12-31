@@ -1,6 +1,8 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 2.1.1 - 31 Dec 2023 - Implemented Difficulty for Math Questions
+- v 2.1.0 - 29 Dec 2023 - Implemented Rewards for finding Secret Answers
 - v 2.0.2 - 28 Dec 2023 - Fixed bug disallowing items to be omitted from Rewards.yml
 - v 2.0.1 - 27 Dec 2023 - Fixed issue with loading files from Resource/Backup
 - v 2.0.0 - 19 Dec 2023 - New Math Mode!

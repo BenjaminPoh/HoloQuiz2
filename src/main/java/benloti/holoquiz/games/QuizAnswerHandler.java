@@ -82,11 +82,12 @@ public class QuizAnswerHandler implements Listener {
         //The actual tasks
         if(secretAnswerTriggered) {
             sendSecretAnnouncement(player, timeTaken, answeredQuestion);
+            rewardsHandler.giveSecretRewards(player, timeTaken);
         } else {
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
         }
         //displayActionBar(player); //Not what I want, but the bug is now a feature
-        rewardsHandler.giveRewards(player, timeTaken);
+        rewardsHandler.giveNormalRewards(player, timeTaken);
         displayTitle(player);
         new BukkitRunnable() {
             public void run() {

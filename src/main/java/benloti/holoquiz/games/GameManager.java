@@ -33,7 +33,7 @@ public class GameManager {
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
         this.userInterface = userInterface;
         this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep(),
-                externalFiles.getAllRewards());
+                externalFiles.getAllTriviaRewards(), externalFiles.getAllSecretRewards());
     }
 
     public void startGame() {

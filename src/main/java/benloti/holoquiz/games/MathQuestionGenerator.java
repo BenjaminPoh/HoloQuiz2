@@ -15,16 +15,18 @@ public class MathQuestionGenerator {
     public static final String ROUND_1DP_INST = "Round off to 1 decimal place: ";
     public static final String ROUND_2DP_INST = "Round off to 2 decimal places: ";
     public static final String ROUND_3DP_INST = "Round off to 3 decimal places: ";
+
+
     private final int mathNumberLimit;
     private final boolean useNormalDistribution;
     private final boolean mathDivisorLimit;
     private final int mathOperationLimit;
     private final boolean mathChaosMode;
     private final String questionColour;
-    private final String[] operationMap = {"+", "-", "*", "/"};
+    private final String[] operationMap;
 
     public MathQuestionGenerator(ConfigFile configFile) {
-        this.mathNumberLimit = configFile.getMathDifficulty();
+        this.mathNumberLimit = configFile.getMathRange();
         String mathDistribution = configFile.getMathDistribution();
         if (mathDistribution.equals("Normal")) {
             this.useNormalDistribution = true;
@@ -33,9 +35,18 @@ public class MathQuestionGenerator {
         } else {
             this.useNormalDistribution = (mathNumberLimit <= 10);
         }
+        String difficulty = configFile.getMathDifficulty();
+        this.mathChaosMode = configFile.isMathChaosMode();
         this.mathDivisorLimit = configFile.isMathDivisorLimit();
         this.mathOperationLimit = configFile.getMathOperationLimit();
-        this.mathChaosMode = configFile.isMathChaosMode();
+        if(difficulty.equals("Hard") || this.mathChaosMode) {
+            this.operationMap = new String[]{"+", "-", "*", "/"};
+        } else if (difficulty.equals("Easy") ) {
+            this.operationMap = new String[]{"+", "-", "+", "-", "+", "-", "*", "/"};
+        } else {
+            this.operationMap = new String[]{"+", "-", "+", "-", "*", "/"};
+        }
+
         this.questionColour = configFile.getMathQuestionColour();
     }
 
@@ -158,9 +169,9 @@ public class MathQuestionGenerator {
     private void generateChaoticQuestion(Random randFunc, StringBuilder stringBuilder, Stack<Integer> parenthesesPosition, int operationsUsed) {
         int currentGroupPos = 1;
         while (operationsUsed >= currentGroupPos) {
-            int operationType = uniformRNG(randFunc, 4);
+            int operationType = uniformRNG(randFunc, operationMap.length);
             int number = generateNumberForQuestion(randFunc);
-            if(number == 0 && operationType == 3) {
+            if(number == 0 && operationType == operationMap.length - 1) {
                 number = generateNumberForQuestion(randFunc) + 1;
             }
 
@@ -189,12 +200,12 @@ public class MathQuestionGenerator {
         int currentGroupPos = 1;
         while (operationsUsed >= currentGroupPos) {
             boolean divisionUsed = false;
-            int operationType = uniformRNG(randFunc, 4);
+            int operationType = uniformRNG(randFunc,  operationMap.length);
             int number = generateNumberForQuestion(randFunc);
             if (divisionLeft == 0) {
-                operationType = uniformRNG(randFunc, 3);
+                operationType = uniformRNG(randFunc,  operationMap.length - 1);
             }
-            if (operationType == 3) {
+            if (operationType ==  operationMap.length - 1) {
                 divisionUsed = true;
                 divisionLeft -= 1;
                 if(mathDivisorLimit && (number > 10 || number  < 1)) {

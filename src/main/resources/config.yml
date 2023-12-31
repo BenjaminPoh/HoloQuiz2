@@ -13,20 +13,22 @@ Cheats:
     - "msg [player] How did you answer so quickly? Cheats? >:("
 
 QuickMath:
-  #Uses ceil(|X~N(Diff, Diff/2)|) to generate numbers for Diff <=10, and X~U(0, diff) otherwise.
-  MathDifficulty: 20
+  #Uses ceil(|X~N(Range, Range/2)|) to generate numbers for Range <=10, and X~U(0, Range) otherwise.
+  MathRange: 20
   Distribution: Default  #Overrides the above if you wish. Available: Default/Normal/Uniform
   DivisorLimit: true #Ensures divisor <= 10
   OperationsLimit: 4 #Min(ceil(|X~N(Limit, 1)|),4) taken.
+  MathDifficulty: Normal #Harder increases the chance of * and / appearing. #Available: Easy/Normal/Hard
   ChaosMode: false #I am not liable for what you see next
   QuestionColour: "&6"
 
 # Leaderboard Config
 LeaderboardSize: 10
 LeaderboardMinQuestionsNeeded: 50
+TimedLeaderboards: #Edit Rewards in Rewards.yml!
+  Daily: true
+  Weekly: false
+  Monthly: true
 
 # Easter Eggs!
 EasterEggs: true
-
-
-

@@ -2,6 +2,7 @@ package benloti.holoquiz.files;
 
 import benloti.holoquiz.structs.Question;
 import benloti.holoquiz.structs.RewardTier;
+import benloti.holoquiz.structs.TimedRewards;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,10 +22,16 @@ public class ExternalFiles {
     private static final String QUESTION_BANK_FILE_NAME = "QuestionBank.yml";
     private static final String REWARDS_FILE_NAME = "Rewards.yml";
     private static final String BACKUP_DIRECTORY_PATH = "backup/";
+    private static final String[] TIMED_REWARDS_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg",
+            "WeeklyMost", "WeeklyFastest", "WeeklyBestAvg","MonthlyMost", "MonthlyFastest", "MonthlyBestAvg",};
+    private static final String TIMED_REWARDS_LOG_MESSAGE = "[HoloQuiz] TimedCategory %s loaded in %d rewards";
+    private static final String TRIVIA_QUESTIONS_LOG_MESSAGE = "[HoloQuiz] Trivia Category loaded %d Questions!";
 
     private final JavaPlugin plugin;
     private ConfigFile configFile;
-    private final ArrayList<RewardTier> allRewards;
+    private final ArrayList<RewardTier> allTriviaRewards;
+    private final ArrayList<RewardTier> secretTriviaRewards;
+    private final TimedRewards timedRewards;
     private ArrayList<Question> allQuestions;
 
     public ExternalFiles(JavaPlugin plugin) {
@@ -66,24 +73,26 @@ public class ExternalFiles {
             }
         }
 
-        this.allRewards = new ArrayList<>();
+        this.allTriviaRewards = new ArrayList<>();
+        this.secretTriviaRewards = new ArrayList<>();
+        this.timedRewards = new TimedRewards();
         try {
             Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-            loadRewards (rewardsYml);
+            loadAllRewards(rewardsYml);
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken! Loading from backups...");
             try {
                 File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
-                loadRewards(rewardsYml);
+                loadAllRewards(rewardsYml);
                 updateFile(REWARDS_FILE_NAME, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
             } catch (Exception e2) {
                 Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml backup file is also broken! Loading from Resource...");
                 loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
                 File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-                loadRewards (rewardsYml);
+                loadAllRewards(rewardsYml);
             }
         }
 
@@ -107,18 +116,42 @@ public class ExternalFiles {
             }
         }
     }
+
     /**
-     * Used to create the ArrayList of Questions used for the Trivia Mode
+     * Used to load all 3 categories of rewards
+     * @param rewardsYml the Rewards.yml File
+     */
+    private void loadAllRewards(File rewardsYml) {
+        FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
+
+        ConfigurationSection triviaRewardsSection = rewardsFile.getConfigurationSection("TriviaRewards");
+        int triviaRewardsLoaded = loadRewardsTier(triviaRewardsSection, allTriviaRewards);
+        if (triviaRewardsLoaded == 0) {
+            Bukkit.getLogger().info("[HoloQuiz] Warning: Rewards Section not found!");
+        }
+        ConfigurationSection secretRewardsSection = rewardsFile.getConfigurationSection("SecretRewards");
+        loadRewardsTier(secretRewardsSection, secretTriviaRewards);
+
+        ConfigurationSection timedRewardsSection = rewardsFile.getConfigurationSection("TimedRewards");
+        loadTimedRewards(timedRewardsSection);
+
+    }
+
+    /**
+     * Used to update the ArrayList of rewards used\.
      * Invalid materials are replaced with a carrot. I don't know why a carrot.
      *
-     * @param rewardsYml The file that has all the rewards.
+     * @param rewardsSection The section that has all the Trivia rewards.
+     * @param rewardsList The ArrayList to be filled.
      */
-
-    private void loadRewards(File rewardsYml) {
-        FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
-        ConfigurationSection rewardsSection = rewardsFile.getConfigurationSection("Rewards");
+    private int loadRewardsTier(ConfigurationSection rewardsSection, ArrayList<RewardTier> rewardsList) {
+        int categoriesLoaded = 0;
+        if(rewardsSection == null) {
+            return categoriesLoaded;
+        }
 
         for (String key : rewardsSection.getKeys(false)) {
+            categoriesLoaded += 1;
             ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
             double maxTime = rewardTierSection.getDouble("MaxAnswerTime");
             int maxTimeInMilliseconds = (int) maxTime * 1000;
@@ -127,7 +160,7 @@ public class ExternalFiles {
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
             if(rewardTierItemSection == null) {
-                allRewards.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
+                rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
                 continue;
             }
             for (String key2 : rewardTierItemSection.getKeys(false)) {
@@ -148,8 +181,31 @@ public class ExternalFiles {
                 itemReward.add(itemStack);
             }
 
-            allRewards.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
+            rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
         }
+
+        return categoriesLoaded;
+    }
+
+    /**
+     * Used to load the timed rewards for timed leaderboards
+     * @param rewardsSection The section that has all the Timed rewards.
+     */
+    private void loadTimedRewards(ConfigurationSection rewardsSection) {
+        if(rewardsSection == null) {
+            Bukkit.getLogger().info("[HoloQuiz] Warning: Timed Rewards Section not found!");
+            return;
+        }
+        for(String category: TIMED_REWARDS_CATEGORIES) {
+            ConfigurationSection section = rewardsSection.getConfigurationSection(category);
+            ArrayList<RewardTier> rewardsList = timedRewards.getRespectiveRewardsSection(category);
+            int categoriesLoaded = loadRewardsTier(section, rewardsList);
+            if(categoriesLoaded > 0) {
+                String logMessage = String.format(TIMED_REWARDS_LOG_MESSAGE, category, categoriesLoaded);
+                Bukkit.getLogger().info(logMessage);
+            }
+        }
+
     }
 
     /**
@@ -170,6 +226,8 @@ public class ExternalFiles {
             ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
             questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
         }
+        String logMessage = String.format(TRIVIA_QUESTIONS_LOG_MESSAGE, questionList.size());
+        Bukkit.getLogger().info(logMessage);
         return questionList;
     }
 
@@ -221,8 +279,12 @@ public class ExternalFiles {
         return this.allQuestions;
     }
 
-    public ArrayList<RewardTier> getAllRewards() {
-        return this.allRewards;
+    public ArrayList<RewardTier> getAllTriviaRewards() {
+        return this.allTriviaRewards;
+    }
+
+    public ArrayList<RewardTier> getAllSecretRewards() {
+        return this.secretTriviaRewards;
     }
 
     private void loadFromResource(String fileName, String dest) {
@@ -243,7 +305,7 @@ public class ExternalFiles {
         }
     }
 
-    private void updateFile(String oldFileName, String newFileName) {
+    private void updateFile (String oldFileName, String newFileName) {
         Bukkit.getLogger().info("[HoloQuiz] Replacing " + oldFileName + " with " + newFileName);
         File oldFile = new File(plugin.getDataFolder(), oldFileName);
         File newFile = new File(plugin.getDataFolder(), newFileName);

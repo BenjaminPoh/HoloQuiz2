@@ -1,6 +1,6 @@
 #Note that time is in seconds!!!
 #Peko-ing up the Material field will give a carrot instead.
-Rewards:
+TriviaRewards:
   FirstReward:
     MaxAnswerTime: 1
     Money: 10000
@@ -58,3 +58,68 @@ Rewards:
         Lore:
           - "&bHoloquiz Reward"
           - "&bFor &a[player]"
+
+SecretRewards:
+  OkayIRanOutOfFunnyMemesToTypeHere:
+    MaxAnswerTime: 2
+    Money: 25000
+    Commands:
+      - "bta add [player] 18"
+    Items:
+      1:
+        Material: emerald
+        Qty: 1
+        Lore:
+          - "{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}"
+          - "&5Secret Prize"
+          - "&5for &a[player]"
+          - ""
+          - "&eUnbridled Passion"
+          - "&eWith Unmatched Skill"
+          - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
+  戌亥どんどんすきになる:
+    MaxAnswerTime: 300
+    Money: 10000
+    Commands:
+      - "bta add [player] 8"
+    Items:
+      1:
+        Material: emerald
+        Qty: 1
+        Lore:
+          - "{#A161E7>}=-=-=-=-=-=-=-=-=-=-=-={#61A8E7<}"
+          - "&5Secret Prize"
+          - "&5for &a[player]"
+          - ""
+          - "&eThere is indeed"
+          - "&eMore than meets the eye."
+          - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
+
+TimedRewards:
+  DailyMost:
+    1:
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Items:
+        1:
+          Material: nether_star
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bBest of &a[date]"
+  DailyFastest:
+    1:
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Items:
+        1:
+          Material: nether_star
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bFastest of &a[date]"
+

@@ -20,16 +20,19 @@ public class ConfigFile {
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
     private final String pluginPrefix;
-    private final int mathDifficulty;
+    private final int mathRange;
     private final String mathDistribution;
     private final boolean mathDivisorLimit;
     private final int mathOperationLimit;
     private final boolean mathChaosMode;
     private final String mathQuestionColour;
+    private final String mathDifficulty;
+    private final boolean dailyLeaderboard;
+    private final boolean weeklyLeaderboard;
+    private final boolean monthlyLeaderboard;
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
-
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
         this.interval = configs.getInt("Interval");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
@@ -43,12 +46,17 @@ public class ConfigFile {
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
         ConfigurationSection mathSection = configs.getConfigurationSection("QuickMath");
-        this.mathDifficulty = mathSection.getInt("MathDifficulty");
+        this.mathRange = mathSection.getInt("MathRange");
         this.mathDistribution = mathSection.getString("Distribution");
         this.mathDivisorLimit = mathSection.getBoolean("DivisorLimit");
         this.mathOperationLimit = mathSection.getInt("OperationsLimit");
         this.mathChaosMode = mathSection.getBoolean("ChaosMode");
         this.mathQuestionColour = mathSection.getString("QuestionColour");
+        this.mathDifficulty = mathSection.getString("MathDifficulty");
+        ConfigurationSection timedLeaderboards = configs.getConfigurationSection("TimedLeaderboards");
+        this.dailyLeaderboard = timedLeaderboards.getBoolean("Daily");
+        this.weeklyLeaderboard = timedLeaderboards.getBoolean("Weekly");
+        this.monthlyLeaderboard = timedLeaderboards.getBoolean("Monthly");
         this.pluginPrefix = configs.getString("PluginPrefix");
     }
 
@@ -96,9 +104,14 @@ public class ConfigFile {
         return pluginPrefix;
     }
 
-    public int getMathDifficulty() {
+    public int getMathRange() {
+        return mathRange;
+    }
+
+    public String getMathDifficulty() {
         return mathDifficulty;
     }
+
 
     public String getMathDistribution() {
         return mathDistribution;
@@ -118,5 +131,17 @@ public class ConfigFile {
 
     public String getMathQuestionColour() {
         return mathQuestionColour;
+    }
+
+    public boolean isDailyLeaderboard() {
+        return dailyLeaderboard;
+    }
+
+    public boolean isWeeklyLeaderboard() {
+        return weeklyLeaderboard;
+    }
+
+    public boolean isMonthlyLeaderboard() {
+        return monthlyLeaderboard;
     }
 }
