@@ -1,6 +1,6 @@
 #Note that time is in seconds!!!
 #Peko-ing up the Material field will give a carrot instead.
-TriviaRewards:
+Rewards:
   FirstReward:
     MaxAnswerTime: 1
     Money: 10000

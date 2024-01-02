@@ -124,7 +124,7 @@ public class ExternalFiles {
     private void loadAllRewards(File rewardsYml) {
         FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
 
-        ConfigurationSection triviaRewardsSection = rewardsFile.getConfigurationSection("TriviaRewards");
+        ConfigurationSection triviaRewardsSection = rewardsFile.getConfigurationSection("Rewards");
         int triviaRewardsLoaded = loadRewardsTier(triviaRewardsSection, allTriviaRewards);
         if (triviaRewardsLoaded == 0) {
             Bukkit.getLogger().info("[HoloQuiz] Warning: Rewards Section not found!");
