@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 2.1.2 - 02 Jan 2023 - Fixed rounding error for Math Questions
 - v 2.1.1 - 31 Dec 2023 - Implemented Difficulty for Math Questions
 - v 2.1.0 - 29 Dec 2023 - Implemented Rewards for finding Secret Answers
 - v 2.0.2 - 28 Dec 2023 - Fixed bug disallowing items to be omitted from Rewards.yml
