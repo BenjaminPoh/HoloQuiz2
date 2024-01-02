@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MathQuestionGenerator {
-    public static final String ROUND_1DP_INST = "Round off to 1 decimal place: ";
     public static final String ROUND_2DP_INST = "Round off to 2 decimal places: ";
     public static final String ROUND_3DP_INST = "Round off to 3 decimal places: ";
 
@@ -134,36 +133,37 @@ public class MathQuestionGenerator {
 
     public Question parser(String questionColour, String question, double answer) {
         List<String> finalAnswer = new ArrayList<>();
-        long temp = Math.round(answer * 100);
 
-        if(temp % 100 == 0) {
-            long tempAnswer = temp/100;
-            finalAnswer.add(String.valueOf(tempAnswer));
+        //Exact answer wanted if 3dp or less
+        if(answer % 1 == 0) {
+            finalAnswer.add(String.valueOf((long) answer));
+            return new Question(questionColour + question, finalAnswer, null  , null, null);
+        }
+        if((answer * 1000) % 1 == 0) {
+            finalAnswer.add(String.valueOf(answer));
             return new Question(questionColour + question, finalAnswer, null  , null, null);
         }
 
-        double tempAnswer = temp/ 100.0;
+        boolean isNegative = answer < 0;
+        double tempAnswer;
+        if(mathChaosMode) {
+            long temp = Math.round(Math.abs(answer) * 1000);
+            tempAnswer = temp / 1000.0;
+        } else {
+            long temp = Math.round(Math.abs(answer) * 100);
+            tempAnswer = temp / 100.0;
+        }
+        if(isNegative) {
+            tempAnswer *= -1;
+        }
         finalAnswer.add(String.valueOf(tempAnswer));
-        if(temp % 10 == 0) {
-            question = questionColour + ROUND_1DP_INST + question;
-            return new Question(question, finalAnswer, null  , null, null);
-        }
-        if(!mathChaosMode) {
-            question = questionColour + ROUND_2DP_INST + question;
-            return new Question(question, finalAnswer, null  , null, null);
-        }
 
-        //Chaos Mode can ask for 3dp.
-        List<String> finalAnswerChaos = new ArrayList<>();
-        temp = Math.round(answer * 1000);
-        double tempAnswerChaos = temp/ 1000.0;
-        finalAnswerChaos.add(String.valueOf(tempAnswerChaos));
-        if(temp % 100 == 0) {
-            question = questionColour + ROUND_2DP_INST + question;
-            return new Question(question, finalAnswerChaos, null  , null, null);
+        if(mathChaosMode) {
+            question = questionColour + ROUND_3DP_INST + question;
+            return new Question(question, finalAnswer, null  , null, null);
         }
-        question = questionColour + ROUND_3DP_INST + question;
-        return new Question(question, finalAnswerChaos, null  , null, null);
+        question = questionColour + ROUND_2DP_INST + question;
+        return new Question(question, finalAnswer, null  , null, null);
     }
 
     private void generateChaoticQuestion(Random randFunc, StringBuilder stringBuilder, Stack<Integer> parenthesesPosition, int operationsUsed) {
