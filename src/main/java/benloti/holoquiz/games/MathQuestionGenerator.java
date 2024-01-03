@@ -137,11 +137,11 @@ public class MathQuestionGenerator {
         //Exact answer wanted if 3dp or less
         if(answer % 1 == 0) {
             finalAnswer.add(String.valueOf((long) answer));
-            return new Question(questionColour + question, finalAnswer, null  , null, null);
+            return new Question(questionColour + question, finalAnswer, null  , new ArrayList<>(), null);
         }
         if((answer * 1000) % 1 == 0) {
             finalAnswer.add(String.valueOf(answer));
-            return new Question(questionColour + question, finalAnswer, null  , null, null);
+            return new Question(questionColour + question, finalAnswer, null  , new ArrayList<>(), null);
         }
 
         boolean isNegative = answer < 0;
@@ -160,10 +160,10 @@ public class MathQuestionGenerator {
 
         if(mathChaosMode) {
             question = questionColour + ROUND_3DP_INST + question;
-            return new Question(question, finalAnswer, null  , null, null);
+            return new Question(question, finalAnswer, null  , new ArrayList<>(), null);
         }
         question = questionColour + ROUND_2DP_INST + question;
-        return new Question(question, finalAnswer, null  , null, null);
+        return new Question(question, finalAnswer, null  , new ArrayList<>(), null);
     }
 
     private void generateChaoticQuestion(Random randFunc, StringBuilder stringBuilder, Stack<Integer> parenthesesPosition, int operationsUsed) {
