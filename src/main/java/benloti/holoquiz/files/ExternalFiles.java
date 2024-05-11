@@ -1,8 +1,8 @@
 package benloti.holoquiz.files;
 
+import benloti.holoquiz.structs.ContestRewardTier;
 import benloti.holoquiz.structs.Question;
 import benloti.holoquiz.structs.RewardTier;
-import benloti.holoquiz.structs.TimedRewards;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,24 +14,29 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExternalFiles {
 
     private static final String CONFIG_FILE_NAME = "config.yml";
     private static final String QUESTION_BANK_FILE_NAME = "QuestionBank.yml";
     private static final String REWARDS_FILE_NAME = "Rewards.yml";
+
     private static final String BACKUP_DIRECTORY_PATH = "backup/";
-    private static final String[] TIMED_REWARDS_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg",
+    private static final String[] CONTEST_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg",
             "WeeklyMost", "WeeklyFastest", "WeeklyBestAvg","MonthlyMost", "MonthlyFastest", "MonthlyBestAvg",};
-    private static final String TIMED_REWARDS_LOG_MESSAGE = "[HoloQuiz] TimedCategory %s loaded in %d rewards";
+    private static final String CONTEST_LOG_MESSAGE = "[HoloQuiz] TimedCategory %s loaded in %d rewards";
     private static final String TRIVIA_QUESTIONS_LOG_MESSAGE = "[HoloQuiz] Trivia Category loaded %d Questions!";
+    public static final String WARNING_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Rewards Section not found!";
+    public static final String WARNING_CONTEST_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Contest Rewards Section not found!";
 
     private final JavaPlugin plugin;
     private ConfigFile configFile;
-    private final ArrayList<RewardTier> allTriviaRewards;
-    private final ArrayList<RewardTier> secretTriviaRewards;
-    private final TimedRewards timedRewards;
+    private final ArrayList<RewardTier> allNormalRewards;
+    private final ArrayList<RewardTier> secretRewards;
+    private final Map<String, ArrayList<ContestRewardTier>> contestRewards;
     private ArrayList<Question> allQuestions;
 
     public ExternalFiles(JavaPlugin plugin) {
@@ -73,9 +78,10 @@ public class ExternalFiles {
             }
         }
 
-        this.allTriviaRewards = new ArrayList<>();
-        this.secretTriviaRewards = new ArrayList<>();
-        this.timedRewards = new TimedRewards();
+        this.allNormalRewards = new ArrayList<>();
+        this.secretRewards = new ArrayList<>();
+        this.contestRewards = new HashMap<>();
+
         try {
             Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
@@ -124,21 +130,20 @@ public class ExternalFiles {
     private void loadAllRewards(File rewardsYml) {
         FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
 
-        ConfigurationSection triviaRewardsSection = rewardsFile.getConfigurationSection("Rewards");
-        int triviaRewardsLoaded = loadRewardsTier(triviaRewardsSection, allTriviaRewards);
-        if (triviaRewardsLoaded == 0) {
-            Bukkit.getLogger().info("[HoloQuiz] Warning: Rewards Section not found!");
+        ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
+        int normalRewardsLoaded = loadRewardsTier(normalRewardsSection, allNormalRewards);
+        if (normalRewardsLoaded == 0) {
+            Bukkit.getLogger().info(WARNING_REWARDS_SECTION_NOT_FOUND);
         }
         ConfigurationSection secretRewardsSection = rewardsFile.getConfigurationSection("SecretRewards");
-        loadRewardsTier(secretRewardsSection, secretTriviaRewards);
+        loadRewardsTier(secretRewardsSection, secretRewards);
 
-        ConfigurationSection timedRewardsSection = rewardsFile.getConfigurationSection("TimedRewards");
-        loadTimedRewards(timedRewardsSection);
-
+        ConfigurationSection contestRewardsSection = rewardsFile.getConfigurationSection("ContestRewards");
+        loadContestRewards(contestRewardsSection);
     }
 
     /**
-     * Used to update the ArrayList of rewards used\.
+     * Used to update the ArrayList of rewards used.
      * Invalid materials are replaced with a carrot. I don't know why a carrot.
      *
      * @param rewardsSection The section that has all the Trivia rewards.
@@ -163,23 +168,7 @@ public class ExternalFiles {
                 rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
                 continue;
             }
-            for (String key2 : rewardTierItemSection.getKeys(false)) {
-                ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key2);
-                String itemType = rewardTierItem.getString("Material");
-                Material itemMaterial = Material.matchMaterial(itemType);
-                if (itemMaterial == null) {
-                    itemMaterial = Material.CARROT;
-                    Bukkit.getLogger().info("[HoloQuiz] Error! Failed to load item of name: " + itemType);
-                }
-                int itemQty = rewardTierItem.getInt("Qty");
-                List<String> itemLore = rewardTierItem.getStringList("Lore");
-                ItemStack itemStack = new ItemStack(itemMaterial, itemQty);
-
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.setLore(itemLore);
-                itemStack.setItemMeta(itemMeta);
-                itemReward.add(itemStack);
-            }
+            loadItemReward(rewardTierItemSection, itemReward);
 
             rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
         }
@@ -187,25 +176,72 @@ public class ExternalFiles {
         return categoriesLoaded;
     }
 
+    private void loadItemReward(ConfigurationSection rewardTierItemSection, ArrayList<ItemStack> itemReward) {
+        for (String key : rewardTierItemSection.getKeys(false)) {
+            ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key);
+            String itemType = rewardTierItem.getString("Material", "");
+            Material itemMaterial = Material.matchMaterial(itemType);
+            if (itemMaterial == null) {
+                itemMaterial = Material.CARROT;
+                Bukkit.getLogger().info("[HoloQuiz] Error! Failed to load item of name: " + itemType);
+            }
+            int itemQty = rewardTierItem.getInt("Qty");
+            List<String> itemLore = rewardTierItem.getStringList("Lore");
+            ItemStack itemStack = new ItemStack(itemMaterial, itemQty);
+
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            itemMeta.setLore(itemLore);
+            itemStack.setItemMeta(itemMeta);
+            itemReward.add(itemStack);
+        }
+    }
+
     /**
-     * Used to load the timed rewards for timed leaderboards
-     * @param rewardsSection The section that has all the Timed rewards.
+     * Used to load the contest rewards.
+     * @param rewardsSection The section that has all the Contest rewards.
      */
-    private void loadTimedRewards(ConfigurationSection rewardsSection) {
+    private void loadContestRewards(ConfigurationSection rewardsSection) {
         if(rewardsSection == null) {
-            Bukkit.getLogger().info("[HoloQuiz] Warning: Timed Rewards Section not found!");
+            Bukkit.getLogger().info(WARNING_CONTEST_REWARDS_SECTION_NOT_FOUND);
             return;
         }
-        for(String category: TIMED_REWARDS_CATEGORIES) {
+
+        for(String category: CONTEST_CATEGORIES) {
             ConfigurationSection section = rewardsSection.getConfigurationSection(category);
-            ArrayList<RewardTier> rewardsList = timedRewards.getRespectiveRewardsSection(category);
-            int categoriesLoaded = loadRewardsTier(section, rewardsList);
+            int categoriesLoaded = loadContestRewardsTier(section, category);
             if(categoriesLoaded > 0) {
-                String logMessage = String.format(TIMED_REWARDS_LOG_MESSAGE, category, categoriesLoaded);
+                String logMessage = String.format(CONTEST_LOG_MESSAGE, category, categoriesLoaded);
                 Bukkit.getLogger().info(logMessage);
             }
         }
+    }
 
+    private int loadContestRewardsTier(ConfigurationSection section, String category) {
+        if(section == null) {
+            return 0;
+        }
+
+        ArrayList<ContestRewardTier> rewardsList = new ArrayList<>();
+        int tiersLoaded = 0;
+        for (String key : section.getKeys(false)) {
+            tiersLoaded += 1;
+            ConfigurationSection rewardTierSection = section.getConfigurationSection(key);
+            int reps = rewardTierSection.getInt("Reps", 0);
+            double moneyReward = rewardTierSection.getDouble("Money", 0);
+            String message = rewardTierSection.getString("Message", "");
+            List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
+            ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
+            ArrayList<ItemStack> itemReward = new ArrayList<>();
+            if(rewardTierItemSection == null) {
+                rewardsList.add(new ContestRewardTier(moneyReward, commandsExecuted, null, message, reps));
+                continue;
+            }
+            loadItemReward(rewardTierItemSection, itemReward);
+            rewardsList.add(new ContestRewardTier(moneyReward, commandsExecuted, null, message, reps));
+        }
+
+        contestRewards.put(category, rewardsList);
+        return tiersLoaded;
     }
 
     /**
@@ -279,12 +315,16 @@ public class ExternalFiles {
         return this.allQuestions;
     }
 
-    public ArrayList<RewardTier> getAllTriviaRewards() {
-        return this.allTriviaRewards;
+    public ArrayList<RewardTier> getAllNormalRewards() {
+        return this.allNormalRewards;
     }
 
     public ArrayList<RewardTier> getAllSecretRewards() {
-        return this.secretTriviaRewards;
+        return this.secretRewards;
+    }
+
+    public ArrayList<ContestRewardTier> getContestRewardByCategory(String category) {
+        return contestRewards.get(category);
     }
 
     private void loadFromResource(String fileName, String dest) {

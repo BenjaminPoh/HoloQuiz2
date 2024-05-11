@@ -5,6 +5,8 @@ PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 # Game Config
 Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math
+IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of ticks. Enable if Server TPS Sucks.
+QuestionCooldown: 3 #The same question will not appear for this number of questions sent. List is reset once server restarts.
 Cheats:
   CheatingChecker: true
   CheatingTimer: 0.5
@@ -25,10 +27,17 @@ QuickMath:
 # Leaderboard Config
 LeaderboardSize: 10
 LeaderboardMinQuestionsNeeded: 50
-TimedLeaderboards: #Edit Rewards in Rewards.yml!
-  Daily: true
+
+#Contests feature. ##NOT WORKING, DO NOT ENABLE
+Contests: #Edit Rewards in Rewards.yml!
+  Daily: false
+  DailyMin: 1
   Weekly: false
-  Monthly: true
+  WeeklyMin: 7
+  WeeklyResetDay: Monday #The day you choose is the start day. Pls spell correctly.
+  Monthly: false
+  MonthlyMin: 10
+  TimeZone: GMT+8 #Used to offset if the server host has a different time zone.
 
 # Easter Eggs!
 EasterEggs: true

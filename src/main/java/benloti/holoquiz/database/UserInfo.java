@@ -22,7 +22,7 @@ public class UserInfo {
             "SELECT * FROM user_info";
     private static final String SQL_STATEMENT_UPDATE_USER_NAME =
             "UPDATE user_info SET username = ? WHERE player_uuid = ?";
-    public static final String SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID =
+    private static final String SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID =
             "SELECT * FROM user_info WHERE username = ?";
 
     private static final String LOG_MSG_UPDATED_USERNAME_FOR_UUID_SUCCESS =
@@ -34,7 +34,7 @@ public class UserInfo {
         createTable(connection);
     }
 
-    public void createTable(Connection connection) {
+    private void createTable(Connection connection) {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_USERINFO_TABLE);

@@ -2,6 +2,8 @@ package benloti.holoquiz.files;
 
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.CMIDep;
+import benloti.holoquiz.structs.ContestInfo;
+import benloti.holoquiz.structs.ContestWinner;
 import benloti.holoquiz.structs.PlayerSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -77,5 +79,35 @@ public class UserInterface {
         return message;
     }
 
-
+    public String attachContestStats(String message, ContestWinner contestWinner, ContestInfo contestInfo) {
+        if(message.contains("[count]")) {
+            String totalAnswers = String.valueOf(contestWinner.getContestWinnerData().getQuestionsAnswered());
+            message = message.replace("[count]", totalAnswers);
+        }
+        if(message.contains("[best]")) {
+            String bestTime = contestWinner.getContestWinnerData().getBestTimeInSeconds3DP();
+            message = message.replace("[count]", bestTime);
+        }
+        if(message.contains("[avg]")) {
+            String avgTime = contestWinner.getContestWinnerData().getAverageTimeInSeconds3DP();
+            message = message.replace("[count]", avgTime);
+        }
+        if(message.contains("[month]")) {
+            String monthOfContest = contestInfo.getStartDate().getMonth().toString();
+            message = message.replace("[month]", monthOfContest);
+        }
+        if(message.contains("[start]")) {
+            String startDateOfContest = contestInfo.getStartDate().toString();
+            message = message.replace("[start]", startDateOfContest);
+        }
+        if(message.contains("[end]")) {
+            String endDateOfContest = contestInfo.getEndDate().toString();
+            message = message.replace("[end]", endDateOfContest);
+        }
+        if(message.contains("[pos]")) {
+            String position = String.valueOf(contestWinner.getPosition());
+            message = message.replace("[pos]", position);
+        }
+        return message;
+    }
 }

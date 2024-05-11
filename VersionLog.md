@@ -1,6 +1,10 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v.2.4.0 - 11 May 2024 - Added cooldown for Questions to reduce repetition
+- v.2.3.0 - 08 May 2024 - Added manual check for Low TPS
+- v 2.2.0 - 28 Mar 2024 - Added Storage for Full Inv
+- v 2.1.3 - 03 Jan 2024 - Fixed compatibility bug for Math Questions
 - v 2.1.2 - 02 Jan 2024 - Fixed rounding error for Math Questions
 - v 2.1.1 - 31 Dec 2023 - Implemented Difficulty for Math Questions
 - v 2.1.0 - 29 Dec 2023 - Implemented Rewards for finding Secret Answers
@@ -9,7 +13,7 @@ For my own entertainment I suppose.
 - v 2.0.0 - 19 Dec 2023 - New Math Mode!
 - v 1.3.1 - 14 Dec 2023 - Leaderboard bug fix
 - v 1.3.0 - 13 Dec 2023 - Improved Database Systems
-- v 1.2.0 - 07 Dec 2023 - TabCompletion finally implemented
+- v 1.2.0 - 07 Dec 2023 - TabCompletion finally implemented, credits to Merunko!
 - v 1.1.3 - 18 Aug 2023 - New function to reload questions
 - v 1.1.2 - 17 Aug 2023 - Update proper reading methods of resource files
 - v 1.1.1 - 12 Aug 2023 - Update on UUID mismatch issue

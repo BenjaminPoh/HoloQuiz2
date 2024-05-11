@@ -24,6 +24,9 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_HOLOQUIZ_STOPPED = "&bHoloQuiz &chas been stopped!";
     public static final String NOTIFY_RELOADING = "&bHoloQuiz &cis reloading...";
     public static final String NOTIFY_RELOADED = "&bHoloQuiz &a has reloaded!";
+    public static final String NOTIFY_STORAGE_CLEARED = "&aAll rewards collected!";
+    public static final String NOTIFY_STORAGE_NOT_CLEARED = "&cMore rewards await you!";
+    public static final String NOTIFY_STORAGE_EMPTY = "&4You have no rewards stored!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_NO_PLAYER_FOUND = "&cNo such player found!";
@@ -62,6 +65,7 @@ public class PlayerCmds implements CommandExecutor {
             "&a/HoloQuiz top <best/average/answers>: &bShows the best of the best!\n" +
             "&a/HoloQuiz stats [player]: &bShows your own / someone else's statistics\n" +
             "&a/HoloQuiz toggle: &bToggles messages from HoloQuiz\n" +
+            "&a/HoloQuiz collect: &bCollect rewards stored in Storage\n" +
             "&a/HoloQuiz normal: &bSwitches off &6/HoloQuiz Pekofy\n" +
             "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=";
 
@@ -118,12 +122,13 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if(easterEggs) {
+        if (easterEggs) {
             return runEasterEggCommands(player, args);
         }
         return false;
     }
 
+    //Available commands: info, next, stop, start, ReloadQns, repairDB
     private boolean runAdminCommand(Player player, String[] args) {
         if (!player.hasPermission("HoloQuiz.admin")) {
             return false;
@@ -157,7 +162,7 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         if (args[0].equalsIgnoreCase("start")) {
-            if(gameManager.getGameStatus()) {
+            if (gameManager.getGameStatus()) {
                 formatInformationForPlayer(ERROR_HOLOQUIZ_IS_ALREADY_RUNNING, player);
                 return true;
             }
@@ -167,12 +172,12 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if(args[0].equalsIgnoreCase("reloadQns")) {
+        if (args[0].equalsIgnoreCase("reloadQns")) {
             updateQuestionBank(player);
             return true;
         }
 
-        if(args[0].equalsIgnoreCase("repairDB")) {
+        if (args[0].equalsIgnoreCase("repairDB")) {
             formatInformationForPlayer(NOTIFY_RELOADING, player);
             int size = databaseManager.reloadDatabase();
             formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + " players!", player);
@@ -183,6 +188,7 @@ public class PlayerCmds implements CommandExecutor {
         return false;
     }
 
+    // Available commands: help, info, stats, toggle, collect, top
     private boolean runUserCommand(Player player, String[] args) {
         if (args[0].equalsIgnoreCase("help")) {
             formatInformationForPlayer(HELP_TABLE, player);
@@ -204,8 +210,24 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if(args[0].equalsIgnoreCase("toggle")) {
+        if (args[0].equalsIgnoreCase("toggle")) {
             toggleHoloQuizNotification(player);
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("collect")) {
+            String message;
+            int moreToCollect = databaseManager.getRewardsFromStorage(player);
+            if (moreToCollect == 1) {
+                message = NOTIFY_STORAGE_NOT_CLEARED;
+            } else if (moreToCollect == 0) {
+                message = NOTIFY_STORAGE_CLEARED;
+            } else {
+                message = NOTIFY_STORAGE_EMPTY;
+
+            }
+            message = userInterface.formatColours(message);
+            userInterface.attachSuffixAndSend(player, message);
             return true;
         }
 
@@ -218,7 +240,7 @@ public class PlayerCmds implements CommandExecutor {
                 return false;
             case "best":
                 ArrayList<PlayerData> topPlayersList = databaseManager.loadLeaderboard(size, minReq, "best", true);
-                String [] topPlayers = displayTopPlayers(topPlayersList,
+                String[] topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_FASTEST_ANSWERS, MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
@@ -236,10 +258,11 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
         }
-
         return false;
     }
 
+    // Available suffixes: pekofy, nanora, shuba, de gozaru, normal
+    // Available Easter Eggs: GlassesAreReallyVersatile, pekopasta
     private boolean runEasterEggCommands(Player player, String[] args) {
         if (args[0].equalsIgnoreCase("pekofy")) {
             player.sendMessage("Peko Peko Peko!!!");
@@ -256,6 +279,13 @@ public class PlayerCmds implements CommandExecutor {
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " shuba");
             return true;
         }
+        /*
+        if (args[0].equalsIgnoreCase("de gozaru")) {
+            player.sendMessage("De Gozaru!");
+            userPersonalisation.setSuffix(player.getUniqueId().toString(), " de gozaru");
+            return true;
+        }
+         */
         if (args[0].equalsIgnoreCase("normal")) {
             player.sendMessage("HoloQuiz is now normal!");
             userPersonalisation.setSuffix(player.getUniqueId().toString(), "");
@@ -279,7 +309,7 @@ public class PlayerCmds implements CommandExecutor {
         String holoQuizNotificationFormatted;
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
 
-        if(playerSettings == null) {
+        if (playerSettings == null) {
             userPersonalisation.setNotificationSetting(playerUUID, false);
             holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_DISABLED, "");
             formatInformationForPlayer(holoQuizNotificationFormatted, player);
@@ -289,7 +319,7 @@ public class PlayerCmds implements CommandExecutor {
         String playerSuffix = playerSettings.getSuffix();
         userPersonalisation.setNotificationSetting(playerUUID, newNotificationSetting);
 
-        if(newNotificationSetting) {
+        if (newNotificationSetting) {
             holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_ENABLED, playerSuffix);
         } else {
             holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_DISABLED, playerSuffix);
@@ -339,8 +369,8 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         int size = information.size();
-        String [] finalInfoArray = new String[size];
-        for(int i = 0; i < size; i++) {
+        String[] finalInfoArray = new String[size];
+        for (int i = 0; i < size; i++) {
             finalInfoArray[i] = information.get(i);
         }
         return finalInfoArray;
@@ -348,7 +378,7 @@ public class PlayerCmds implements CommandExecutor {
 
     private void updateQuestionBank(Player player) {
         formatInformationForPlayer(NOTIFY_RELOADING, player);
-        if(externalFiles.reloadQuestions()) {
+        if (externalFiles.reloadQuestions()) {
             gameManager.stopGame();
             gameManager.updateQuestionList(externalFiles.getAllQuestions());
             gameManager.startGame();
@@ -376,18 +406,18 @@ public class PlayerCmds implements CommandExecutor {
 
     private String[] displayTopPlayers(ArrayList<PlayerData> topPlayers, String headerFormat, String bodyFormat) {
         int size = externalFiles.getConfigFile().getLeaderboardSize();
-        if(size > topPlayers.size()) {
+        if (size > topPlayers.size()) {
             size = topPlayers.size();
         }
-        String [] info = new String[size + 1];
+        String[] info = new String[size + 1];
         info[0] = String.format(headerFormat, size);
-        for(int i = 0; i < size; i ++) {
+        for (int i = 0; i < size; i++) {
             PlayerData currentPlayerData = topPlayers.get(i);
             String playerName = currentPlayerData.getPlayerName();
             String bestTime = currentPlayerData.getBestTimeInSeconds3DP();
             String averageTime = currentPlayerData.getAverageTimeInSeconds3DP();
             int totalAnswers = currentPlayerData.getQuestionsAnswered();
-            info[i+1] = String.format(bodyFormat,i+1, playerName,totalAnswers,bestTime,averageTime);
+            info[i + 1] = String.format(bodyFormat, i + 1, playerName, totalAnswers, bestTime, averageTime);
         }
         return info;
     }

@@ -2,15 +2,18 @@ package benloti.holoquiz.structs;
 
 public class PlayerData {
     private final String playerName;
+    private final int holoQuizID;
+
     private final double averageTime;
     private final int bestTime;
     private final int questionsAnswered;
 
-    public PlayerData(String name, int bestTime, int answers, int averageTime) {
+    public PlayerData(String name, int bestTime, int answers, int averageTime, int holoQuizID) {
         this.playerName = name;
         this.bestTime = bestTime;
         this.questionsAnswered = answers;
         this.averageTime = averageTime;
+        this.holoQuizID = holoQuizID;
     }
 
     public String getPlayerName() {
@@ -37,5 +40,9 @@ public class PlayerData {
 
     public int getQuestionsAnswered() {
         return questionsAnswered;
+    }
+
+    public int getHoloQuizID() {
+        return holoQuizID;
     }
 }

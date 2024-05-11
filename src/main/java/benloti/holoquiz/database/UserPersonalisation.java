@@ -29,7 +29,8 @@ public class UserPersonalisation {
         this.updateList = new HashMap<>();
         this.addList = new HashMap<>();
     }
-    public void createTable(Connection connection) {
+
+    private void createTable(Connection connection) {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_USER_PERSONALISATION_TABLE);

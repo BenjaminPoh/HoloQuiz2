@@ -18,7 +18,6 @@ public class QuestionHandler extends BukkitRunnable {
 
     public QuestionHandler(JavaPlugin plugin, UserInterface userInterface, GameManager gameManager) {
         this.gameManager = gameManager;
-        this.question = gameManager.getRandomQuestion();
         this.plugin = plugin;
         this.userInterface = userInterface;
     }

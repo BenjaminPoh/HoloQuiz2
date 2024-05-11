@@ -95,31 +95,298 @@ SecretRewards:
           - "&eMore than meets the eye."
           - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
 
-TimedRewards:
+ContestRewards:
   DailyMost:
-    1:
+    Top1:
+      Reps: 1
       Money: 20000
       Commands:
         - "bta add [player] 10"
+      Message:
+        - "&bYou had the most answers of HoloQuiz for &a[date]&b! Have a cookie!"
       Items:
         1:
-          Material: nether_star
+          Material: cookie
           Qty: 1
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bBest of &a[date]"
+            - "&bTop of &a[date]"
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
   DailyFastest:
-    1:
+    Top1:
+      Reps: 1
       Money: 20000
       Commands:
         - "bta add [player] 10"
+      Message:
+        - "&bYou had the fastest answer of HoloQuiz for &a[date]&b! Have a cookie!"
       Items:
         1:
-          Material: nether_star
+          Material: cookie
           Qty: 1
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
             - "&bFastest of &a[date]"
-
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
+  DailyAverage:
+    ActuallyAnyNameCanGoHere:
+      Reps: 1
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Message:
+        - "&bYou were the best of HoloQuiz for &a[date]&b! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bBest of &a[date]"
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
+  WeeklyMost:
+    Top1:
+      Reps: 1
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Message:
+        - "&bYou had the most answers of HoloQuiz for &a[week]&b! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bTop of &a[week]"
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
+  WeeklyFastest:
+    Top1:
+      Reps: 1
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Message:
+        - "&bYou had the fastest answer of HoloQuiz for &a[week]&b! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bFastest of &a[week]"
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
+  WeeklyAverage:
+    ActuallyAnyNameCanGoHere:
+      Reps: 1
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Message:
+        - "&bYou were the best of HoloQuiz for &a[week]&b! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bBest of &a[week]"
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
+  MonthlyMost:
+    Top1:
+      Reps: 1
+      Money: 100000
+      Commands:
+        - "bta add [player] 50"
+      Message:
+        - "&bYou had the most answers of HoloQuiz for [month]! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bTop of &a[month]"
+    Top2:
+      Reps: 1
+      Money: 75000
+      Commands:
+        - "bta add [player] 40"
+    Top3:
+      Reps: 1
+      Money: 50000
+      Commands:
+        - "bta add [player] 30"
+    Top4-5:
+      Reps: 2
+      Money: 25000
+      Commands:
+        - "bta add [player] 20"
+    Top6-10:
+      Reps: 5
+      Money: 10000
+      Commands:
+        - "bta add [player] 10"
+  MonthlyFastest:
+    Top1:
+      Reps: 1
+      Money: 100000
+      Commands:
+        - "bta add [player] 50"
+      Message:
+        - "&bYou had the fastest answer of HoloQuiz for [month]! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bFastest of &a[month]"
+    Top2:
+      Reps: 1
+      Money: 75000
+      Commands:
+        - "bta add [player] 40"
+    Top3:
+      Reps: 1
+      Money: 50000
+      Commands:
+        - "bta add [player] 30"
+    Top4-5:
+      Reps: 2
+      Money: 25000
+      Commands:
+        - "bta add [player] 20"
+    Top6-10:
+      Reps: 5
+      Money: 10000
+      Commands:
+        - "bta add [player] 10"
+  MonthlyAverage:
+    Top1:
+      Reps: 1
+      Money: 100000
+      Commands:
+        - "bta add [player] 50"
+      Message:
+        - "&bYou were the best of HoloQuiz for [month]! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bBest of &a[month]"
+    Top2:
+      Reps: 1
+      Money: 75000
+      Commands:
+        - "bta add [player] 40"
+    Top3:
+      Reps: 1
+      Money: 50000
+      Commands:
+        - "bta add [player] 30"
+    Top4-5:
+      Reps: 2
+      Money: 25000
+      Commands:
+        - "bta add [player] 20"
+    Top6-10:
+      Reps: 5
+      Money: 10000
+      Commands:
+        - "bta add [player] 10"

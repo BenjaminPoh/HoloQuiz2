@@ -5,21 +5,19 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RewardTier {
-    private final int maxTimeInMilliseconds;
+public class ContestRewardTier  {
     private final double moneyReward;
     private final List<String> commandsExecuted;
     private final ArrayList<ItemStack> itemRewards;
+    private final String message;
+    private final int reps;
 
-    public RewardTier(int time, double money, List<String> commands, ArrayList<ItemStack> items) {
-        this.maxTimeInMilliseconds = time;
+    public ContestRewardTier(double money, List<String> commands, ArrayList<ItemStack> items, String message, int reps) {
         this.moneyReward = money;
         this.commandsExecuted = commands;
         this.itemRewards = items;
-    }
-
-    public int getMaxTimeInMilliseconds() {
-        return maxTimeInMilliseconds;
+        this.message = message;
+        this.reps = reps;
     }
 
     public double getMoneyReward() {
@@ -34,7 +32,11 @@ public class RewardTier {
         return itemRewards;
     }
 
-    public boolean checkIfRewardPresent() {
-        return (commandsExecuted.isEmpty() && itemRewards.isEmpty() && moneyReward == 0);
+    public String getMessage() {
+        return message;
+    }
+
+    public int getReps() {
+        return reps;
     }
 }

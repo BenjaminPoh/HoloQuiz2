@@ -26,7 +26,7 @@ public class HoloQuizStats {
         this.databaseManager = databaseManager;
     }
 
-    public void createTable(Connection connection) {
+    private void createTable(Connection connection) {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_STATS_TABLE);
@@ -89,7 +89,7 @@ public class HoloQuizStats {
             statsSQLQuery.setInt(5, userID);
             statsSQLQuery.executeUpdate();
 
-            return new PlayerData(playerName,bestTime,totalAnswers, averageTime);
+            return new PlayerData(playerName,bestTime,totalAnswers, averageTime, userID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -114,7 +114,7 @@ public class HoloQuizStats {
             int totalAnswers = resultSet.getInt("answers");
             int bestTime = resultSet.getInt("best");
             int averageTime = resultSet.getInt("average");
-            return new PlayerData(playerName,bestTime,totalAnswers, averageTime);
+            return new PlayerData(playerName,bestTime,totalAnswers, averageTime, holoQuizID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -132,7 +132,7 @@ public class HoloQuizStats {
                 int bestTime = resultSet.getInt("best");
                 int holoQuizID = resultSet.getInt("user_id");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerData leaderboardEntry = new PlayerData(playerName, bestTime, totalAnswers, averageTime);
+                PlayerData leaderboardEntry = new PlayerData(playerName, bestTime, totalAnswers, averageTime, holoQuizID);
                 list.add(leaderboardEntry);
             }
         } catch (SQLException e) {
@@ -153,7 +153,7 @@ public class HoloQuizStats {
                 int bestTime = resultSet.getInt("best");
                 int holoQuizID = resultSet.getInt("user_id");
                 String playerName = allPlayerNames[holoQuizID - 1];
-                PlayerData playerData = new PlayerData(playerName,bestTime,totalAnswers, averageTime);
+                PlayerData playerData = new PlayerData(playerName,bestTime,totalAnswers, averageTime, holoQuizID);
                 allPlayerData.add(playerData);
             }
             return allPlayerData;

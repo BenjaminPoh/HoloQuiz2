@@ -1,6 +1,9 @@
 package benloti.holoquiz.database;
 
+import benloti.holoquiz.games.RewardsHandler;
+import benloti.holoquiz.structs.ContestInfo;
 import benloti.holoquiz.structs.PlayerData;
+import benloti.holoquiz.structs.RewardTier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,23 +24,30 @@ public class DatabaseManager {
             "SELECT * FROM answers_logs";
     private static final String SQL_STATEMENT_UPDATE_STATS =
             "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ?, average = ? WHERE user_id = ?";
+    public static final String ERROR_HOLOQUIZ_ID_NOT_FOUND = "[HoloQuiz] Error: Player doesn't exist. You should NOT see this.";
 
     private Connection connection;
+    private RewardsHandler rewardsHandler;
     private final JavaPlugin plugin;
     private final File dataFile;
     private final HoloQuizStats holoQuizStats;
     private final AnswersLogs answersLogs;
     private final UserInfo userInfo;
     private final UserPersonalisation userPersonalisation;
+    private final Contests contests;
+    private final Storage storage;
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.dataFile = checkFile();
         this.connection = getConnection();
+
         this.holoQuizStats = new HoloQuizStats(connection, this);
-        this.answersLogs = new AnswersLogs(connection);
+        this.answersLogs = new AnswersLogs(connection, this);
         this.userInfo = new UserInfo(connection);
         this.userPersonalisation = new UserPersonalisation(connection);
+        this.contests = new Contests(connection);
+        this.storage = new Storage(connection);
     }
 
     public File checkFile() {
@@ -88,7 +98,7 @@ public class DatabaseManager {
         connection = getConnection();
         int playerHoloQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName);
         if (playerHoloQuizID == 0) {
-            Bukkit.getLogger().info("[HoloQuiz] Error: Player doesn't exist. You should NOT see this.");
+            Bukkit.getLogger().info(ERROR_HOLOQUIZ_ID_NOT_FOUND);
             return null;
         }
         answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken, gameMode);
@@ -184,5 +194,108 @@ public class DatabaseManager {
 
     public String getPlayerNameByHoloQuizID (Connection connection, int holoQuizID) {
         return userInfo.getPlayerNameByHoloQuizID(connection, holoQuizID);
+    }
+
+    public ArrayList<ContestInfo> updateOngoingContestInformation(ArrayList<ContestInfo> enabledContests) {
+        ArrayList<ContestInfo> updatedOngoingContests = new ArrayList<>();
+        ArrayList<ContestInfo> ongoingContests = contests.getOngoingTournaments(connection);
+        //We do it clever.
+        HashMap<String, ContestInfo> enabledContestFlag = new HashMap<>();
+        HashMap<String, ContestInfo> ongoingContestFlag = new HashMap<>();
+        for (ContestInfo enabledContest : enabledContests) {
+            enabledContestFlag.put(enabledContest.getType(), enabledContest);
+        }
+        for (ContestInfo ongoingContest : ongoingContests) {
+           ongoingContestFlag.put(ongoingContest.getType(), ongoingContest);
+        }
+        for(String code : enabledContestFlag.keySet() ) {
+            if(enabledContestFlag.containsKey(code) && !ongoingContestFlag.containsKey(code)) {
+                //Add new contest to db and the return list
+                ContestInfo newContestInfo = enabledContestFlag.get(code);
+                contests.createOngoingContest(connection, newContestInfo);
+                updatedOngoingContests.add(newContestInfo);
+            } else if (!enabledContestFlag.containsKey(code) && ongoingContestFlag.containsKey(code)) {
+                //Delete disabled contest.
+                contests.deleteOngoingContest(connection, code);
+            } else if (enabledContestFlag.containsKey(code) && ongoingContestFlag.containsKey(code)) {
+                //Add ongoing contest to the return list
+                ContestInfo configContestInfo = enabledContestFlag.get(code);
+                ContestInfo storedContestInfo = ongoingContestFlag.get(code);
+                configContestInfo.updateContestTimes(storedContestInfo.getStartTime(), storedContestInfo.getEndTime());
+                updatedOngoingContests.add(configContestInfo);
+            }
+        }
+        return updatedOngoingContests;
+    }
+
+    public Map<String, ArrayList<PlayerData>> executeContestEndedTasks(ContestInfo endedContest, long nextContestTime, boolean isMultipleWinsAllowed) {
+        connection = getConnection();
+        long startTime = endedContest.getStartTime();
+        long endTime = endedContest.getEndTime();
+        int minAns = endedContest.getMinAnswersNeeded();
+        //Fetch All the Winners
+        ArrayList<PlayerData> mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
+                startTime, endTime, endedContest.getTopAnswerPlacements());
+        ArrayList<PlayerData> fastestAnswerWinners;
+        if (isMultipleWinsAllowed) {
+            fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getFastestAnswerPlacements());
+        } else {
+            fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestampNoRepeat(connection,
+                    startTime, endTime, endedContest.getFastestAnswerPlacements());
+        }
+
+        ArrayList<PlayerData> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
+                startTime, endTime, endedContest.getBestAverageAnswerPlacements(), minAns);
+
+        //Update Contests
+        contests.updateContestInfo(connection, endedContest, nextContestTime);
+
+        //Log Winners
+        contests.addContestWinners(connection, mostAnswerWinners, endedContest, "M");
+        contests.addContestWinners(connection, fastestAnswerWinners, endedContest, "F");
+        contests.addContestWinners(connection, bestAverageWinners, endedContest, "B");
+
+        //Return ArrayLists for issuing rewards
+        Map<String, ArrayList<PlayerData>> allContestWinners = new HashMap<>();
+        allContestWinners.put("M", mostAnswerWinners);
+        allContestWinners.put("F", fastestAnswerWinners);
+        allContestWinners.put("B", bestAverageWinners);
+        return allContestWinners;
+    }
+
+    public void storeRewardToStorage(String playerName, String type, String contents, String metaDetails, int count) {
+        connection = getConnection();
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
+        if (playerHoloQuizID == 0) {
+            Bukkit.getLogger().info(ERROR_HOLOQUIZ_ID_NOT_FOUND);
+            return;
+        }
+        storage.addToStorage(connection, playerHoloQuizID, type, contents, metaDetails, count);
+    }
+
+    public void setRewardsHandler(RewardsHandler rewardsHandler) {
+        this.rewardsHandler = rewardsHandler;
+    }
+
+
+
+    /**
+     * Fetches stored rewards, and issues as much as inventory space allows.
+     *
+     * @param player the player
+     * @return 1 if there are more rewards in the storage, 0 if its cleared, -1 if there wasn't any
+     */
+    public int getRewardsFromStorage(Player player) {
+        connection = getConnection();
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, player.getName());
+        RewardTier storedRewards = storage.retrieveFromStorage(connection, playerHoloQuizID);
+        if(storedRewards.checkIfRewardPresent()) {
+            return -1;
+        }
+        if(rewardsHandler.giveRewardsByTier(player, storedRewards)) {
+            return 1;
+        }
+        return 0;
     }
 }

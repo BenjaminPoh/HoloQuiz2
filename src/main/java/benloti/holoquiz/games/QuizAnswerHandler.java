@@ -25,6 +25,9 @@ public class QuizAnswerHandler implements Listener {
     public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
     public static final String CORRECT_ANSWER_LOG = "[HoloQuiz] %s answered correctly in %s time.";
 
+    private static final String INVENTORY_FULL_MESSAGE =
+            "&bYour Inventory was full! Rewards has been sent to Storage. Do &a/holoquiz collect &bto get them!";
+
     private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
@@ -80,20 +83,25 @@ public class QuizAnswerHandler implements Listener {
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getGameModeIdentifier();
         //The actual tasks
+        boolean fullInvFlagOne = false;
         if(secretAnswerTriggered) {
             sendSecretAnnouncement(player, timeTaken, answeredQuestion);
-            rewardsHandler.giveSecretRewards(player, timeTaken);
+            fullInvFlagOne = rewardsHandler.giveSecretRewards(player, timeTaken);
         } else {
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
         }
         //displayActionBar(player); //Not what I want, but the bug is now a feature
-        rewardsHandler.giveNormalRewards(player, timeTaken);
+        boolean fullInvFlagTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
         displayTitle(player);
         new BukkitRunnable() {
             public void run() {
                 makeFireworks(player);
             }
         }.runTask(plugin);
+        if(fullInvFlagTwo || fullInvFlagOne) {
+            String fullInvMessage = userInterface.formatColours(INVENTORY_FULL_MESSAGE);
+            userInterface.attachSuffixAndSend(player, fullInvMessage);
+        }
 
         //Update database
         database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);

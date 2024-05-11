@@ -10,12 +10,14 @@ import java.util.List;
 
 public class ConfigFile {
     private final int interval;
+    private final int intervalCheck;
     private final int leaderboardSize;
     private final int leaderboardMinReq;
     private final boolean easterEggsEnabled;
     private final String gameMode;
     private final boolean cheatsDetectorEnabled;
     private final int minTimeRequired;
+    private final int QuestionCooldownLength;
     private final boolean countAsCorrect;
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
@@ -27,19 +29,27 @@ public class ConfigFile {
     private final boolean mathChaosMode;
     private final String mathQuestionColour;
     private final String mathDifficulty;
-    private final boolean dailyLeaderboard;
-    private final boolean weeklyLeaderboard;
-    private final boolean monthlyLeaderboard;
+    private final boolean dailyContest;
+    private final boolean weeklyContest;
+    private final boolean monthlyContest;
+    private final int dailyMin;
+    private final int weeklyMin;
+    private final int monthlyMin;
+    private final String weeklyResetDay;
+    private final String timezoneOffset;
+    private final boolean isMultipleContestPositionAllowed;
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
         this.interval = configs.getInt("Interval");
+        this.intervalCheck = configs.getInt("IntervalCheck");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
         this.easterEggsEnabled = configs.getBoolean("EasterEggs");
         this.gameMode = configs.getString("GameMode");
         this.enableOnStart = configs.getBoolean("EnableOnStart");
+        this.QuestionCooldownLength = configs.getInt("QuestionCooldown");
         ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
         this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
@@ -53,10 +63,16 @@ public class ConfigFile {
         this.mathChaosMode = mathSection.getBoolean("ChaosMode");
         this.mathQuestionColour = mathSection.getString("QuestionColour");
         this.mathDifficulty = mathSection.getString("MathDifficulty");
-        ConfigurationSection timedLeaderboards = configs.getConfigurationSection("TimedLeaderboards");
-        this.dailyLeaderboard = timedLeaderboards.getBoolean("Daily");
-        this.weeklyLeaderboard = timedLeaderboards.getBoolean("Weekly");
-        this.monthlyLeaderboard = timedLeaderboards.getBoolean("Monthly");
+        ConfigurationSection contestSection = configs.getConfigurationSection("Contests");
+        this.dailyContest = contestSection.getBoolean("Daily");
+        this.weeklyContest = contestSection.getBoolean("Weekly");
+        this.monthlyContest = contestSection.getBoolean("Monthly");
+        this.weeklyResetDay = contestSection.getString("WeeklyResetDay");
+        this.dailyMin = contestSection.getInt("DailyMin");
+        this.weeklyMin = contestSection.getInt("WeeklyMin");
+        this.monthlyMin = contestSection.getInt("MonthlyMin");
+        this.timezoneOffset = contestSection.getString("TimeZone", "GMT+0");
+        this.isMultipleContestPositionAllowed = contestSection.getBoolean("RepeatWinning");
         this.pluginPrefix = configs.getString("PluginPrefix");
     }
 
@@ -112,7 +128,6 @@ public class ConfigFile {
         return mathDifficulty;
     }
 
-
     public String getMathDistribution() {
         return mathDistribution;
     }
@@ -133,15 +148,47 @@ public class ConfigFile {
         return mathQuestionColour;
     }
 
-    public boolean isDailyLeaderboard() {
-        return dailyLeaderboard;
+    public boolean isDailyContest() {
+        return dailyContest;
     }
 
-    public boolean isWeeklyLeaderboard() {
-        return weeklyLeaderboard;
+    public boolean isWeeklyContest() {
+        return weeklyContest;
     }
 
-    public boolean isMonthlyLeaderboard() {
-        return monthlyLeaderboard;
+    public boolean isMonthlyContest() {
+        return monthlyContest;
+    }
+
+    public String getWeeklyResetDay() {
+        return weeklyResetDay;
+    }
+
+    public int getDailyMin() {
+        return dailyMin;
+    }
+
+    public int getWeeklyMin() {
+        return weeklyMin;
+    }
+
+    public int getMonthlyMin() {
+        return monthlyMin;
+    }
+
+    public String getTimezoneOffset() {
+        return timezoneOffset;
+    }
+
+    public boolean isMultipleContestPositionAllowed() {
+        return isMultipleContestPositionAllowed;
+    }
+
+    public int getIntervalCheck() {
+        return intervalCheck;
+    }
+
+    public int getQuestionCooldownLength() {
+        return QuestionCooldownLength;
     }
 }
