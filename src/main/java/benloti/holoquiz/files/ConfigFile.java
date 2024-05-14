@@ -18,6 +18,7 @@ public class ConfigFile {
     private final boolean cheatsDetectorEnabled;
     private final int minTimeRequired;
     private final int QuestionCooldownLength;
+    private final int revealAnswerDelay;
     private final boolean countAsCorrect;
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
@@ -50,6 +51,7 @@ public class ConfigFile {
         this.gameMode = configs.getString("GameMode");
         this.enableOnStart = configs.getBoolean("EnableOnStart");
         this.QuestionCooldownLength = configs.getInt("QuestionCooldown");
+        this.revealAnswerDelay = configs.getInt("RevealAnswer");
         ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
         this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
@@ -190,5 +192,9 @@ public class ConfigFile {
 
     public int getQuestionCooldownLength() {
         return QuestionCooldownLength;
+    }
+
+    public int getRevealAnswerDelay() {
+        return revealAnswerDelay;
     }
 }

@@ -146,7 +146,7 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
 
-            gameManager.nextQuestion();
+            gameManager.nextQuestion(0);
             return true;
         }
 
@@ -167,7 +167,7 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
 
-            gameManager.startGame();
+            gameManager.startGame(0);
             formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, player);
             return true;
         }
@@ -261,7 +261,7 @@ public class PlayerCmds implements CommandExecutor {
         return false;
     }
 
-    // Available suffixes: pekofy, nanora, shuba, de gozaru, normal
+    // Available suffixes: pekofy, nanora, shuba, degozaru, normal
     // Available Easter Eggs: GlassesAreReallyVersatile, pekopasta
     private boolean runEasterEggCommands(Player player, String[] args) {
         if (args[0].equalsIgnoreCase("pekofy")) {
@@ -279,13 +279,11 @@ public class PlayerCmds implements CommandExecutor {
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " shuba");
             return true;
         }
-        /*
         if (args[0].equalsIgnoreCase("de gozaru")) {
             player.sendMessage("De Gozaru!");
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " de gozaru");
             return true;
         }
-         */
         if (args[0].equalsIgnoreCase("normal")) {
             player.sendMessage("HoloQuiz is now normal!");
             userPersonalisation.setSuffix(player.getUniqueId().toString(), "");
@@ -381,7 +379,7 @@ public class PlayerCmds implements CommandExecutor {
         if (externalFiles.reloadQuestions()) {
             gameManager.stopGame();
             gameManager.updateQuestionList(externalFiles.getAllQuestions());
-            gameManager.startGame();
+            gameManager.startGame(0);
             formatInformationForPlayer(NOTIFY_RELOADED, player);
         } else {
             formatInformationForPlayer(ERROR_QUESTION_FILE_BROKEN, player);

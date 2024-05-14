@@ -36,7 +36,7 @@ public final class HoloQuiz extends JavaPlugin {
         getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, externalFiles, userInterface));
         getCommand("HoloQuiz").setTabCompleter(new CmdAutoComplete(externalFiles, this));
         if(configFile.isEnableOnStart()) {
-            gameManager.startGame();
+            gameManager.startGame(0);
         }
     }
 

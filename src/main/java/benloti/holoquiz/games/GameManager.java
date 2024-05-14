@@ -20,6 +20,7 @@ public class GameManager {
     private final long interval;
     private final long intervalCheck;
     private final int questionCooldown;
+    private final int revealAnswerDelay;
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
     private final RewardsHandler rewardsHandler;
@@ -28,8 +29,8 @@ public class GameManager {
     private boolean gameRunning;
     private String gameMode;
     private QuestionHandler questionHandler;
+    private QuestionEndTask questionEndTask;
     private PeriodicChecker periodicChecker;
-
     private ArrayList<Question> triviaQuestionList;
 
     public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
@@ -37,6 +38,7 @@ public class GameManager {
         this.plugin = plugin;
         this.interval = externalFiles.getConfigFile().getInterval();
         this.intervalCheck = externalFiles.getConfigFile().getIntervalCheck();
+        this.revealAnswerDelay = externalFiles.getConfigFile().getRevealAnswerDelay();
         this.gameMode = configFile.getGameMode();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
@@ -53,18 +55,18 @@ public class GameManager {
         this.questionCooldownMap = new HashSet<>();
     }
 
-    public void startGame() {
+    public void startGame(int tickDelay) {
         if (gameRunning) {
             return;
         }
         this.questionHandler = new QuestionHandler(plugin, userInterface, this);
+        this.questionEndTask = new QuestionEndTask(plugin, userInterface, this);
         this.gameRunning = true;
-        //Note to future self: runTaskTimer is the one that loops the task on interval.
-        //If you are thinking to move the randomisation function here, it won't work.
-        questionHandler.runTaskTimer(plugin, 0, interval * 20);
+        questionHandler.runTaskLater(plugin, (long)tickDelay * 20);
+        questionEndTask.runTaskLater(plugin, (tickDelay + interval) * 20);
         if(intervalCheck > 0) {
             this.periodicChecker = new PeriodicChecker(this);
-            periodicChecker.runTaskTimer(plugin, 0, intervalCheck * 20);
+            periodicChecker.runTaskTimer(plugin, 0, (intervalCheck + tickDelay) * 20);
         }
     }
 
@@ -84,6 +86,7 @@ public class GameManager {
             return;
         }
         questionHandler.cancel();
+        questionEndTask.cancel();
         this.questionHandler = null;
         if(intervalCheck > 0) {
             periodicChecker.cancel();
@@ -91,9 +94,9 @@ public class GameManager {
         this.gameRunning = false;
     }
 
-    public void nextQuestion() {
+    public void nextQuestion(int tickDelay) {
         stopGame();
-        startGame();
+        startGame(tickDelay);
     }
 
     public Question getCurrentQuestion() {
@@ -143,7 +146,6 @@ public class GameManager {
         int size = triviaQuestionList.size();
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
-        Bukkit.getLogger().info("Index rolled: " + randomIndex + " | Queue: " + questionCooldownList.toString());
         randomIndex = obtainQuestionNotOnCooldown(randomIndex, size);
         return triviaQuestionList.get(randomIndex);
     }
@@ -171,5 +173,9 @@ public class GameManager {
         String question = mathQuestionGenerator.getMathQuestion();
         double answer = mathQuestionGenerator.solver(question);
         return mathQuestionGenerator.parser(mathQuestionGenerator.getMathQuestionColour(), question, answer);
+    }
+
+    public int getRevealAnswerDelay() {
+        return revealAnswerDelay;
     }
 }
