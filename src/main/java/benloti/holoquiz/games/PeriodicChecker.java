@@ -18,7 +18,7 @@ public class PeriodicChecker extends BukkitRunnable {
         int timePassed = (int)(timeNow - startTime);
         if(timePassed > gameManager.getInterval() * 1000) {
             Bukkit.getLogger().info("[HoloQuiz] IntervalCheck triggered! Is server TPS not doing well?");
-            gameManager.nextQuestion(0);
+            gameManager.nextQuestion();
         }
     }
 }
