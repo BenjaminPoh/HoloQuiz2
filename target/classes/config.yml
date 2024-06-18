@@ -7,7 +7,6 @@ Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math
 IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of ticks. Enable if Server TPS Sucks.
 QuestionCooldown: 3 #The same question will not appear for this number of questions sent. List is reset once server restarts.
-RevealAnswer: -1 #Reveals answer, sends next question after this amount of seconds. Set to -1 to disable.
 Cheats:
   CheatingChecker: true
   CheatingTimer: 0.5

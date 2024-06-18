@@ -261,7 +261,7 @@ public class PlayerCmds implements CommandExecutor {
         return false;
     }
 
-    // Available suffixes: pekofy, nanora, shuba, de gozaru, normal
+    // Available suffixes: pekofy, nanora, shuba, degozaru, normal
     // Available Easter Eggs: GlassesAreReallyVersatile, pekopasta
     private boolean runEasterEggCommands(Player player, String[] args) {
         if (args[0].equalsIgnoreCase("pekofy")) {
@@ -279,13 +279,11 @@ public class PlayerCmds implements CommandExecutor {
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " shuba");
             return true;
         }
-        /*
-        if (args[0].equalsIgnoreCase("de gozaru")) {
+        if (args[0].equalsIgnoreCase("degozaru")) {
             player.sendMessage("De Gozaru!");
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " de gozaru");
             return true;
         }
-         */
         if (args[0].equalsIgnoreCase("normal")) {
             player.sendMessage("HoloQuiz is now normal!");
             userPersonalisation.setSuffix(player.getUniqueId().toString(), "");
