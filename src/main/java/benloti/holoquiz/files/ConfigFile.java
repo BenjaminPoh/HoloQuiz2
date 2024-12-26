@@ -11,6 +11,7 @@ import java.util.List;
 public class ConfigFile {
     private final int interval;
     private final int intervalCheck;
+    private final int revealAnswerDelay;
     private final int leaderboardSize;
     private final int leaderboardMinReq;
     private final boolean easterEggsEnabled;
@@ -44,6 +45,7 @@ public class ConfigFile {
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
         this.interval = configs.getInt("Interval");
         this.intervalCheck = configs.getInt("IntervalCheck");
+        this.revealAnswerDelay = configs.getInt("RevealAnswerDelay");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
         this.easterEggsEnabled = configs.getBoolean("EasterEggs");
@@ -190,5 +192,9 @@ public class ConfigFile {
 
     public int getQuestionCooldownLength() {
         return QuestionCooldownLength;
+    }
+
+    public int getRevealAnswerDelay() {
+        return revealAnswerDelay;
     }
 }

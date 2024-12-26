@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 2.5.0 - 26 Dec 2024 - Answers can now be revealed!
 - v 2.4.1 - 18 Jun 2024 - De Gozaru!
 - v 2.4.0 - 11 May 2024 - Added cooldown for Questions to reduce repetition
 - v 2.3.0 - 08 May 2024 - Added manual check for Low TPS

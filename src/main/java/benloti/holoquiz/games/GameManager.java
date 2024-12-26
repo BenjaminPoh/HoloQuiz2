@@ -7,6 +7,7 @@ import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -15,20 +16,30 @@ import java.util.LinkedList;
 import java.util.Random;
 
 public class GameManager {
+    private static final String MESSAGE_REVEAL_ANSWER = "&bNo one got the answer! The answer was &a%s&b.";
+
     private final JavaPlugin plugin;
     private final UserInterface userInterface;
     private final long interval;
     private final long intervalCheck;
     private final int questionCooldown;
+    private final long revealAnswerDelay;
+    private final boolean revealAnswerFlag;
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
     private final RewardsHandler rewardsHandler;
     private final MathQuestionGenerator mathQuestionGenerator;
-    
-    private boolean gameRunning;
+
     private String gameMode;
-    private QuestionHandler questionHandler;
+    private NextTaskScheduler nextTaskScheduler;
     private PeriodicChecker periodicChecker;
+
+    private boolean gameRunning;
+    private Question currentQuestion;
+
+    private long timeQuestionSent;
+    private boolean questionAnswered;
+    private long nextTaskTime;
 
     private ArrayList<Question> triviaQuestionList;
 
@@ -37,6 +48,7 @@ public class GameManager {
         this.plugin = plugin;
         this.interval = externalFiles.getConfigFile().getInterval();
         this.intervalCheck = externalFiles.getConfigFile().getIntervalCheck();
+        this.revealAnswerDelay = externalFiles.getConfigFile().getRevealAnswerDelay();
         this.gameMode = configFile.getGameMode();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
@@ -44,11 +56,14 @@ public class GameManager {
         this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep(),databaseManager,
                 externalFiles.getAllNormalRewards(), externalFiles.getAllSecretRewards());
 
+        this.revealAnswerFlag = (this.revealAnswerDelay == -1);
+
         if(configFile.getQuestionCooldownLength() >= triviaQuestionList.size()) {
             this.questionCooldown = 0;
         } else {
             this.questionCooldown = configFile.getQuestionCooldownLength();
         }
+
         this.questionCooldownList = new LinkedList<>();
         this.questionCooldownMap = new HashSet<>();
     }
@@ -57,25 +72,80 @@ public class GameManager {
         if (gameRunning) {
             return;
         }
-        this.questionHandler = new QuestionHandler(plugin, userInterface, this);
+        this.nextTaskScheduler = new NextTaskScheduler(this);
         this.gameRunning = true;
-        //Note to future self: runTaskTimer is the one that loops the task on interval.
-        //If you are thinking to move the randomisation function here, it won't work.
-        questionHandler.runTaskTimer(plugin, 0, interval * 20);
+        sendQuestion();
+        this.nextTaskScheduler.runTaskLater(plugin,  getInterval() * 20);
+        this.nextTaskTime = this.timeQuestionSent + getInterval()*1000;
+
         if(intervalCheck > 0) {
             this.periodicChecker = new PeriodicChecker(this);
             periodicChecker.runTaskTimer(plugin, 0, intervalCheck * 20);
         }
     }
 
+    public void triggerNextTask(boolean cancelScheduledTask) {
+        if(cancelScheduledTask) {
+            nextTaskScheduler.cancel();
+        }
+        this.nextTaskScheduler = new NextTaskScheduler(this);
+
+        //If chosen to not reveal answer, send next question immediately.
+        if(revealAnswerFlag) {
+            sendQuestion();
+            this.nextTaskScheduler.runTaskLater(plugin,  getInterval() * 20);
+            this.nextTaskTime = this.timeQuestionSent + getInterval()*1000;
+            return;
+        }
+
+        //If question is not answered, send the answer
+        if(!getQuestionStatus()) {
+            revealAnswer();
+            setQuestionStatus(true);
+            this.nextTaskScheduler.runTaskLater(plugin,  getRevealAnswerDelay() * 20);
+            this.nextTaskTime = System.currentTimeMillis() + getRevealAnswerDelay()*1000;
+            return;
+        }
+
+        //Schedule the time taken to send next question.
+        sendQuestion();
+        this.nextTaskScheduler.runTaskLater(plugin,  getInterval() * 20);
+        this.nextTaskTime = this.timeQuestionSent + getInterval()*1000;
+    }
+
+    private void sendQuestion() {
+        Question question = getRandomQuestion();
+        Bukkit.getLogger().info("[HoloQuiz] Question Sent: " + question.getQuestion());
+        String formattedQuestion = userInterface.attachLabel(question.getQuestion());
+        formattedQuestion = userInterface.formatColours(formattedQuestion);
+        setQuestionStatus(false);
+        long currentTime = System.currentTimeMillis();
+        setTimeQuestionSent(currentTime);
+        for(Player player : plugin.getServer().getOnlinePlayers()) {
+            userInterface.attachSuffixAndSend(player, formattedQuestion);
+        }
+    }
+
+    private void revealAnswer() {
+        String answer = getCurrentQuestion().getAnswers().get(0);
+        String announcement = String.format(MESSAGE_REVEAL_ANSWER, answer);
+        String formattedAnnouncement = userInterface.attachLabel(userInterface.formatColours(announcement));
+        for(Player player : plugin.getServer().getOnlinePlayers()) {
+            userInterface.attachSuffixAndSend(player, formattedAnnouncement);
+        }
+        Bukkit.getLogger().info("[HoloQuiz] No one got the answer!");
+    }
+
     public Question getRandomQuestion() {
         if(gameMode.equals("Math")) {
-            return getRandomMathQuestion();
+            this.currentQuestion = getRandomMathQuestion();
+            return this.currentQuestion;
         }
         if(gameMode.equals("Trivia")) {
-            return getRandomTriviaQuestion();
+            this.currentQuestion = getRandomTriviaQuestion();
+            return this.currentQuestion;
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error: There is no way you ever see this message.");
+        Bukkit.getLogger().info("[HoloQuiz] Error: Invalid mode.");
         return null;
     }
 
@@ -83,10 +153,11 @@ public class GameManager {
         if (!gameRunning) {
             return;
         }
-        questionHandler.cancel();
-        this.questionHandler = null;
+        nextTaskScheduler.cancel();
+        this.nextTaskScheduler = null;
         if(intervalCheck > 0) {
             periodicChecker.cancel();
+            this.periodicChecker = null;
         }
         this.gameRunning = false;
     }
@@ -96,37 +167,7 @@ public class GameManager {
         startGame();
     }
 
-    public Question getCurrentQuestion() {
-        return questionHandler.getQuestion();
-    }
-
-    public boolean getQuestionStatus() {
-        return questionHandler.isQuestionAnswered();
-    }
-
-    public void setQuestionStatus(boolean status) {
-        questionHandler.setQuestionAnswered(status);
-    }
-
-    public long getTimeQuestionSent() {
-        return questionHandler.getTimeQuestionSent();
-    }
-
-    public boolean getGameStatus() {
-        return this.gameRunning;
-    }
-
-    public long getInterval() {
-        return this.interval;
-    }
-
-    public void updateQuestionList(ArrayList<Question> questionList) {
-        this.triviaQuestionList = questionList;
-    }
-
-    public RewardsHandler getRewardsHandler() {
-        return this.rewardsHandler;
-    }
+    //Actual Helper Functions
 
     public String getGameModeIdentifier() {
         if(gameMode.equals("Math")) {
@@ -143,7 +184,7 @@ public class GameManager {
         int size = triviaQuestionList.size();
         Random rand = new Random();
         int randomIndex = rand.nextInt(size);
-        Bukkit.getLogger().info("Index rolled: " + randomIndex + " | Queue: " + questionCooldownList.toString());
+        //Bukkit.getLogger().info("Qn Rolled: " + randomIndex + " | Queue: " + questionCooldownList.toString());
         randomIndex = obtainQuestionNotOnCooldown(randomIndex, size);
         return triviaQuestionList.get(randomIndex);
     }
@@ -171,5 +212,53 @@ public class GameManager {
         String question = mathQuestionGenerator.getMathQuestion();
         double answer = mathQuestionGenerator.solver(question);
         return mathQuestionGenerator.parser(mathQuestionGenerator.getMathQuestionColour(), question, answer);
+    }
+
+    //Getters and Setters
+
+    public Question getCurrentQuestion() {
+        return this.currentQuestion;
+    }
+
+    public boolean getQuestionStatus() {
+        return this.questionAnswered;
+    }
+
+    public void setQuestionStatus(boolean status) {
+        this.questionAnswered = status;
+    }
+
+    public long getTimeQuestionSent() {
+        return this.timeQuestionSent;
+    }
+
+    public void setTimeQuestionSent(long time) {
+        this.timeQuestionSent = time;
+    }
+
+    public boolean getGameStatus() {
+        return this.gameRunning;
+    }
+
+    public long getInterval() {
+        return this.interval;
+    }
+
+    public void updateQuestionList(ArrayList<Question> questionList) {
+        this.triviaQuestionList = questionList;
+    }
+
+    public RewardsHandler getRewardsHandler() {
+        return this.rewardsHandler;
+    }
+
+
+
+    public long getRevealAnswerDelay() {
+        return this.revealAnswerDelay;
+    }
+
+    public long getNextTaskTime() {
+        return this.nextTaskTime;
     }
 }

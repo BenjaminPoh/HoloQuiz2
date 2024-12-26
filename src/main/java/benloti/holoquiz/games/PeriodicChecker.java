@@ -5,6 +5,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class PeriodicChecker extends BukkitRunnable {
 
+    private static final String LOG_MESSAGE = "[HoloQuiz] LOG: Question was delayed by %f secs. Is server TPS not doing well?";
+
     private final GameManager gameManager;
 
     public PeriodicChecker (GameManager gameManager) {
@@ -14,11 +16,13 @@ public class PeriodicChecker extends BukkitRunnable {
     @Override
     public void run() {
         long timeNow = System.currentTimeMillis();
-        long startTime = gameManager.getTimeQuestionSent();
-        int timePassed = (int)(timeNow - startTime);
-        if(timePassed > gameManager.getInterval() * 1000) {
-            Bukkit.getLogger().info("[HoloQuiz] IntervalCheck triggered! Is server TPS not doing well?");
-            gameManager.nextQuestion();
+        long timeLimit = gameManager.getNextTaskTime();
+        if(timeLimit < timeNow) {
+            double delay = (timeNow - timeLimit) / 1000.0;
+            gameManager.triggerNextTask(true);
+            if(delay > 0.1) {
+                Bukkit.getLogger().info(String.format(LOG_MESSAGE, delay));
+            }
         }
     }
 }
