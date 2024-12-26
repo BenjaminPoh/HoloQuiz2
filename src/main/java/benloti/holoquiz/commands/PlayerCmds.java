@@ -146,7 +146,7 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
 
-            gameManager.nextQuestion(0);
+            gameManager.nextQuestion();
             return true;
         }
 
@@ -167,7 +167,7 @@ public class PlayerCmds implements CommandExecutor {
                 return true;
             }
 
-            gameManager.startGame(0);
+            gameManager.startGame();
             formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, player);
             return true;
         }
@@ -279,7 +279,7 @@ public class PlayerCmds implements CommandExecutor {
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " shuba");
             return true;
         }
-        if (args[0].equalsIgnoreCase("de gozaru")) {
+        if (args[0].equalsIgnoreCase("degozaru")) {
             player.sendMessage("De Gozaru!");
             userPersonalisation.setSuffix(player.getUniqueId().toString(), " de gozaru");
             return true;
@@ -379,7 +379,7 @@ public class PlayerCmds implements CommandExecutor {
         if (externalFiles.reloadQuestions()) {
             gameManager.stopGame();
             gameManager.updateQuestionList(externalFiles.getAllQuestions());
-            gameManager.startGame(0);
+            gameManager.startGame();
             formatInformationForPlayer(NOTIFY_RELOADED, player);
         } else {
             formatInformationForPlayer(ERROR_QUESTION_FILE_BROKEN, player);

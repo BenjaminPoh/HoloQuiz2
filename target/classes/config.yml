@@ -5,9 +5,9 @@ PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 # Game Config
 Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math
-IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of ticks. Enable if Server TPS Sucks.
+IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of ticks. Enable if Server TPS Sucks. Set to 0 to disable.
 QuestionCooldown: 3 #The same question will not appear for this number of questions sent. List is reset once server restarts.
-RevealAnswer: -1 #Reveals answer, sends next question after this amount of seconds. Set to -1 to disable.
+RevealAnswerDelay: 5 #Reveals the answer, and sends question after this amount of seconds. Set to -1 to not reveal answer.
 Cheats:
   CheatingChecker: true
   CheatingTimer: 0.5

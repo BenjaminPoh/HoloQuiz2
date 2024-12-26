@@ -1,8 +1,8 @@
 ## Version Log!
 For my own entertainment I suppose.
 
-- v 2.4.2 - ?? May 2024 - Added ability to restart plugin ingame.
-- v 2.4.1 - 13 May 2024 - Added feature to reveal answers to unanswered questions
+- v 2.5.0 - 26 Dec 2024 - Answers can now be revealed!
+- v 2.4.1 - 18 Jun 2024 - De Gozaru!
 - v 2.4.0 - 11 May 2024 - Added cooldown for Questions to reduce repetition
 - v 2.3.0 - 08 May 2024 - Added manual check for Low TPS
 - v 2.2.0 - 28 Mar 2024 - Added Storage for Full Inv

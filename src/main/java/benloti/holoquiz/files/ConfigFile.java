@@ -11,6 +11,7 @@ import java.util.List;
 public class ConfigFile {
     private final int interval;
     private final int intervalCheck;
+    private final int revealAnswerDelay;
     private final int leaderboardSize;
     private final int leaderboardMinReq;
     private final boolean easterEggsEnabled;
@@ -18,7 +19,6 @@ public class ConfigFile {
     private final boolean cheatsDetectorEnabled;
     private final int minTimeRequired;
     private final int QuestionCooldownLength;
-    private final int revealAnswerDelay;
     private final boolean countAsCorrect;
     private final List<String> cheatingCommands;
     private final boolean enableOnStart;
@@ -45,13 +45,13 @@ public class ConfigFile {
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
         this.interval = configs.getInt("Interval");
         this.intervalCheck = configs.getInt("IntervalCheck");
+        this.revealAnswerDelay = configs.getInt("RevealAnswerDelay");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
         this.easterEggsEnabled = configs.getBoolean("EasterEggs");
         this.gameMode = configs.getString("GameMode");
         this.enableOnStart = configs.getBoolean("EnableOnStart");
         this.QuestionCooldownLength = configs.getInt("QuestionCooldown");
-        this.revealAnswerDelay = configs.getInt("RevealAnswer");
         ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
         this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
