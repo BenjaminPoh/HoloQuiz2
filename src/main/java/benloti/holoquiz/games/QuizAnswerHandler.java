@@ -48,7 +48,7 @@ public class QuizAnswerHandler implements Listener {
 
     @EventHandler
     public void checkAnswerSent(AsyncPlayerChatEvent theEvent) {
-        if(!gameManager.getGameStatus() || gameManager.getQuestionStatus()) {
+        if(!gameManager.getGameStatus() || gameManager.isQuestionAnswered() || gameManager.isQuestionTimedOut()) {
             return;
         }
         String message = theEvent.getMessage();
@@ -78,7 +78,7 @@ public class QuizAnswerHandler implements Listener {
         if(cheatHandler(timeTaken, player)) {
             return;
         }
-        gameManager.setQuestionStatus(true);
+        gameManager.setQuestionAnswered(true);
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getGameModeIdentifier();

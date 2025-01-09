@@ -39,8 +39,10 @@ public class PlayerCmds implements CommandExecutor {
     public static final String MSG_ANSWER_LIST_FORMAT = "&2- &b%s";
     public static final String MSG_ANSWER_HEADER_FORMAT = "&bAnswers: ";
     public static final String MSG_QUESTION_STATUS_ANSWERED_FORMAT = "&bThe Question has been &aAnswered!";
+    public static final String MSG_QUESTION_STATUS_TIMEOUT_FORMAT = "&bThe Question has &cTimed Out!";
     public static final String MSG_QUESTION_STATUS_UNANSWERED_FORMAT = "&bThe Question is &cNot Yet Answered!";
     public static final String MSG_NEXT_QUESTION_COUNTDOWN_FORMAT = "&bNext Question is in &6%s seconds";
+    public static final String MSG_ANSWER_REVEAL_COUNTDOWN_FORMAT = "&bAnswer will be revealed is in &6%s seconds";
     public static final String MSG_DISPLAY_QUESTION_FORMAT = "&bQuestion: &6%s";
 
     public static final String MSG_LEADERBOARD_HEADER_MOST_ANSWERS =
@@ -332,21 +334,31 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         String currentQuestion = gameManager.getCurrentQuestion().getQuestion();
-        long currentTime = System.currentTimeMillis();
-        //Simple calculations for later
-        long timeQuestionSent = gameManager.getTimeQuestionSent();
-        long questionInterval = gameManager.getInterval();
-        int timeLeft = (int) (timeQuestionSent - currentTime + questionInterval * 1000);
-        double timeLeftInSeconds = timeLeft / 1000.0;
-        boolean questionStatus = gameManager.getQuestionStatus();
-
         String currentQuestionFormatted = String.format(MSG_DISPLAY_QUESTION_FORMAT, currentQuestion);
-        String timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
+
+        long currentTime = System.currentTimeMillis();
+        long timeQuestionSent = gameManager.getNextTaskTime();
+        String timeLeftFormatted;
         String questionStatusFormatted;
-        if (questionStatus) {
+        long timeLeft = timeQuestionSent - currentTime;
+        double timeLeftInSeconds = timeLeft / 1000.0;
+
+        //I call this the Bukit Timah Hill Coding Style
+        if (gameManager.isQuestionAnswered()) {
+            timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
             questionStatusFormatted = MSG_QUESTION_STATUS_ANSWERED_FORMAT;
         } else {
-            questionStatusFormatted = MSG_QUESTION_STATUS_UNANSWERED_FORMAT;
+            if(gameManager.isQuestionTimedOut()) {
+                timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
+                questionStatusFormatted = MSG_QUESTION_STATUS_TIMEOUT_FORMAT;
+            } else {
+                if(gameManager.getRevealAnswerDelay() > 0) {
+                    timeLeftFormatted = String.format(MSG_ANSWER_REVEAL_COUNTDOWN_FORMAT, timeLeftInSeconds);
+                } else {
+                    timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
+                }
+                questionStatusFormatted = MSG_QUESTION_STATUS_UNANSWERED_FORMAT;
+            }
         }
 
         String[] basicInfo = {TABLE_BORDER, questionStatusFormatted, timeLeftFormatted,

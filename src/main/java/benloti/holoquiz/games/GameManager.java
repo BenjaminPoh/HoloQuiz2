@@ -39,6 +39,7 @@ public class GameManager {
 
     private long timeQuestionSent;
     private boolean questionAnswered;
+    private boolean timedOut;
     private long nextTaskTime;
 
     private ArrayList<Question> triviaQuestionList;
@@ -99,9 +100,9 @@ public class GameManager {
         }
 
         //If question is not answered, send the answer
-        if(!getQuestionStatus()) {
+        if(!isQuestionAnswered() && !isQuestionTimedOut()) {
             revealAnswer();
-            setQuestionStatus(true);
+            setQuestionTimedOut(true);
             this.nextTaskScheduler.runTaskLater(plugin,  getRevealAnswerDelay() * 20);
             this.nextTaskTime = System.currentTimeMillis() + getRevealAnswerDelay()*1000;
             return;
@@ -118,7 +119,8 @@ public class GameManager {
         Bukkit.getLogger().info("[HoloQuiz] Question Sent: " + question.getQuestion());
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
-        setQuestionStatus(false);
+        setQuestionAnswered(false);
+        setQuestionTimedOut(false);
         long currentTime = System.currentTimeMillis();
         setTimeQuestionSent(currentTime);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
@@ -220,11 +222,11 @@ public class GameManager {
         return this.currentQuestion;
     }
 
-    public boolean getQuestionStatus() {
+    public boolean isQuestionAnswered() {
         return this.questionAnswered;
     }
 
-    public void setQuestionStatus(boolean status) {
+    public void setQuestionAnswered(boolean status) {
         this.questionAnswered = status;
     }
 
@@ -252,13 +254,19 @@ public class GameManager {
         return this.rewardsHandler;
     }
 
-
-
     public long getRevealAnswerDelay() {
         return this.revealAnswerDelay;
     }
 
     public long getNextTaskTime() {
         return this.nextTaskTime;
+    }
+
+    public boolean isQuestionTimedOut() {
+        return timedOut;
+    }
+
+    public void setQuestionTimedOut(boolean status) {
+        this.timedOut = status;
     }
 }
