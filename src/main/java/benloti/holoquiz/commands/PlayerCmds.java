@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PlayerCmds implements CommandExecutor {
     public static final String ERROR_NO_SUCH_COMMAND = "No Such Command! Are you trying to find Easter Eggs?";
-    private static final String TABLE_BORDER = "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=";
+    public static final String TABLE_BORDER = "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=";
 
     public static final String NOTIFY_HOLOQUIZ_STARTED = "&bHoloQuiz &ahas started!";
     public static final String NOTIFY_HOLOQUIZ_STOPPED = "&bHoloQuiz &chas been stopped!";
@@ -101,22 +101,23 @@ public class PlayerCmds implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command theCommand, String alias, String[] args) {
-        if (!(sender instanceof Player)) {
+        boolean isPlayer = sender instanceof Player;
+        if (runAdminCommand(sender, args, isPlayer)) {
+            return true;
+        }
+
+        if (args.length == 0) {
+            formatInformationForPlayer(HELP_TABLE, sender);
+            return true;
+        }
+
+        if (!isPlayer) {
             sender.sendMessage("Only players can run this command.");
             return true;
         }
 
         Player player = ((Player) sender).getPlayer();
         assert player != null;
-
-        if (args.length == 0) {
-            formatInformationForPlayer(HELP_TABLE, player);
-            return true;
-        }
-
-        if (runAdminCommand(player, args)) {
-            return true;
-        }
 
         if (runUserCommand(player, args)) {
             return true;
@@ -129,20 +130,20 @@ public class PlayerCmds implements CommandExecutor {
     }
 
     //Available commands: info, next, stop, start, ReloadQns, repairDB
-    private boolean runAdminCommand(Player player, String[] args) {
-        if (!player.hasPermission("HoloQuiz.admin")) {
+    private boolean runAdminCommand(CommandSender sender, String[] args, boolean isPlayer) {
+        if (isPlayer && !sender.hasPermission("HoloQuiz.admin")) {
             return false;
         }
 
         if (args[0].equalsIgnoreCase("info")) {
             String[] information = obtainQuestionInfo(true);
-            formatInformationForPlayer(information, player);
+            formatInformationForPlayer(information, sender);
             return true;
         }
 
         if (args[0].equalsIgnoreCase("next")) {
             if (!gameManager.getGameStatus()) {
-                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, player);
+                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, sender);
                 return true;
             }
 
@@ -152,36 +153,36 @@ public class PlayerCmds implements CommandExecutor {
 
         if (args[0].equalsIgnoreCase("stop")) {
             if (!gameManager.getGameStatus()) {
-                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, player);
+                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_STOPPED, sender);
                 return true;
             }
 
             gameManager.stopGame();
-            formatInformationForPlayer(NOTIFY_HOLOQUIZ_STOPPED, player);
+            formatInformationForPlayer(NOTIFY_HOLOQUIZ_STOPPED, sender);
             return true;
         }
 
         if (args[0].equalsIgnoreCase("start")) {
             if (gameManager.getGameStatus()) {
-                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_ALREADY_RUNNING, player);
+                formatInformationForPlayer(ERROR_HOLOQUIZ_IS_ALREADY_RUNNING, sender);
                 return true;
             }
 
             gameManager.startGame();
-            formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, player);
+            formatInformationForPlayer(NOTIFY_HOLOQUIZ_STARTED, sender);
             return true;
         }
 
         if (args[0].equalsIgnoreCase("reloadQns")) {
-            updateQuestionBank(player);
+            updateQuestionBank(sender);
             return true;
         }
 
         if (args[0].equalsIgnoreCase("repairDB")) {
-            formatInformationForPlayer(NOTIFY_RELOADING, player);
+            formatInformationForPlayer(NOTIFY_RELOADING, sender);
             int size = databaseManager.reloadDatabase();
-            formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + " players!", player);
-            formatInformationForPlayer(NOTIFY_RELOADED, player);
+            formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + " players!", sender);
+            formatInformationForPlayer(NOTIFY_RELOADED, sender);
             return true;
         }
 
@@ -374,7 +375,7 @@ public class PlayerCmds implements CommandExecutor {
         return finalInfoArray;
     }
 
-    private void updateQuestionBank(Player player) {
+    private void updateQuestionBank(CommandSender player) {
         formatInformationForPlayer(NOTIFY_RELOADING, player);
         if (externalFiles.reloadQuestions()) {
             gameManager.stopGame();
@@ -420,12 +421,12 @@ public class PlayerCmds implements CommandExecutor {
         return info;
     }
 
-    private void formatInformationForPlayer(String[] message, Player player) {
+    private void formatInformationForPlayer(String[] message, CommandSender player) {
         message = userInterface.formatColoursArray(message);
         player.sendMessage(message);
     }
 
-    private void formatInformationForPlayer(String message, Player player) {
+    private void formatInformationForPlayer(String message, CommandSender player) {
         message = userInterface.formatColours(message);
         player.sendMessage(message);
     }
