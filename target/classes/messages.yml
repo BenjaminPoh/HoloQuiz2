@@ -1,0 +1,5 @@
+##Correct Answer Message
+INVENTORY_FULL_MESSAGE: "&bYour Inventory was full! Rewards has been sent to Storage. Do &a/holoquiz collect &bto get them!"
+CORRECT_ANSWER_MESSAGE: "&6%CORRECT_PLAYER%&e wins after &6%TIME_SEC%&e seconds! The answer was &6%QN_ANSWER%!"
+SECRET_ANSWER_MESSAGE: "&6%CORRECT_PLAYER%&e wins after &6%TIME_SEC%&e seconds!"
+REVEAL_ANSWER_MESSAGE: "&bNo one got the answer! The answer was &a%QN_ANSWER%&b."
