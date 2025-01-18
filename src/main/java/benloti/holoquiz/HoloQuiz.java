@@ -10,7 +10,6 @@ import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.QuizAnswerHandler;
-
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class HoloQuiz extends JavaPlugin {
@@ -22,6 +21,9 @@ public final class HoloQuiz extends JavaPlugin {
     private GameManager gameManager;
     private UserInterface userInterface;
     //private ContestManager contestManager;
+    private QuizAnswerHandler quizAnswerHandler;
+    private PlayerCmds playerCmds;
+    private CmdAutoComplete cmdAutoComplete;
 
     @Override
     public void onEnable() {
@@ -32,9 +34,11 @@ public final class HoloQuiz extends JavaPlugin {
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
         this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
         //this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
-        new QuizAnswerHandler(this, gameManager, database, userInterface, configFile);
-        getCommand("HoloQuiz").setExecutor(new PlayerCmds(gameManager, database, externalFiles, userInterface));
-        getCommand("HoloQuiz").setTabCompleter(new CmdAutoComplete(externalFiles, this));
+        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, userInterface, configFile);
+        this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, this);
+        this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
+        getCommand("HoloQuiz").setExecutor(playerCmds);
+        getCommand("HoloQuiz").setTabCompleter(cmdAutoComplete);
         if(configFile.isEnableOnStart()) {
             gameManager.startGame();
         }
@@ -44,6 +48,24 @@ public final class HoloQuiz extends JavaPlugin {
     public void onDisable() {
         database.getUserPersonalisation().savePlayerSettings();
         //Bukkit.getLogger().info("[HoloQuiz] Shutting Down HoloQuiz!");
+    }
+
+    public boolean reloadHoloQuiz() {
+        if(!externalFiles.reloadAll()) {
+            return false;
+        }
+        this.configFile = externalFiles.getConfigFile();
+        this.dependencyHandler = new DependencyHandler(this);
+        this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
+        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
+        //this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
+        quizAnswerHandler.reload(gameManager, userInterface, configFile);
+        playerCmds.reload(gameManager, externalFiles, userInterface);
+        cmdAutoComplete.reload(externalFiles);
+        if(configFile.isEnableOnStart()) {
+            gameManager.startGame();
+        }
+        return true;
     }
 }
 

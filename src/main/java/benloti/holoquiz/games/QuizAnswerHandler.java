@@ -28,12 +28,13 @@ public class QuizAnswerHandler implements Listener {
     private static final String INVENTORY_FULL_MESSAGE =
             "&bYour Inventory was full! Rewards has been sent to Storage. Do &a/holoquiz collect &bto get them!";
 
-    private final GameManager gameManager;
     private final HoloQuiz plugin;
     private final DatabaseManager database;
-    private final RewardsHandler rewardsHandler;
-    private final UserInterface userInterface;
-    private final ConfigFile configFile;
+
+    private  GameManager gameManager;
+    private RewardsHandler rewardsHandler;
+    private UserInterface userInterface;
+    private ConfigFile configFile;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
                              UserInterface userInterface, ConfigFile configFile) {
@@ -44,6 +45,13 @@ public class QuizAnswerHandler implements Listener {
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.userInterface = userInterface;
         this.configFile = configFile;
+    }
+
+    public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile) {
+        this.gameManager = gameManager;
+        this.userInterface = userInterface;
+        this.configFile = configFile;
+        this.rewardsHandler = gameManager.getRewardsHandler();
     }
 
     @EventHandler

@@ -1,5 +1,6 @@
 package benloti.holoquiz.commands;
 
+import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
@@ -29,6 +30,7 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_STORAGE_EMPTY = "&4You have no rewards stored!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
+    public static final String ERROR_CONFIG_FILE_BROKEN = "&cA file is broken! Aborting reload!";
     public static final String ERROR_NO_PLAYER_FOUND = "&cNo such player found!";
     public static final String ERROR_HOLOQUIZ_IS_STOPPED = "&bYou can't do that, HoloQuiz &cis stopped!";
     public static final String ERROR_HOLOQUIZ_IS_ALREADY_RUNNING = "&bYou can't do that, HoloQuiz &cis already running!";
@@ -84,19 +86,28 @@ public class PlayerCmds implements CommandExecutor {
             "We really need glasses to become a thing in hololive and start selling them for HoloComi. " +
             "Don't. You. Think. We. Really. Need. To. Officially. Give. Everyone. Glasses?";
 
-    private final GameManager gameManager;
+    private GameManager gameManager;
     private final DatabaseManager databaseManager;
-    private final boolean easterEggs;
+    private boolean easterEggs;
     private final UserPersonalisation userPersonalisation;
-    private final UserInterface userInterface;
-    private final ExternalFiles externalFiles;
+    private UserInterface userInterface;
+    private ExternalFiles externalFiles;
+    private final HoloQuiz holoQuiz;
 
     public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager,
-                      ExternalFiles externalFiles, UserInterface userInterface) {
+                      ExternalFiles externalFiles, UserInterface userInterface, HoloQuiz plugin) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userPersonalisation = databaseManager.getUserPersonalisation();
+        this.userInterface = userInterface;
+        this.externalFiles = externalFiles;
+        this.holoQuiz = plugin;
+    }
+
+    public void reload(GameManager gameManager, ExternalFiles externalFiles, UserInterface userInterface) {
+        this.gameManager = gameManager;
+        this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userInterface = userInterface;
         this.externalFiles = externalFiles;
     }
@@ -180,11 +191,16 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("repairDB")) {
+        if (args[0].equalsIgnoreCase("reloadStats")) {
             formatInformationForPlayer(NOTIFY_RELOADING, sender);
             int size = databaseManager.reloadDatabase();
             formatInformationForPlayer("Reloaded HoloQuiz stats for " + size + " players!", sender);
             formatInformationForPlayer(NOTIFY_RELOADED, sender);
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("reload")) {
+            reloadConfigFile(sender);
             return true;
         }
 
@@ -399,6 +415,14 @@ public class PlayerCmds implements CommandExecutor {
         }
     }
 
+    private void reloadConfigFile(CommandSender sender) {
+        formatInformationForPlayer(NOTIFY_RELOADING, sender);
+        if(holoQuiz.reloadHoloQuiz()) {
+            formatInformationForPlayer(NOTIFY_RELOADED, sender);
+        } else {
+            formatInformationForPlayer(ERROR_CONFIG_FILE_BROKEN, sender);
+        }
+    }
 
     //Warning: Only for player-query purposes and not for database Maintenance.
     private void displayPlayerStats(Player player, String playerName) {

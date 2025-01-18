@@ -11,12 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CmdAutoComplete implements TabCompleter {
-    private final boolean easterEggs;
+    private boolean easterEggs;
     private final JavaPlugin plugin;
 
     public CmdAutoComplete(ExternalFiles externalFiles, JavaPlugin plugin) {
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.plugin = plugin;
+    }
+
+    public void reload(ExternalFiles externalFiles) {
+        this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
     }
 
     @Override
@@ -33,7 +37,8 @@ public class CmdAutoComplete implements TabCompleter {
             autoCompleteSuggestions.add("start");
             autoCompleteSuggestions.add("stop");
             autoCompleteSuggestions.add("reloadQns");
-            autoCompleteSuggestions.add("repairDB");
+            autoCompleteSuggestions.add("reloadStats");
+            autoCompleteSuggestions.add("reload");
         }
         if (easterEggs) {
             autoCompleteSuggestions.add("pekofy");

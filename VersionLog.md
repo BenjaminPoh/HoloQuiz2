@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 2.6.0 - 18 Jan 2025 - HoloQuiz can now restart. In-game. After 2 years.
 - v 2.5.2 - 09 Jan 2025 - Fixed issue with /holoquiz info not updating correctly for revealed answers.
 - v 2.5.1 - 28 Dec 2024 - You can now send commands with console!
 - v 2.5.0 - 26 Dec 2024 - Answers can now be revealed!

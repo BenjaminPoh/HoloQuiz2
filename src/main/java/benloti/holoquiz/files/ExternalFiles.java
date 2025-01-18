@@ -34,9 +34,9 @@ public class ExternalFiles {
 
     private final JavaPlugin plugin;
     private ConfigFile configFile;
-    private final ArrayList<RewardTier> allNormalRewards;
-    private final ArrayList<RewardTier> secretRewards;
-    private final Map<String, ArrayList<ContestRewardTier>> contestRewards;
+    private ArrayList<RewardTier> allNormalRewards;
+    private ArrayList<RewardTier> secretRewards;
+    private Map<String, ArrayList<ContestRewardTier>> contestRewards;
     private ArrayList<Question> allQuestions;
 
     public ExternalFiles(JavaPlugin plugin) {
@@ -85,20 +85,20 @@ public class ExternalFiles {
         try {
             Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-            loadAllRewards(rewardsYml);
+            loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
             Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken! Loading from backups...");
             try {
                 File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
-                loadAllRewards(rewardsYml);
+                loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
                 updateFile(REWARDS_FILE_NAME, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
             } catch (Exception e2) {
                 Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml backup file is also broken! Loading from Resource...");
                 loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
                 File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-                loadAllRewards(rewardsYml);
+                loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
             }
         }
 
@@ -123,11 +123,66 @@ public class ExternalFiles {
         }
     }
 
+    public boolean reloadAll() {
+        if (!plugin.getDataFolder().exists()) {
+            Bukkit.getLogger().info("[HoloQuiz] Plugin Folder Missing!");
+            return false;
+        }
+        File backupDir = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH);
+        if(!backupDir.exists()) {
+            Bukkit.getLogger().info("[HoloQuiz] Backup Folder Missing!");
+            return false;
+        }
+
+        ConfigFile newConfigFile;
+        ArrayList<RewardTier> newAllNormalRewards = new ArrayList<>();
+        ArrayList<RewardTier> newSecretRewards = new ArrayList<>();
+        Map<String, ArrayList<ContestRewardTier>> newContestRewards = new HashMap<>();
+        ArrayList<Question> newQuestions;
+
+        try {
+            Bukkit.getLogger().info("[HoloQuiz] Loading config.yml ...");
+            newConfigFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
+        } catch (Exception e) {
+            Bukkit.getLogger().info("[HoloQuiz] Your config.yml file is broken! Loading from backups...");
+            return false;
+        }
+        try {
+            Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
+            File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
+            loadAllRewards(rewardsYml, newAllNormalRewards, newSecretRewards, newContestRewards);
+        } catch (Exception e) {
+            Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken!");
+            return false;
+        }
+        try {
+            Bukkit.getLogger().info("[HoloQuiz] Loading QuestionBank.yml ...");
+            File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
+            newQuestions = loadQuestions(questionsYml);
+        } catch (Exception e) {
+            Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml file is broken!");
+            return false;
+        }
+
+        updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
+        updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
+        updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
+
+        this.allQuestions = newQuestions;
+        this.allNormalRewards = newAllNormalRewards;
+        this.secretRewards = newSecretRewards;
+        this.contestRewards = newContestRewards;
+        this.configFile = newConfigFile;
+
+        return true;
+    }
+
     /**
      * Used to load all 3 categories of rewards
      * @param rewardsYml the Rewards.yml File
      */
-    private void loadAllRewards(File rewardsYml) {
+    private void loadAllRewards(File rewardsYml, ArrayList<RewardTier> allNormalRewards, ArrayList<RewardTier> secretRewards,
+                                Map<String, ArrayList<ContestRewardTier>> contestRewards) {
         FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
 
         ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
@@ -139,7 +194,7 @@ public class ExternalFiles {
         loadRewardsTier(secretRewardsSection, secretRewards);
 
         ConfigurationSection contestRewardsSection = rewardsFile.getConfigurationSection("ContestRewards");
-        loadContestRewards(contestRewardsSection);
+        loadContestRewards(contestRewardsSection, contestRewards);
     }
 
     /**
@@ -200,7 +255,8 @@ public class ExternalFiles {
      * Used to load the contest rewards.
      * @param rewardsSection The section that has all the Contest rewards.
      */
-    private void loadContestRewards(ConfigurationSection rewardsSection) {
+    private void loadContestRewards(ConfigurationSection rewardsSection,
+                                    Map<String, ArrayList<ContestRewardTier>> contestRewards) {
         if(rewardsSection == null) {
             Bukkit.getLogger().info(WARNING_CONTEST_REWARDS_SECTION_NOT_FOUND);
             return;
@@ -208,23 +264,23 @@ public class ExternalFiles {
 
         for(String category: CONTEST_CATEGORIES) {
             ConfigurationSection section = rewardsSection.getConfigurationSection(category);
-            int categoriesLoaded = loadContestRewardsTier(section, category);
-            if(categoriesLoaded > 0) {
-                String logMessage = String.format(CONTEST_LOG_MESSAGE, category, categoriesLoaded);
+
+            ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
+            contestRewards.put(category, rewardsList);
+            if(rewardsList.size() > 0) {
+                String logMessage = String.format(CONTEST_LOG_MESSAGE, category, rewardsList.size());
                 Bukkit.getLogger().info(logMessage);
             }
         }
     }
 
-    private int loadContestRewardsTier(ConfigurationSection section, String category) {
+    private ArrayList<ContestRewardTier> loadContestRewardsTier(ConfigurationSection section) {
+        ArrayList<ContestRewardTier> rewardsList = new ArrayList<>();
         if(section == null) {
-            return 0;
+            return rewardsList;
         }
 
-        ArrayList<ContestRewardTier> rewardsList = new ArrayList<>();
-        int tiersLoaded = 0;
         for (String key : section.getKeys(false)) {
-            tiersLoaded += 1;
             ConfigurationSection rewardTierSection = section.getConfigurationSection(key);
             int reps = rewardTierSection.getInt("Reps", 0);
             double moneyReward = rewardTierSection.getDouble("Money", 0);
@@ -237,11 +293,9 @@ public class ExternalFiles {
                 continue;
             }
             loadItemReward(rewardTierItemSection, itemReward);
-            rewardsList.add(new ContestRewardTier(moneyReward, commandsExecuted, null, message, reps));
+            rewardsList.add(new ContestRewardTier(moneyReward, commandsExecuted, itemReward, message, reps));
         }
-
-        contestRewards.put(category, rewardsList);
-        return tiersLoaded;
+        return rewardsList;
     }
 
     /**
