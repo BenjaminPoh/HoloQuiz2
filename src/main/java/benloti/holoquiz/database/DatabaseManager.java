@@ -284,18 +284,19 @@ public class DatabaseManager {
      * Fetches stored rewards, and issues as much as inventory space allows.
      *
      * @param player the player
-     * @return 1 if there are more rewards in the storage, 0 if its cleared, -1 if there wasn't any
+     * @return  -2 if there are no rewards present
+     *          -1 if a rewardTier is null, which should be impossible given it's from storage.
+     *          0 if all rewards are issued
+     *          1 if the storage is Full
+     *          2 if SRTS Overwrite is triggered
      */
     public int getRewardsFromStorage(Player player) {
         connection = getConnection();
         int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, player.getName());
         RewardTier storedRewards = storage.retrieveFromStorage(connection, playerHoloQuizID);
         if(storedRewards.checkIfRewardPresent()) {
-            return -1;
+            return -2;
         }
-        if(rewardsHandler.giveRewardsByTier(player, storedRewards)) {
-            return 1;
-        }
-        return 0;
+        return rewardsHandler.giveRewardsByTier(player, storedRewards);
     }
 }

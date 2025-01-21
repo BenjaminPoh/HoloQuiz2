@@ -1,5 +1,6 @@
 package benloti.holoquiz.files;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -9,6 +10,8 @@ import java.io.File;
 import java.util.List;
 
 public class ConfigFile {
+    private static final String WARNING_SRTS_EMPTY_WHITELIST = "[HoloQuiz] Warning: SRTS uses an empty Whitelist - No one can claim reward items!" ;
+
     private final int interval;
     private final int intervalCheck;
     private final int revealAnswerDelay;
@@ -39,6 +42,8 @@ public class ConfigFile {
     private final String weeklyResetDay;
     private final String timezoneOffset;
     private final boolean isMultipleContestPositionAllowed;
+    private final boolean SRTS_useWhitelist;
+    private final List<String> SRTS_WorldList; //Expect list to be small.
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
@@ -76,6 +81,12 @@ public class ConfigFile {
         this.timezoneOffset = contestSection.getString("TimeZone", "GMT+0");
         this.isMultipleContestPositionAllowed = contestSection.getBoolean("RepeatWinning");
         this.pluginPrefix = configs.getString("PluginPrefix");
+        this.SRTS_useWhitelist = configs.getBoolean("SRTS_useWhitelist");
+        this.SRTS_WorldList = configs.getStringList("SRTS_WorldList");
+
+        if(this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
+            Bukkit.getLogger().info(WARNING_SRTS_EMPTY_WHITELIST);
+        }
     }
 
     public int getInterval() {
@@ -196,5 +207,13 @@ public class ConfigFile {
 
     public int getRevealAnswerDelay() {
         return revealAnswerDelay;
+    }
+
+    public boolean isSRTS_useWhitelist() {
+        return SRTS_useWhitelist;
+    }
+
+    public List<String> getSRTS_WorldList() {
+        return SRTS_WorldList;
     }
 }

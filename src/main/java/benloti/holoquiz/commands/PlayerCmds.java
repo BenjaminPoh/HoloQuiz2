@@ -28,6 +28,8 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_STORAGE_CLEARED = "&aAll rewards collected!";
     public static final String NOTIFY_STORAGE_NOT_CLEARED = "&cMore rewards await you!";
     public static final String NOTIFY_STORAGE_EMPTY = "&4You have no rewards stored!";
+    public static final String NOTIFY_BLOCKED_WORLD = "&4You are not allowed to claim rewards in this World!";
+    public static final String NOTIFY_UNKNOWN_ERROR = "&4You should not see this message. How did you get here?";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_CONFIG_FILE_BROKEN = "&cA file is broken! Aborting reload!";
@@ -236,14 +238,17 @@ public class PlayerCmds implements CommandExecutor {
 
         if (args[0].equalsIgnoreCase("collect")) {
             String message;
-            int moreToCollect = databaseManager.getRewardsFromStorage(player);
-            if (moreToCollect == 1) {
+            int statusCode = databaseManager.getRewardsFromStorage(player);
+            if (statusCode == 1) {
                 message = NOTIFY_STORAGE_NOT_CLEARED;
-            } else if (moreToCollect == 0) {
+            } else if (statusCode == 0) {
                 message = NOTIFY_STORAGE_CLEARED;
-            } else {
+            } else if (statusCode == -2) {
                 message = NOTIFY_STORAGE_EMPTY;
-
+            } else if (statusCode == 2){
+                message = NOTIFY_BLOCKED_WORLD;
+            } else {
+                message = NOTIFY_UNKNOWN_ERROR;
             }
             message = userInterface.formatColours(message);
             userInterface.attachSuffixAndSend(player, message);
@@ -417,6 +422,7 @@ public class PlayerCmds implements CommandExecutor {
 
     private void reloadConfigFile(CommandSender sender) {
         formatInformationForPlayer(NOTIFY_RELOADING, sender);
+        gameManager.stopGame();
         if(holoQuiz.reloadHoloQuiz()) {
             formatInformationForPlayer(NOTIFY_RELOADED, sender);
         } else {

@@ -2,6 +2,11 @@
 EnableOnStart: false
 PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 
+# A special override which directly Sends item Rewards To Storage (SRTS) instead of to their inventory.
+SRTS_useWhitelist: false #Set to true to use whitelist instead!
+SRTS_WorldList:
+  - world_nether #No HoloQuiz in the Nether!
+
 # Game Config
 Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math

@@ -2,6 +2,8 @@ package benloti.holoquiz.games;
 
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.dependencies.VaultDep;
+import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.*;
 import org.bukkit.Bukkit;
@@ -23,10 +25,16 @@ public class RewardsHandler {
     private final JavaPlugin plugin;
     private final DatabaseManager databaseManager;
 
+    private final boolean SRTS_isWhitelist;
+    private final List<String> SRTS_worldList;
+
     public RewardsHandler(JavaPlugin plugin, UserInterface userInterface, VaultDep vaultDep, DatabaseManager databaseManager,
-                          ArrayList<RewardTier> allRewards, ArrayList<RewardTier> secretRewards) {
-        this.allRewards = allRewards;
-        this.secretRewards = secretRewards;
+                          ExternalFiles externalFiles, ConfigFile configFile) {
+        this.allRewards = externalFiles.getAllNormalRewards();
+        this.secretRewards = externalFiles.getAllSecretRewards();
+        this.SRTS_isWhitelist = configFile.isSRTS_useWhitelist();
+        this.SRTS_worldList = configFile.getSRTS_WorldList();
+
         this.userInterface = userInterface;
         this.vaultDep = vaultDep;
         this.plugin = plugin;
@@ -34,12 +42,12 @@ public class RewardsHandler {
         databaseManager.setRewardsHandler(this);
     }
 
-    public boolean giveNormalRewards(Player player, int timeTaken) {
+    public int giveNormalRewards(Player player, int timeTaken) {
         RewardTier rewardTier = determineRewardTier(timeTaken, allRewards);
         return giveRewardsByTier(player, rewardTier);
     }
 
-    public boolean giveSecretRewards(Player player, int timeTaken) {
+    public int giveSecretRewards(Player player, int timeTaken) {
         RewardTier rewardTier = determineRewardTier(timeTaken, secretRewards);
         return giveRewardsByTier(player, rewardTier);
     }
@@ -59,14 +67,25 @@ public class RewardsHandler {
         }
     }
 
-    public boolean giveRewardsByTier(Player player, RewardTier rewardTier) {
+    /**
+     * Issues rewards, then sends a status code based on the result.
+     *
+     * @param player The player
+     * @param rewardTier The RewardTier
+     * @return -1 if a rewardTier is null -> No item rewards to be given
+     *          0 if all rewards are issued
+     *          1 if the storage is Full
+     *          2 if SRTS Overwrite is triggered
+     */
+    public int giveRewardsByTier(Player player, RewardTier rewardTier) {
         if (rewardTier == null) {
-            return false;
+            return -1;
         }
-        boolean itemsWereSentToStorage = giveItemRewards(player, rewardTier.getItemRewards());
+
+        int statusCode = giveItemRewards(player, rewardTier.getItemRewards());
         giveMoneyRewards(player, rewardTier.getMoneyReward());
         executeCommandRewards(player, rewardTier.getCommandsExecuted());
-        return itemsWereSentToStorage;
+        return statusCode;
     }
 
     private void storeContestRewardToStorage(String playerName, ContestWinner contestWinner) {
@@ -136,10 +155,13 @@ public class RewardsHandler {
         }
     }
 
-    private boolean giveItemRewards(Player player, ArrayList<ItemStack> itemRewards) {
+    private int giveItemRewards(Player player, ArrayList<ItemStack> itemRewards) {
         boolean fullInvDetected = false;
+        boolean forceSendRewardToStorage = checkSRTS(player.getWorld().getName());
+
         for (ItemStack item : itemRewards) {
-            ItemMeta itemMeta = item.getItemMeta();
+            ItemStack formattedItem = item.clone(); //??
+            ItemMeta itemMeta = formattedItem.getItemMeta();
             List<String> itemLore = itemMeta.getLore();
             if (itemLore == null) {
                 continue;
@@ -151,17 +173,37 @@ public class RewardsHandler {
                 itemLoreFormatted.add(peko);
             }
             itemMeta.setLore(itemLoreFormatted);
-            item.setItemMeta(itemMeta);
-            HashMap<Integer, ItemStack> notAddedItem = player.getInventory().addItem(item);
-            if(!notAddedItem.isEmpty()) {
-                fullInvDetected = true;
-                storeItemToStorage(player.getName(), item);
+            formattedItem.setItemMeta(itemMeta);
+            if(forceSendRewardToStorage) {
+                storeItemToStorage(player.getName(), formattedItem);
+                continue;
             }
-            //Stupidly reset itemMeta
-            itemMeta.setLore(itemLore);
-            item.setItemMeta(itemMeta);
+            HashMap<Integer, ItemStack> notAddedItem = player.getInventory().addItem(formattedItem);
+            if (!notAddedItem.isEmpty()) {
+                fullInvDetected = true;
+                storeItemToStorage(player.getName(), formattedItem);
+            }
+
         }
-        return fullInvDetected;
+
+        if(forceSendRewardToStorage) {
+            return 2;
+        }
+        if(fullInvDetected) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private boolean checkSRTS(String name) {
+        boolean isInList = this.SRTS_worldList.contains(name);
+        if(isInList && !this.SRTS_isWhitelist) {
+            return true;
+        }
+        if(!isInList && this.SRTS_isWhitelist) {
+            return true;
+        }
+        return false;
     }
 
     private void giveMoneyRewards(Player player, double moneyGained) {

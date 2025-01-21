@@ -27,6 +27,8 @@ public class QuizAnswerHandler implements Listener {
 
     private static final String INVENTORY_FULL_MESSAGE =
             "&bYour Inventory was full! Rewards has been sent to Storage. Do &a/holoquiz collect &bto get them!";
+    private static final String SRTS_TRIGGERED_MESSAGE =
+            "&bYour rewards has been sent to Storage! Do &a/holoquiz collect &bto get them!";
 
     private final HoloQuiz plugin;
     private final DatabaseManager database;
@@ -91,26 +93,23 @@ public class QuizAnswerHandler implements Listener {
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getGameModeIdentifier();
         //The actual tasks
-        boolean fullInvFlagOne = false;
+        int statusCodeOne = -1;
         if(secretAnswerTriggered) {
             sendSecretAnnouncement(player, timeTaken, answeredQuestion);
-            fullInvFlagOne = rewardsHandler.giveSecretRewards(player, timeTaken);
+            statusCodeOne = rewardsHandler.giveSecretRewards(player, timeTaken);
         } else {
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
         }
         //displayActionBar(player); //Not what I want, but the bug is now a feature
-        boolean fullInvFlagTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
+        int statusCodeTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
         displayTitle(player);
         new BukkitRunnable() {
             public void run() {
                 makeFireworks(player);
             }
         }.runTask(plugin);
-        if(fullInvFlagTwo || fullInvFlagOne) {
-            String fullInvMessage = userInterface.formatColours(INVENTORY_FULL_MESSAGE);
-            userInterface.attachSuffixAndSend(player, fullInvMessage);
-        }
 
+        sendUserMessage(player, statusCodeOne, statusCodeTwo);
         //Update database
         database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);
 
@@ -194,5 +193,18 @@ public class QuizAnswerHandler implements Listener {
             return !configFile.isCountAsCorrect();
         }
         return false;
+    }
+
+    private void sendUserMessage(Player player, int statusCodeOne, int statusCodeTwo) {
+        if(statusCodeTwo == 2 || statusCodeOne == 2) {
+
+            String fullInvMessage = userInterface.formatColours(SRTS_TRIGGERED_MESSAGE);
+            userInterface.attachSuffixAndSend(player, fullInvMessage);
+        }
+        if(statusCodeTwo == 1 || statusCodeOne == 1) {
+
+            String fullInvMessage = userInterface.formatColours(INVENTORY_FULL_MESSAGE);
+            userInterface.attachSuffixAndSend(player, fullInvMessage);
+        }
     }
 }

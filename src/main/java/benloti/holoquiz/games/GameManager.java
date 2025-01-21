@@ -10,10 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 public class GameManager {
     private static final String MESSAGE_REVEAL_ANSWER = "&bNo one got the answer! The answer was &a%s&b.";
@@ -25,12 +22,13 @@ public class GameManager {
     private final int questionCooldown;
     private final long revealAnswerDelay;
     private final boolean revealAnswerFlag;
+
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
     private final RewardsHandler rewardsHandler;
     private final MathQuestionGenerator mathQuestionGenerator;
 
-    private String gameMode;
+    private final String gameMode;
     private NextTaskScheduler nextTaskScheduler;
     private PeriodicChecker periodicChecker;
 
@@ -47,15 +45,15 @@ public class GameManager {
     public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
                        DependencyHandler dependencyHandler, ExternalFiles externalFiles, DatabaseManager databaseManager) {
         this.plugin = plugin;
-        this.interval = externalFiles.getConfigFile().getInterval();
-        this.intervalCheck = externalFiles.getConfigFile().getIntervalCheck();
-        this.revealAnswerDelay = externalFiles.getConfigFile().getRevealAnswerDelay();
+        this.interval = configFile.getInterval();
+        this.intervalCheck = configFile.getIntervalCheck();
+        this.revealAnswerDelay = configFile.getRevealAnswerDelay();
         this.gameMode = configFile.getGameMode();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
         this.userInterface = userInterface;
         this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep(),databaseManager,
-                externalFiles.getAllNormalRewards(), externalFiles.getAllSecretRewards());
+                externalFiles, configFile);
 
         this.revealAnswerFlag = (this.revealAnswerDelay == -1);
 
