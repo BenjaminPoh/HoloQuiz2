@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 2.7.1 - 31 Jan 2025 - Fixed bug where running /HoloQuiz with no args threw an error
 - v 2.7.0 - 21 Jan 2025 - Rewards can be restricted from being issued in some worlds.
 - v 2.6.0 - 18 Jan 2025 - HoloQuiz can now restart. In-game. After 2 years.
 - v 2.5.2 - 09 Jan 2025 - Fixed issue with /holoquiz info not updating correctly for revealed answers.

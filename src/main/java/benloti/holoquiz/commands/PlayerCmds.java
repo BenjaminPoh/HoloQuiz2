@@ -117,12 +117,12 @@ public class PlayerCmds implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command theCommand, String alias, String[] args) {
         boolean isPlayer = sender instanceof Player;
-        if (runAdminCommand(sender, args, isPlayer)) {
+        if (args.length == 0) {
+            formatInformationForPlayer(HELP_TABLE, sender);
             return true;
         }
 
-        if (args.length == 0) {
-            formatInformationForPlayer(HELP_TABLE, sender);
+        if (runAdminCommand(sender, args, isPlayer)) {
             return true;
         }
 
