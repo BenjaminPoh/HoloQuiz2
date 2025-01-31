@@ -129,7 +129,7 @@ public class GameManager {
     private void revealAnswer() {
         String answer = getCurrentQuestion().getAnswers().get(0);
         String announcement = String.format(MESSAGE_REVEAL_ANSWER, answer);
-        String formattedAnnouncement = userInterface.attachLabel(userInterface.formatColours(announcement));
+        String formattedAnnouncement = userInterface.formatColours(userInterface.attachLabel(announcement));
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             userInterface.attachSuffixAndSend(player, formattedAnnouncement);
         }
