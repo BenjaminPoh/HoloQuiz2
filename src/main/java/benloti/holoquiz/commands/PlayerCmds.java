@@ -24,7 +24,7 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_HOLOQUIZ_STARTED = "&bHoloQuiz &ahas started!";
     public static final String NOTIFY_HOLOQUIZ_STOPPED = "&bHoloQuiz &chas been stopped!";
     public static final String NOTIFY_RELOADING = "&bHoloQuiz &cis reloading...";
-    public static final String NOTIFY_RELOADED = "&bHoloQuiz &a has reloaded!";
+    public static final String NOTIFY_RELOADED = "&bHoloQuiz &ahas reloaded!";
     public static final String NOTIFY_STORAGE_CLEARED = "&aAll rewards collected!";
     public static final String NOTIFY_STORAGE_NOT_CLEARED = "&cMore rewards await you!";
     public static final String NOTIFY_STORAGE_EMPTY = "&4You have no rewards stored!";
