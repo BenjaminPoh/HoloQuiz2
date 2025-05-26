@@ -411,9 +411,7 @@ public class PlayerCmds implements CommandExecutor {
     private void updateQuestionBank(CommandSender player) {
         formatInformationForPlayer(NOTIFY_RELOADING, player);
         if (externalFiles.reloadQuestions()) {
-            gameManager.stopGame();
             gameManager.updateQuestionList(externalFiles.getAllQuestions());
-            gameManager.startGame();
             formatInformationForPlayer(NOTIFY_RELOADED, player);
         } else {
             formatInformationForPlayer(ERROR_QUESTION_FILE_BROKEN, player);
