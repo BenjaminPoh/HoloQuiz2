@@ -101,6 +101,32 @@ public class AnswersLogs {
         return fastestAnswerers;
     }
 
+    public ArrayList<PlayerData> getBestAnswerersWithinTimestamp
+            (Connection connection, long start, long end, int limit, int minReq) {
+        ArrayList<PlayerData> bestAnswerers = new ArrayList<>();
+        if(limit == 0) {
+            return bestAnswerers;
+        }
+        String sqlQuery = String.format(SQL_STATEMENT_FETCH_BEST_AVG_ANSWERS_WITHIN_TIMESTAMP, start, end, minReq, limit);
+        try {
+            PreparedStatement statement = connection.prepareStatement(sqlQuery);
+            ResultSet resultSet = statement.executeQuery();
+            while(resultSet.next()) {
+                int holoQuizID = resultSet.getInt("user_id");
+                int answers = resultSet.getInt("ans_count");
+                int average = resultSet.getInt("average");
+                String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
+                PlayerData contestWinner = new PlayerData(playerName, -1, answers, average, holoQuizID);
+                bestAnswerers.add(contestWinner);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return bestAnswerers;
+    }
+
+
+    @Deprecated
     public ArrayList<PlayerData> getFastestAnswerersWithinTimestampNoRepeat
             (Connection connection, long start, long end, int limit) {
         ArrayList<PlayerData> fastestAnswerers = new ArrayList<>();
@@ -127,29 +153,5 @@ public class AnswersLogs {
             e.printStackTrace();
         }
         return fastestAnswerers;
-    }
-
-    public ArrayList<PlayerData> getBestAnswerersWithinTimestamp
-            (Connection connection, long start, long end, int limit, int minReq) {
-        ArrayList<PlayerData> bestAnswerers = new ArrayList<>();
-        if(limit == 0) {
-            return bestAnswerers;
-        }
-        String sqlQuery = String.format(SQL_STATEMENT_FETCH_BEST_AVG_ANSWERS_WITHIN_TIMESTAMP, start, end, minReq, limit);
-        try {
-            PreparedStatement statement = connection.prepareStatement(sqlQuery);
-            ResultSet resultSet = statement.executeQuery();
-            while(resultSet.next()) {
-                int holoQuizID = resultSet.getInt("user_id");
-                int answers = resultSet.getInt("ans_count");
-                int average = resultSet.getInt("average");
-                String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerData contestWinner = new PlayerData(playerName, -1, answers, average, holoQuizID);
-                bestAnswerers.add(contestWinner);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return bestAnswerers;
     }
 }

@@ -37,12 +37,12 @@ LeaderboardMinQuestionsNeeded: 50
 #Contests feature. ##NOT WORKING, DO NOT ENABLE
 Contests: #Edit Rewards in Rewards.yml!
   Daily: false
-  DailyMin: 1
+  DailyAvgMin: 1
   Weekly: false
-  WeeklyMin: 7
-  WeeklyResetDay: Monday #The day you choose is the start day. Pls spell correctly.
+  WeeklyAvgMin: 7
+  WeeklyResetDay: Monday #The day you choose is the start day. Pls spell correctly. //UNUSED
   Monthly: false
-  MonthlyMin: 10
+  MonthlyAvgMin: 10
   TimeZone: GMT+8 #Used to offset if the server host has a different time zone.
 
 # Easter Eggs!

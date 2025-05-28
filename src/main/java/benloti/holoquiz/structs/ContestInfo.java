@@ -2,107 +2,81 @@ package benloti.holoquiz.structs;
 
 import org.bukkit.Bukkit;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 
 public class ContestInfo {
-    private final String type;
+    private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
     private final int minAnswersNeeded;
 
-    private final ArrayList<ContestRewardTier> topAnswerRewards;
-    private final ArrayList<ContestRewardTier> bestAverageRewards;
-    private final ArrayList<ContestRewardTier> fastestRewards;
-    private final int topAnswerPlacements;
-    private final int bestAverageAnswerPlacements;
-    private final int fastestAnswerPlacements;
+    private final ArrayList<ContestRewardTier> topAnswerRewards; // Code 0
+    private final ArrayList<ContestRewardTier> fastestRewards; // Code 1
+    private final ArrayList<ContestRewardTier> bestAverageRewards; // Code 2
+
 
     private long startTime;
     private long endTime;
     private LocalDate startDate;
     private LocalDate endDate;
 
-    public ContestInfo(long start, long end, String type, int minReq, ArrayList<ContestRewardTier> topAnswerRewards,
-                       ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> fastestRewards) {
-        this.startTime = start;
-        this.endTime = end;
-        this.type = type;
+    public ContestInfo(ZoneId zoneId, int type, int minReq, ArrayList<ContestRewardTier> topAnswerRewards,
+                       ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> fastestRewards,
+                       LocalDate startDate, LocalDate endDate) {
+        this.typeCode = type;
         this.minAnswersNeeded = minReq;
         this.topAnswerRewards = topAnswerRewards;
         this.bestAverageRewards = bestAverageRewards;
         this.fastestRewards = fastestRewards;
-        this.topAnswerPlacements = checkPlacementCount(topAnswerRewards);
-        this.bestAverageAnswerPlacements = checkPlacementCount(bestAverageRewards);
-        this.fastestAnswerPlacements = checkPlacementCount(fastestRewards);
 
+        this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        LocalDate tempEndDate = endDate.plusDays(1);
+        this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
     }
 
     public long getStartTime() {
-        return this.endTime;
-    }
-
-    public long getEndTime() {
         return this.startTime;
     }
 
-    public String getType() {
-        return type;
+    public long getEndTime() {
+        return this.endTime;
     }
 
-    public void updateContestTimes(long start, long end) {
-        this.startTime = start;
-        this.endTime = end;
+    public int getTypeCode() {
+        return typeCode;
     }
 
     public int getMinAnswersNeeded() {
         return minAnswersNeeded;
     }
 
-    public int getTopAnswerPlacements() {
-        return topAnswerPlacements;
-    }
-
-    public int getBestAverageAnswerPlacements() {
-        return bestAverageAnswerPlacements;
-    }
-
-    public int getFastestAnswerPlacements() {
-        return fastestAnswerPlacements;
-    }
-
-    public void loadDates (ZoneId zoneId) {
-        startDate = Instant.ofEpochMilli(startTime).atZone(zoneId).toLocalDate();
-        endDate = Instant.ofEpochMilli(endTime).atZone(zoneId).toLocalDate();
-    }
-
-
-    public ArrayList<ContestRewardTier> getRewardByCategory(String categoryCode) {
-        if(categoryCode.equals("M")) {
+    public ArrayList<ContestRewardTier> getRewardByCategory(int code) {
+        if(code == 0) {
             return topAnswerRewards;
         }
-        if(categoryCode.equals("F")) {
+        if(code == 1) {
             return fastestRewards;
         }
-        if(categoryCode.equals("B")) {
+        if(code == 2) {
             return bestAverageRewards;
         }
         Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
         return null;
     }
 
-    private int checkPlacementCount(ArrayList<ContestRewardTier> rewardTiers) {
-        if(rewardTiers == null) {
-            return 0;
+    public int getRewardCountByCategory(int code) {
+        if(code == 0) {
+            return topAnswerRewards.size();
         }
-
-        int totalPlacements = 0;
-        for(ContestRewardTier rewardTier : rewardTiers) {
-            totalPlacements += rewardTier.getReps();
+        if(code == 1) {
+            return fastestRewards.size();
         }
-        return totalPlacements;
+        if(code == 2) {
+            return bestAverageRewards.size();
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
+        return 0;
     }
-
 
     public LocalDate getStartDate() {
         return startDate;
@@ -110,5 +84,32 @@ public class ContestInfo {
 
     public LocalDate getEndDate() {
         return endDate;
+    }
+
+    public void updateTournamentDateToNextCycle(ZoneId zoneId) {
+        boolean theSafeguardThatShouldNeverTrigger = true;
+        if(this.typeCode == 0) {
+            //typeCode == 0 -> Daily
+            theSafeguardThatShouldNeverTrigger = false;
+            this.startDate = endDate.plusDays(1);
+            this.endDate = startDate.plusDays(1);
+        }
+        else if(this.typeCode == 1) {
+            //typeCode == 1 -> Weekly
+            theSafeguardThatShouldNeverTrigger = false;
+            this.startDate = endDate.plusDays(1);
+            this.endDate = startDate.plusWeeks(1);
+        }
+        else if(this.typeCode == 2) {
+            //typeCode == 2 -> Monthly
+            theSafeguardThatShouldNeverTrigger = false;
+            this.startDate = endDate.plusDays(1);
+            this.endDate = startDate.plusMonths(1);
+        }
+        this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        this.endTime = endDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        if(theSafeguardThatShouldNeverTrigger) {
+            Bukkit.getLogger().info("[HoloQuiz] Contest StatusCode not between 1 to 3. How did you even get here?");
+        }
     }
 }

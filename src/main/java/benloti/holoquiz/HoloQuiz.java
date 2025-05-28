@@ -20,7 +20,7 @@ public final class HoloQuiz extends JavaPlugin {
     private DatabaseManager database;
     private GameManager gameManager;
     private UserInterface userInterface;
-    //private ContestManager contestManager;
+    private ContestManager contestManager;
     private QuizAnswerHandler quizAnswerHandler;
     private PlayerCmds playerCmds;
     private CmdAutoComplete cmdAutoComplete;
@@ -33,8 +33,8 @@ public final class HoloQuiz extends JavaPlugin {
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
         this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
-        //this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
-        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, userInterface, configFile);
+        this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
+        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, userInterface, configFile, contestManager);
         this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, this);
         this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
         getCommand("HoloQuiz").setExecutor(playerCmds);

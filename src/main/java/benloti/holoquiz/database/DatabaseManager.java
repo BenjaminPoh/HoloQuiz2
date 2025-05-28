@@ -196,72 +196,41 @@ public class DatabaseManager {
         return userInfo.getPlayerNameByHoloQuizID(connection, holoQuizID);
     }
 
-    public ArrayList<ContestInfo> updateOngoingContestInformation(ArrayList<ContestInfo> enabledContests) {
-        ArrayList<ContestInfo> updatedOngoingContests = new ArrayList<>();
-        ArrayList<ContestInfo> ongoingContests = contests.getOngoingTournaments(connection);
-        //We do it clever.
-        HashMap<String, ContestInfo> enabledContestFlag = new HashMap<>();
-        HashMap<String, ContestInfo> ongoingContestFlag = new HashMap<>();
-        for (ContestInfo enabledContest : enabledContests) {
-            enabledContestFlag.put(enabledContest.getType(), enabledContest);
-        }
-        for (ContestInfo ongoingContest : ongoingContests) {
-           ongoingContestFlag.put(ongoingContest.getType(), ongoingContest);
-        }
-        for(String code : enabledContestFlag.keySet() ) {
-            if(enabledContestFlag.containsKey(code) && !ongoingContestFlag.containsKey(code)) {
-                //Add new contest to db and the return list
-                ContestInfo newContestInfo = enabledContestFlag.get(code);
-                contests.createOngoingContest(connection, newContestInfo);
-                updatedOngoingContests.add(newContestInfo);
-            } else if (!enabledContestFlag.containsKey(code) && ongoingContestFlag.containsKey(code)) {
-                //Delete disabled contest.
-                contests.deleteOngoingContest(connection, code);
-            } else if (enabledContestFlag.containsKey(code) && ongoingContestFlag.containsKey(code)) {
-                //Add ongoing contest to the return list
-                ContestInfo configContestInfo = enabledContestFlag.get(code);
-                ContestInfo storedContestInfo = ongoingContestFlag.get(code);
-                configContestInfo.updateContestTimes(storedContestInfo.getStartTime(), storedContestInfo.getEndTime());
-                updatedOngoingContests.add(configContestInfo);
-            }
-        }
-        return updatedOngoingContests;
+    public ArrayList<Long> fetchSavedContests() {
+        return contests.getOngoingTournaments(connection);
     }
 
-    public Map<String, ArrayList<PlayerData>> executeContestEndedTasks(ContestInfo endedContest, long nextContestTime, boolean isMultipleWinsAllowed) {
+    public ArrayList<ArrayList<PlayerData>> fetchContestWinners(ContestInfo endedContest) {
         connection = getConnection();
         long startTime = endedContest.getStartTime();
         long endTime = endedContest.getEndTime();
         int minAns = endedContest.getMinAnswersNeeded();
+
         //Fetch All the Winners
         ArrayList<PlayerData> mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
-                startTime, endTime, endedContest.getTopAnswerPlacements());
-        ArrayList<PlayerData> fastestAnswerWinners;
-        if (isMultipleWinsAllowed) {
-            fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
-                    startTime, endTime, endedContest.getFastestAnswerPlacements());
-        } else {
-            fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestampNoRepeat(connection,
-                    startTime, endTime, endedContest.getFastestAnswerPlacements());
-        }
+                startTime, endTime, endedContest.getRewardCountByCategory(0));
+
+        ArrayList<PlayerData> fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(1));
 
         ArrayList<PlayerData> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
-                startTime, endTime, endedContest.getBestAverageAnswerPlacements(), minAns);
-
-        //Update Contests
-        contests.updateContestInfo(connection, endedContest, nextContestTime);
+                startTime, endTime, endedContest.getRewardCountByCategory(2), minAns);
 
         //Log Winners
-        contests.addContestWinners(connection, mostAnswerWinners, endedContest, "M");
-        contests.addContestWinners(connection, fastestAnswerWinners, endedContest, "F");
-        contests.addContestWinners(connection, bestAverageWinners, endedContest, "B");
+        contests.logContestWinners(connection, mostAnswerWinners, endedContest, 0);
+        contests.logContestWinners(connection, fastestAnswerWinners, endedContest, 1);
+        contests.logContestWinners(connection, bestAverageWinners, endedContest, 2);
 
         //Return ArrayLists for issuing rewards
-        Map<String, ArrayList<PlayerData>> allContestWinners = new HashMap<>();
-        allContestWinners.put("M", mostAnswerWinners);
-        allContestWinners.put("F", fastestAnswerWinners);
-        allContestWinners.put("B", bestAverageWinners);
-        return allContestWinners;
+        ArrayList<ArrayList<PlayerData>> fullWinnersList = new ArrayList<>(3);
+        fullWinnersList.set(0, mostAnswerWinners);
+        fullWinnersList.set(1,fastestAnswerWinners);
+        fullWinnersList.set(2, bestAverageWinners);
+        return fullWinnersList;
+    }
+
+    public void updateRunningContestInfo(int type, long time) {
+        contests.updateContestInfo(connection, type, time);
     }
 
     public void storeRewardToStorage(String playerName, String type, String contents, String metaDetails, int count) {
@@ -277,8 +246,6 @@ public class DatabaseManager {
     public void setRewardsHandler(RewardsHandler rewardsHandler) {
         this.rewardsHandler = rewardsHandler;
     }
-
-
 
     /**
      * Fetches stored rewards, and issues as much as inventory space allows.
@@ -298,5 +265,13 @@ public class DatabaseManager {
             return -2;
         }
         return rewardsHandler.giveRewardsByTier(player, storedRewards);
+    }
+
+    public void createOngoingContest(ContestInfo newContestInfo) {
+        contests.createOngoingContest(connection, newContestInfo);
+    }
+
+    public void deleteOngoingContest(int code) {
+        contests.deleteOngoingContest(connection, code);
     }
 }

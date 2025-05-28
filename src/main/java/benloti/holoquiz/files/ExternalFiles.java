@@ -219,12 +219,7 @@ public class ExternalFiles {
             List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
-            if(rewardTierItemSection == null) {
-                rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
-                continue;
-            }
             loadItemReward(rewardTierItemSection, itemReward);
-
             rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
         }
 
@@ -232,6 +227,9 @@ public class ExternalFiles {
     }
 
     private void loadItemReward(ConfigurationSection rewardTierItemSection, ArrayList<ItemStack> itemReward) {
+        if(rewardTierItemSection == null) {
+            return;
+        }
         for (String key : rewardTierItemSection.getKeys(false)) {
             ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key);
             String itemType = rewardTierItem.getString("Material", "");
@@ -288,12 +286,11 @@ public class ExternalFiles {
             List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
-            if(rewardTierItemSection == null) {
-                rewardsList.add(new ContestRewardTier(moneyReward, commandsExecuted, null, message, reps));
-                continue;
-            }
             loadItemReward(rewardTierItemSection, itemReward);
-            rewardsList.add(new ContestRewardTier(moneyReward, commandsExecuted, itemReward, message, reps));
+            ContestRewardTier rewardTier = new ContestRewardTier(moneyReward, commandsExecuted, itemReward, message);
+            for(int i = 0; i < reps; i++) {
+                rewardsList.add(rewardTier);
+            }
         }
         return rewardsList;
     }

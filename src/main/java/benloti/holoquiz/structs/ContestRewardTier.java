@@ -10,14 +10,12 @@ public class ContestRewardTier  {
     private final List<String> commandsExecuted;
     private final ArrayList<ItemStack> itemRewards;
     private final String message;
-    private final int reps;
 
-    public ContestRewardTier(double money, List<String> commands, ArrayList<ItemStack> items, String message, int reps) {
+    public ContestRewardTier(double money, List<String> commands, ArrayList<ItemStack> items, String message) {
         this.moneyReward = money;
         this.commandsExecuted = commands;
         this.itemRewards = items;
         this.message = message;
-        this.reps = reps;
     }
 
     public double getMoneyReward() {
@@ -34,9 +32,5 @@ public class ContestRewardTier  {
 
     public String getMessage() {
         return message;
-    }
-
-    public int getReps() {
-        return reps;
     }
 }

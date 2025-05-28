@@ -57,13 +57,11 @@ public class RewardsHandler {
             PlayerData contestWinnerData = contestWinner.getContestWinnerData();
             String playerName = contestWinnerData.getPlayerName();
             Player winningPlayer = plugin.getServer().getPlayer(playerName);
-            if (winningPlayer == null) {
+            if (winningPlayer == null || checkSRTS(winningPlayer.getWorld().getName())) {
                 storeContestRewardToStorage(playerName, contestWinner);
             } else {
                 issueContestReward(winningPlayer, contestWinner, contestInfo);
             }
-
-
         }
     }
 

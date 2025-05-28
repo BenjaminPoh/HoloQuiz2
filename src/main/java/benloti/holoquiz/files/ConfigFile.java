@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.time.ZoneId;
 import java.util.List;
 
 public class ConfigFile {
@@ -40,14 +41,15 @@ public class ConfigFile {
     private final int weeklyMin;
     private final int monthlyMin;
     private final String weeklyResetDay;
-    private final String timezoneOffset;
-    private final boolean isMultipleContestPositionAllowed;
+    private final ZoneId timezoneOffset;
     private final boolean SRTS_useWhitelist;
     private final List<String> SRTS_WorldList; //Expect list to be small.
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
+
+        this.pluginPrefix = configs.getString("PluginPrefix");
         this.interval = configs.getInt("Interval");
         this.intervalCheck = configs.getInt("IntervalCheck");
         this.revealAnswerDelay = configs.getInt("RevealAnswerDelay");
@@ -57,11 +59,13 @@ public class ConfigFile {
         this.gameMode = configs.getString("GameMode");
         this.enableOnStart = configs.getBoolean("EnableOnStart");
         this.QuestionCooldownLength = configs.getInt("QuestionCooldown");
-        ConfigurationSection cheatSection= configs.getConfigurationSection("Cheats");
+
+        ConfigurationSection cheatSection = configs.getConfigurationSection("Cheats");
         this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
         this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
         this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
         this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
+
         ConfigurationSection mathSection = configs.getConfigurationSection("QuickMath");
         this.mathRange = mathSection.getInt("MathRange");
         this.mathDistribution = mathSection.getString("Distribution");
@@ -70,20 +74,19 @@ public class ConfigFile {
         this.mathChaosMode = mathSection.getBoolean("ChaosMode");
         this.mathQuestionColour = mathSection.getString("QuestionColour");
         this.mathDifficulty = mathSection.getString("MathDifficulty");
+
         ConfigurationSection contestSection = configs.getConfigurationSection("Contests");
         this.dailyContest = contestSection.getBoolean("Daily");
         this.weeklyContest = contestSection.getBoolean("Weekly");
         this.monthlyContest = contestSection.getBoolean("Monthly");
-        this.weeklyResetDay = contestSection.getString("WeeklyResetDay");
-        this.dailyMin = contestSection.getInt("DailyMin");
-        this.weeklyMin = contestSection.getInt("WeeklyMin");
-        this.monthlyMin = contestSection.getInt("MonthlyMin");
-        this.timezoneOffset = contestSection.getString("TimeZone", "GMT+0");
-        this.isMultipleContestPositionAllowed = contestSection.getBoolean("RepeatWinning");
-        this.pluginPrefix = configs.getString("PluginPrefix");
+        this.weeklyResetDay = contestSection.getString("WeeklyResetDay", "Monday");
+        this.dailyMin = contestSection.getInt("DailyAvgMin");
+        this.weeklyMin = contestSection.getInt("WeeklyAvgMin");
+        this.monthlyMin = contestSection.getInt("MonthlyAvgMin");
+        this.timezoneOffset = parseTimeZone(contestSection.getString("TimeZone", "GMT+0"));
+
         this.SRTS_useWhitelist = configs.getBoolean("SRTS_useWhitelist");
         this.SRTS_WorldList = configs.getStringList("SRTS_WorldList");
-
         if(this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
             Bukkit.getLogger().info(WARNING_SRTS_EMPTY_WHITELIST);
         }
@@ -189,12 +192,8 @@ public class ConfigFile {
         return monthlyMin;
     }
 
-    public String getTimezoneOffset() {
+    public ZoneId getTimezoneOffset() {
         return timezoneOffset;
-    }
-
-    public boolean isMultipleContestPositionAllowed() {
-        return isMultipleContestPositionAllowed;
     }
 
     public int getIntervalCheck() {
@@ -215,5 +214,16 @@ public class ConfigFile {
 
     public List<String> getSRTS_WorldList() {
         return SRTS_WorldList;
+    }
+
+    private ZoneId parseTimeZone(String timeZone) {
+        ZoneId zoneId;
+        try {
+            zoneId = ZoneId.of(timeZone);
+        } catch (Exception e) {
+            Bukkit.getLogger().info("[HoloQuiz] Your TimeZone isn't valid! Defaulting to +0.");
+            zoneId = ZoneId.of("GMT+0");
+        }
+        return zoneId;
     }
 }

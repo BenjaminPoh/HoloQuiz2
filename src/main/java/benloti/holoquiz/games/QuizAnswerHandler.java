@@ -2,6 +2,7 @@ package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.files.ConfigFile;
+import benloti.holoquiz.files.ContestManager;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.structs.Question;
@@ -33,13 +34,14 @@ public class QuizAnswerHandler implements Listener {
     private final HoloQuiz plugin;
     private final DatabaseManager database;
 
-    private  GameManager gameManager;
+    private GameManager gameManager;
     private RewardsHandler rewardsHandler;
     private UserInterface userInterface;
     private ConfigFile configFile;
+    private ContestManager contestManager;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             UserInterface userInterface, ConfigFile configFile) {
+                             UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
@@ -47,6 +49,7 @@ public class QuizAnswerHandler implements Listener {
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.userInterface = userInterface;
         this.configFile = configFile;
+        this.contestManager = contestManager;
     }
 
     public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile) {
@@ -116,6 +119,9 @@ public class QuizAnswerHandler implements Listener {
         //Log it
         String logInfo = String.format(CORRECT_ANSWER_LOG, player.getName(), timeTaken);
         Bukkit.getLogger().info(logInfo);
+
+        //Update for ended contests if necessary
+        contestManager.updateContestsStatus();
     }
 
     private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question) {

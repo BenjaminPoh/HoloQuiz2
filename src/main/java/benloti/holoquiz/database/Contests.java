@@ -5,42 +5,41 @@ import benloti.holoquiz.structs.PlayerData;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Contests {
     //TODO: Implement table for logs of winners
     //SCHEMA- ContestTimes : START, END, A/B/T, (D/W/M), ContestID (INT), Concluded
     //SCHEMA- ContestWinners : ContestID, HoloQuizID
     private static final String SQL_STATEMENT_CREATE_CONTEST_INFO_TABLE =
-            "CREATE TABLE IF NOT EXISTS contest_info (type VARCHAR(1) PRIMARY KEY , start BIGINT, end BIGINT)";
+            "CREATE TABLE IF NOT EXISTS contest_info (type INT PRIMARY KEY , end BIGINT)";
     private static final String SQL_STATEMENT_CREATE_CONTEST_LOG_TABLE =
-            "CREATE TABLE IF NOT EXISTS contest_log (type VARCHAR(2), start DATE, user_id INT, position INT)";
+            "CREATE TABLE IF NOT EXISTS contest_log (type INT, category INT, start BIGINT, end BIGINT, user_id INT, position INT)";
 
     private static final String SQL_STATEMENT_FETCH_ONGOING_CONTESTS =
             "SELECT * FROM contest_info";
     private static final String SQL_STATEMENT_DELETE_ONGOING_CONTEST =
             "DELETE FROM contest_info WHERE type = ?";
     private static final String SQL_STATEMENT_ADD_ONGOING_CONTEST =
-            "INSERT INTO contest_info (type, start, end) VALUES (?, ?, ?)";
-    private static final String SQL_STATEMENT_ADD_CONTEST_WINNER =
-            "INSERT INTO contest_log (type, start, user_id, position) VALUES (?, ?, ?, ?)";
+            "INSERT INTO contest_info (type, end) VALUES (?, ?)";
     private static final String SQL_STATEMENT_UPDATE_CONTEST =
-            "UPDATE contest_info SET start = ?, end = ? WHERE type = ?";
+            "UPDATE contest_info SET end = ? WHERE type = ?";
+    private static final String SQL_STATEMENT_ADD_CONTEST_WINNER =
+            "INSERT INTO contest_log (type, category, start, end, user_id, position) VALUES (?, ?, ?, ?, ?, ?)";
 
     public Contests(Connection connection) {
         createTable(connection);
     }
 
-    public ArrayList<ContestInfo> getOngoingTournaments(Connection connection) {
-        ArrayList<ContestInfo> incompleteTournamentsCode = new ArrayList<>();
+    public ArrayList<Long> getOngoingTournaments(Connection connection) {
+        ArrayList<Long> incompleteTournamentsCode = new ArrayList<>(Arrays.asList(0L, 0L, 0L));
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_STATEMENT_FETCH_ONGOING_CONTESTS);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                String type = resultSet.getString("type");
-                long startTime = resultSet.getLong("start");
+                int type = resultSet.getInt("type");
                 long endTime = resultSet.getLong("end");
-                ContestInfo temp = new ContestInfo(startTime, endTime, type, -1, null, null, null);
-                incompleteTournamentsCode.add(temp);
+                incompleteTournamentsCode.set(type,endTime);
             }
             return incompleteTournamentsCode;
 
@@ -50,10 +49,10 @@ public class Contests {
         return incompleteTournamentsCode;
     }
 
-    public void deleteOngoingContest(Connection connection, String contestType) {
+    public void deleteOngoingContest(Connection connection, int contestType) {
         try {
             PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_DELETE_ONGOING_CONTEST);
-            statement.setString(1, contestType);
+            statement.setInt(1, contestType);
             statement.executeQuery();
         } catch(Exception e) {
             e.printStackTrace();
@@ -63,22 +62,20 @@ public class Contests {
     public void createOngoingContest(Connection connection, ContestInfo contestInfo) {
         try {
             PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_ADD_ONGOING_CONTEST);
-            statement.setString(1, contestInfo.getType());
-            statement.setLong(2, contestInfo.getStartTime());
-            statement.setLong(3, contestInfo.getEndTime());
+            statement.setInt(1, contestInfo.getTypeCode());
+            statement.setLong(2, contestInfo.getEndTime());
             statement.executeQuery();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void addContestWinners(Connection connection, ArrayList<PlayerData> contestWinners, ContestInfo contestInfo, String contestCategory) {
+    public void logContestWinners(Connection connection, ArrayList<PlayerData> contestWinners, ContestInfo contestInfo, int contestCategory) {
         try {
             int position = 1;
-            String contestCode = contestInfo.getType() + contestCategory;
             for (PlayerData contestWinner: contestWinners) {
                 PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_ADD_CONTEST_WINNER);
-                statement.setString(1, contestCode);
+                statement.setInt(1, contestInfo.getTypeCode());
                 statement.setLong(2, contestInfo.getStartTime());
                 statement.setInt(3, contestWinner.getHoloQuizID());
                 statement.setInt(4, position);
@@ -90,14 +87,11 @@ public class Contests {
         }
     }
 
-    public void updateContestInfo(Connection connection, ContestInfo endedContest, long newEndTime) {
-        long newStartTime = endedContest.getEndTime();
-        String contestCode = endedContest.getType();
+    public void updateContestInfo(Connection connection, int code, long newEndTime) {
         try {
             PreparedStatement statsSQLQuery = connection.prepareStatement(SQL_STATEMENT_UPDATE_CONTEST);
-            statsSQLQuery.setLong(1, newStartTime);
-            statsSQLQuery.setLong(2, newEndTime);
-            statsSQLQuery.setString(3, contestCode);
+            statsSQLQuery.setLong(1, newEndTime);
+            statsSQLQuery.setInt(2, code);
             statsSQLQuery.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
