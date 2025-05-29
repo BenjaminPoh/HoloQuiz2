@@ -19,7 +19,7 @@ public class AnswersLogs {
             "SELECT user_id, COUNT (*) as ans_count FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d " +
             "GROUP BY user_id ORDER BY ans_count DESC LIMIT %d";
     private static final String SQL_STATEMENT_FETCH_FASTEST_ANSWERS_WITHIN_TIMESTAMP =
-            "SELECT user_id, took, FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d " +
+            "SELECT user_id, took FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d " +
                     "ORDER BY took ASC LIMIT %d";
     private static final String SQL_STATEMENT_FETCH_FASTEST_ANSWERS_WITHIN_TIMESTAMP_NO_LIMIT =
             "SELECT user_id, took, FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d " +

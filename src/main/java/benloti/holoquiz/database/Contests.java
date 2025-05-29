@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Contests {
-    //TODO: Implement table for logs of winners
-    //SCHEMA- ContestTimes : START, END, A/B/T, (D/W/M), ContestID (INT), Concluded
-    //SCHEMA- ContestWinners : ContestID, HoloQuizID
     private static final String SQL_STATEMENT_CREATE_CONTEST_INFO_TABLE =
             "CREATE TABLE IF NOT EXISTS contest_info (type INT PRIMARY KEY , end BIGINT)";
     private static final String SQL_STATEMENT_CREATE_CONTEST_LOG_TABLE =
@@ -36,7 +33,7 @@ public class Contests {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_STATEMENT_FETCH_ONGOING_CONTESTS);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 int type = resultSet.getInt("type");
                 long endTime = resultSet.getLong("end");
                 incompleteTournamentsCode.set(type,endTime);
@@ -53,7 +50,7 @@ public class Contests {
         try {
             PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_DELETE_ONGOING_CONTEST);
             statement.setInt(1, contestType);
-            statement.executeQuery();
+            statement.executeUpdate();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -64,7 +61,7 @@ public class Contests {
             PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_ADD_ONGOING_CONTEST);
             statement.setInt(1, contestInfo.getTypeCode());
             statement.setLong(2, contestInfo.getEndTime());
-            statement.executeQuery();
+            statement.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,10 +73,12 @@ public class Contests {
             for (PlayerData contestWinner: contestWinners) {
                 PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_ADD_CONTEST_WINNER);
                 statement.setInt(1, contestInfo.getTypeCode());
-                statement.setLong(2, contestInfo.getStartTime());
-                statement.setInt(3, contestWinner.getHoloQuizID());
-                statement.setInt(4, position);
-                statement.executeQuery();
+                statement.setInt(2,contestCategory);
+                statement.setLong(3, contestInfo.getStartTime());
+                statement.setLong(4, contestInfo.getEndTime());
+                statement.setInt(5, contestWinner.getHoloQuizID());
+                statement.setInt(6, position);
+                statement.executeUpdate();
                 position += 1;
             }
         } catch (Exception e) {

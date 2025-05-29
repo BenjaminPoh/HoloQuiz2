@@ -255,6 +255,10 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
+        //if(args[0].equalsIgnoreCase("contest") || args[0].equalsIgnoreCase("contests")) {
+            //return true;
+        //}
+
         if (args[0].equalsIgnoreCase("top") && args.length > 1) {
             int size = externalFiles.getConfigFile().getLeaderboardSize();
             int minReq = externalFiles.getConfigFile().getLeaderboardMinReq();

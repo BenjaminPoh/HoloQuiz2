@@ -8,13 +8,22 @@ import benloti.holoquiz.structs.ContestInfo;
 import benloti.holoquiz.structs.ContestRewardTier;
 import benloti.holoquiz.structs.ContestWinner;
 import benloti.holoquiz.structs.PlayerData;
+import org.bukkit.Bukkit;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ContestManager {
+    private static final String LOG_CURRENT_TIME =
+            "[HoloQuiz] The set TimeZone is %s, giving a current date of %s (%d)";
+    private static final String LOG_CREATED_NEW_CONTEST =  "[HoloQuiz] Scheduled new %s Contest from %s (%d) to %s (%d)";
+    private static final String LOG_DELETED_CONTEST =  "[HoloQuiz] Removed old %s Contest that ends on %s (%d)";
+    private static final String LOG_MESSAGE_CONTEST_ENDED = "[HoloQuiz] Contest from %s to %s ended!";
+
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
     private final ZoneId zoneId;
@@ -34,6 +43,11 @@ public class ContestManager {
         this.monthlyEnabled = configFile.isMonthlyContest();
         this.zoneId = configFile.getTimezoneOffset();
 
+        ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
+        long currentTimestamp = currentDateTime.toInstant().toEpochMilli();
+        String logMessage = String.format(LOG_CURRENT_TIME,zoneId, currentDateTime,currentTimestamp);
+        Bukkit.getLogger().info(logMessage);
+
         this.enabledContests = initialiseContestInfo(externalFiles, configFile);
     }
 
@@ -50,8 +64,7 @@ public class ContestManager {
     }
 
     public void updateContestsStatus() {
-        LocalDate todayDate = LocalDate.now(zoneId);
-        long currTime = todayDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        long currTime = ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
 
         for(int i = 0; i < 3; i++) {
             ContestInfo currContest = enabledContests.get(i);
@@ -117,28 +130,59 @@ public class ContestManager {
             if(currentEnabledContest != null && currentSavedContest == 0) {
                 //Add new contest to db and the return list
                 databaseManager.createOngoingContest(currentEnabledContest);
+                String logMessage = String.format(LOG_CREATED_NEW_CONTEST, getContestTypeByID(i),
+                        currentEnabledContest.getStartDate(), currentEnabledContest.getStartTime(),
+                        currentEnabledContest.getEndDate(), currentEnabledContest.getEndTime()); //How long is this going
+                Bukkit.getLogger().info(logMessage);
             } else if (currentEnabledContest == null && currentSavedContest > 0) {
                 //Delete disabled contest.
                 databaseManager.deleteOngoingContest(i);
+                ZonedDateTime dateTime = Instant.ofEpochMilli(currentSavedContest).atZone(zoneId);
+                String contestType = getContestTypeByID(i);
+                String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, currentSavedContest);
+                Bukkit.getLogger().info(logMessage);
             }
         }
     }
 
+    private String getContestTypeByID(int i) {
+        if(i == 0) {
+            return "daily";
+        }
+        if(i == 1) {
+            return "weekly";
+        }
+        if(i == 2) {
+            return "monthly";
+        }
+        return "some non-existent value because you edited the db you lil punk";
+    }
+
     private void initialiseEndedContests(ArrayList<ContestInfo> enabledContests, ArrayList<Long> savedContests) {
-        LocalDate todayDate = LocalDate.now(zoneId);
-        long currTime = todayDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
+        long currTime = currentDateTime.toInstant().toEpochMilli();
 
         for(int i = 0; i < 3; i++) {
             ContestInfo currContest = enabledContests.get(i);
             long endTime = savedContests.get(i);
+            if (endTime == 0) {
+                continue; //The band-aid for when the contest is newly initialised.
+            }
             checkForContestExpiry(currTime, i, currContest, endTime);
         }
     }
 
     private void checkForContestExpiry(long currTime, int i, ContestInfo currContest, long endTime) {
         if(currTime > endTime) {
-            ArrayList<ArrayList<PlayerData>> dailyContestWinners = databaseManager.fetchContestWinners(currContest);
-            ArrayList<ContestWinner> contestWinners = parseContestWinners(dailyContestWinners, currContest);
+            ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(currContest);
+            String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, currContest.getStartDate(), currContest.getEndDate());
+            Bukkit.getLogger().info(logMessage);
+            if(allContestWinners.isEmpty()) {
+                Bukkit.getLogger().info("[HoloQuiz] The contest ended with no winners! Not even one!");
+                currContest.updateTournamentDateToNextCycle(zoneId);
+                return;
+            }
+            ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, currContest);
             rewardsHandler.giveContestRewards(contestWinners, currContest);
             currContest.updateTournamentDateToNextCycle(zoneId);
 
@@ -153,12 +197,12 @@ public class ContestManager {
         for(int i = 0; i < contestWinnersData.size(); i++) {
             ArrayList<PlayerData> contestCategoryWinnersData = contestWinnersData.get(i);
             ArrayList<ContestRewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
-            for(int j = 0; j< contestInfo.getRewardCountByCategory(i); j++) {
+            int limit = Math.min(contestCategoryWinnersData.size(), contestRewardTiers.size());
+            for(int j = 0; j < limit; j++) {
                 ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j);
                 contestWinners.add(winner);
             }
         }
         return contestWinners;
     }
-
 }

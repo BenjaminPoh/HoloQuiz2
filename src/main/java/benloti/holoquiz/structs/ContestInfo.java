@@ -29,6 +29,8 @@ public class ContestInfo {
         this.bestAverageRewards = bestAverageRewards;
         this.fastestRewards = fastestRewards;
 
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
         LocalDate tempEndDate = endDate.plusDays(1);
         this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;

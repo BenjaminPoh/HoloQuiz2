@@ -201,6 +201,9 @@ public class DatabaseManager {
     }
 
     public ArrayList<ArrayList<PlayerData>> fetchContestWinners(ContestInfo endedContest) {
+        if(endedContest == null) {
+            return new ArrayList<>();
+        }
         connection = getConnection();
         long startTime = endedContest.getStartTime();
         long endTime = endedContest.getEndTime();
@@ -223,9 +226,9 @@ public class DatabaseManager {
 
         //Return ArrayLists for issuing rewards
         ArrayList<ArrayList<PlayerData>> fullWinnersList = new ArrayList<>(3);
-        fullWinnersList.set(0, mostAnswerWinners);
-        fullWinnersList.set(1,fastestAnswerWinners);
-        fullWinnersList.set(2, bestAverageWinners);
+        fullWinnersList.add(mostAnswerWinners);
+        fullWinnersList.add(fastestAnswerWinners);
+        fullWinnersList.add(bestAverageWinners);
         return fullWinnersList;
     }
 
