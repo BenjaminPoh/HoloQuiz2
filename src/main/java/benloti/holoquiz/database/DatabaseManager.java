@@ -196,7 +196,7 @@ public class DatabaseManager {
         return userInfo.getPlayerNameByHoloQuizID(connection, holoQuizID);
     }
 
-    public ArrayList<Long> fetchSavedContests() {
+    public ArrayList<ContestInfo> fetchSavedContests() {
         return contests.getOngoingTournaments(connection);
     }
 
@@ -219,11 +219,6 @@ public class DatabaseManager {
         ArrayList<PlayerData> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
                 startTime, endTime, endedContest.getRewardCountByCategory(2), minAns);
 
-        //Log Winners
-        contests.logContestWinners(connection, mostAnswerWinners, endedContest, 0);
-        contests.logContestWinners(connection, fastestAnswerWinners, endedContest, 1);
-        contests.logContestWinners(connection, bestAverageWinners, endedContest, 2);
-
         //Return ArrayLists for issuing rewards
         ArrayList<ArrayList<PlayerData>> fullWinnersList = new ArrayList<>(3);
         fullWinnersList.add(mostAnswerWinners);
@@ -232,8 +227,8 @@ public class DatabaseManager {
         return fullWinnersList;
     }
 
-    public void updateRunningContestInfo(int type, long time) {
-        contests.updateContestInfo(connection, type, time);
+    public void updateRunningContestInfo(int type, long start, long end) {
+        contests.updateContestInfo(connection, type, start, end);
     }
 
     public void storeRewardToStorage(String playerName, String type, String contents, String metaDetails, int count) {
@@ -276,5 +271,32 @@ public class DatabaseManager {
 
     public void deleteOngoingContest(int code) {
         contests.deleteOngoingContest(connection, code);
+    }
+
+    public void logContestWinners(ArrayList<ArrayList<PlayerData>> allContestWinners, ContestInfo endedContest) {
+        contests.logContestWinners(connection, allContestWinners.get(0), endedContest, 0);
+        contests.logContestWinners(connection, allContestWinners.get(1), endedContest, 1);
+        contests.logContestWinners(connection, allContestWinners.get(2), endedContest, 2);
+    }
+
+    public PlayerData fetchPlayerContestPlacement(ContestInfo contest, String playerName, String playerUUID) {
+        int holoQuizID = getHoloQuizIDbyName(playerName, playerUUID);
+        if(holoQuizID == 0) {
+            return null;
+        }
+        connection = getConnection();
+        long startTime = contest.getStartTime();
+        long endTime = contest.getEndTime();
+        int minAns = contest.getMinAnswersNeeded();
+        return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, playerName);
+    }
+
+    public int getHoloQuizIDbyName(String playerName, String playerUUID) {
+        connection = getConnection();
+        int holoQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName);
+        if(holoQuizID == 0) {
+            Bukkit.getLogger().info(ERROR_HOLOQUIZ_ID_NOT_FOUND);
+        }
+        return holoQuizID;
     }
 }

@@ -3,11 +3,8 @@ package benloti.holoquiz.files;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.games.RewardsHandler;
-import benloti.holoquiz.structs.ContestInfo;
+import benloti.holoquiz.structs.*;
 
-import benloti.holoquiz.structs.ContestRewardTier;
-import benloti.holoquiz.structs.ContestWinner;
-import benloti.holoquiz.structs.PlayerData;
 import org.bukkit.Bukkit;
 
 import java.time.Instant;
@@ -16,6 +13,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ContestManager {
     private static final String LOG_CURRENT_TIME =
@@ -33,6 +32,7 @@ public class ContestManager {
     private final boolean monthlyEnabled;
 
     private final ArrayList<ContestInfo> enabledContests;
+    private final Set<String> playersWithOpenGUI = new HashSet<>();
 
     public ContestManager(DatabaseManager databaseManager, ConfigFile configFile,
                           ExternalFiles externalFiles, GameManager gameManager) {
@@ -51,26 +51,54 @@ public class ContestManager {
         this.enabledContests = initialiseContestInfo(externalFiles, configFile);
     }
 
-    private ArrayList<ContestInfo> initialiseContestInfo(ExternalFiles externalFiles, ConfigFile configFile) {
-        //Creates contests as though they don't exist.
-        ArrayList<ContestInfo> enabledContestList = initialiseNewContests(externalFiles, configFile);
-        //Fetch ongoing contests that were saved
-        ArrayList<Long> savedContestList = databaseManager.fetchSavedContests();
-        //Update the Database for removed and new contests
-        updateContestDB(enabledContestList,savedContestList);
-        //Check for ended contests
-        initialiseEndedContests(enabledContestList,savedContestList);
-        return enabledContestList;
-    }
-
     public void updateContestsStatus() {
         long currTime = ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
 
         for(int i = 0; i < 3; i++) {
             ContestInfo currContest = enabledContests.get(i);
             long endTime = currContest.getEndTime();
-            checkForContestExpiry(currTime, i, currContest, endTime);
+            if(currTime < endTime) {
+                continue;
+            }
+            handleEndedContestTasks(currContest);
+            currContest.updateTournamentDateToNextCycle(zoneId);
+            databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
         }
+    }
+
+    public ContestProgressGUI fetchPlayerContestStatus(String playerName, String playerUUID, UserInterface userInterface) {
+        if(this.playersWithOpenGUI.contains(playerName)) {
+            Bukkit.getLogger().info("[HoloQuiz] BUG: A player managed to open the Contests GUI while having it open.");
+        } else {
+            this.playersWithOpenGUI.add(playerName);
+        }
+        ContestProgressGUI contestProgressGUI = new ContestProgressGUI(this, playerName, userInterface);
+        for (ContestInfo contest : this.enabledContests) {
+            ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(contest);
+            PlayerData targetPlayerPlacement = databaseManager.fetchPlayerContestPlacement(contest,playerName,playerUUID);
+            contestProgressGUI.addInfo(contest, allContestWinners, targetPlayerPlacement);
+        }
+        return contestProgressGUI;
+    }
+
+    public void updateClosedContestGUI(String playerName) {
+        if(!this.playersWithOpenGUI.contains(playerName)) {
+            Bukkit.getLogger().info("[HoloQuiz] BUG: A player managed to close the Contests GUI while not having it open.");
+            return;
+        }
+        this.playersWithOpenGUI.remove(playerName);
+    }
+
+    private ArrayList<ContestInfo> initialiseContestInfo(ExternalFiles externalFiles, ConfigFile configFile) {
+        //Creates contests as though they don't exist.
+        ArrayList<ContestInfo> enabledContestList = initialiseNewContests(externalFiles, configFile);
+        //Fetch ongoing contests that were saved
+        ArrayList<ContestInfo> savedContestList = databaseManager.fetchSavedContests();
+        //Update the Database for removed and new contests
+        updateContestDB(enabledContestList,savedContestList);
+        //Check for ended contests
+        initialiseEndedContests(enabledContestList,savedContestList);
+        return enabledContestList;
     }
 
     private ArrayList<ContestInfo> initialiseNewContests(ExternalFiles externalFiles, ConfigFile configFile) {
@@ -123,23 +151,24 @@ public class ContestManager {
         return enabledContestList;
     }
 
-    private void updateContestDB(ArrayList<ContestInfo> enabledContests, ArrayList<Long> savedContests) {
+    private void updateContestDB(ArrayList<ContestInfo> enabledContests, ArrayList<ContestInfo> savedContests) {
         for(int i = 0; i < 3; i++) {
             ContestInfo currentEnabledContest = enabledContests.get(i);
-            long currentSavedContest = savedContests.get(i);
-            if(currentEnabledContest != null && currentSavedContest == 0) {
+            ContestInfo currentSavedContest = savedContests.get(i);
+            if(currentEnabledContest != null && currentSavedContest == null) {
                 //Add new contest to db and the return list
                 databaseManager.createOngoingContest(currentEnabledContest);
                 String logMessage = String.format(LOG_CREATED_NEW_CONTEST, getContestTypeByID(i),
                         currentEnabledContest.getStartDate(), currentEnabledContest.getStartTime(),
                         currentEnabledContest.getEndDate(), currentEnabledContest.getEndTime()); //How long is this going
                 Bukkit.getLogger().info(logMessage);
-            } else if (currentEnabledContest == null && currentSavedContest > 0) {
+            } else if (currentEnabledContest == null && currentSavedContest != null) {
                 //Delete disabled contest.
                 databaseManager.deleteOngoingContest(i);
-                ZonedDateTime dateTime = Instant.ofEpochMilli(currentSavedContest).atZone(zoneId);
+                long endingTimestamp = currentSavedContest.getEndTime();
+                ZonedDateTime dateTime = Instant.ofEpochMilli(endingTimestamp).atZone(zoneId);
                 String contestType = getContestTypeByID(i);
-                String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, currentSavedContest);
+                String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, endingTimestamp);
                 Bukkit.getLogger().info(logMessage);
             }
         }
@@ -158,37 +187,37 @@ public class ContestManager {
         return "some non-existent value because you edited the db you lil punk";
     }
 
-    private void initialiseEndedContests(ArrayList<ContestInfo> enabledContests, ArrayList<Long> savedContests) {
+    private void initialiseEndedContests(ArrayList<ContestInfo> enabledContests, ArrayList<ContestInfo> savedContests) {
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
         long currTime = currentDateTime.toInstant().toEpochMilli();
 
         for(int i = 0; i < 3; i++) {
             ContestInfo currContest = enabledContests.get(i);
-            long endTime = savedContests.get(i);
-            if (endTime == 0) {
+            ContestInfo savedContest = savedContests.get(i);
+            if (savedContest == null) {
                 continue; //The band-aid for when the contest is newly initialised.
             }
-            checkForContestExpiry(currTime, i, currContest, endTime);
+            if(currTime < savedContest.getEndTime()) {
+                continue;
+            }
+
+            //Update Contests
+            handleEndedContestTasks(savedContest);
+            databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
         }
     }
 
-    private void checkForContestExpiry(long currTime, int i, ContestInfo currContest, long endTime) {
-        if(currTime > endTime) {
-            ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(currContest);
-            String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, currContest.getStartDate(), currContest.getEndDate());
-            Bukkit.getLogger().info(logMessage);
-            if(allContestWinners.isEmpty()) {
-                Bukkit.getLogger().info("[HoloQuiz] The contest ended with no winners! Not even one!");
-                currContest.updateTournamentDateToNextCycle(zoneId);
-                return;
-            }
-            ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, currContest);
-            rewardsHandler.giveContestRewards(contestWinners, currContest);
-            currContest.updateTournamentDateToNextCycle(zoneId);
-
-            //Update Contests
-            databaseManager.updateRunningContestInfo(i, currContest.getEndTime());
+    private void handleEndedContestTasks(ContestInfo oldContest) {
+        String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, oldContest.getStartDate(), oldContest.getEndDate());
+        Bukkit.getLogger().info(logMessage);
+        ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
+        databaseManager.logContestWinners(allContestWinners, oldContest);
+        if(allContestWinners.isEmpty()) {
+            Bukkit.getLogger().info("[HoloQuiz] The contest ended with no winners! Not even one!");
+            return;
         }
+        ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, oldContest);
+        rewardsHandler.giveContestRewards(contestWinners, oldContest);
     }
 
     private ArrayList<ContestWinner> parseContestWinners

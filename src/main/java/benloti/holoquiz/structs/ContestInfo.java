@@ -14,11 +14,20 @@ public class ContestInfo {
     private final ArrayList<ContestRewardTier> fastestRewards; // Code 1
     private final ArrayList<ContestRewardTier> bestAverageRewards; // Code 2
 
-
     private long startTime;
     private long endTime;
     private LocalDate startDate;
     private LocalDate endDate;
+
+    public ContestInfo(int type, long startTime, long endTime) {
+        this.typeCode = type;
+        this.minAnswersNeeded = 0;
+        this.topAnswerRewards = null;
+        this.fastestRewards = null;
+        this.bestAverageRewards = null;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 
     public ContestInfo(ZoneId zoneId, int type, int minReq, ArrayList<ContestRewardTier> topAnswerRewards,
                        ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> fastestRewards,
@@ -109,9 +118,22 @@ public class ContestInfo {
             this.endDate = startDate.plusMonths(1);
         }
         this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
-        this.endTime = endDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        this.endTime = endDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
         if(theSafeguardThatShouldNeverTrigger) {
             Bukkit.getLogger().info("[HoloQuiz] Contest StatusCode not between 1 to 3. How did you even get here?");
         }
+    }
+
+    public String getTypeString() {
+        if(typeCode == 0) {
+            return "Daily";
+        }
+        if(typeCode == 1) {
+            return "Weekly";
+        }
+        if(typeCode == 2) {
+            return "Monthly";
+        }
+        return "You found a bug!";
     }
 }

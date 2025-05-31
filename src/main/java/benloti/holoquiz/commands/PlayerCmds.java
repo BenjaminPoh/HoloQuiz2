@@ -2,16 +2,19 @@ package benloti.holoquiz.commands;
 
 import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.database.UserPersonalisation;
+import benloti.holoquiz.files.ContestManager;
 import benloti.holoquiz.files.ExternalFiles;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.structs.PlayerSettings;
 import benloti.holoquiz.database.DatabaseManager;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,16 +97,18 @@ public class PlayerCmds implements CommandExecutor {
     private final UserPersonalisation userPersonalisation;
     private UserInterface userInterface;
     private ExternalFiles externalFiles;
+    private ContestManager contestManager;
     private final HoloQuiz holoQuiz;
 
-    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager,
-                      ExternalFiles externalFiles, UserInterface userInterface, HoloQuiz plugin) {
+    public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, ExternalFiles externalFiles,
+                      UserInterface userInterface, ContestManager contestManager, HoloQuiz plugin) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userPersonalisation = databaseManager.getUserPersonalisation();
         this.userInterface = userInterface;
         this.externalFiles = externalFiles;
+        this.contestManager = contestManager;
         this.holoQuiz = plugin;
     }
 
@@ -255,9 +260,13 @@ public class PlayerCmds implements CommandExecutor {
             return true;
         }
 
-        //if(args[0].equalsIgnoreCase("contest") || args[0].equalsIgnoreCase("contests")) {
-            //return true;
-        //}
+        if(args[0].equalsIgnoreCase("contest") || args[0].equalsIgnoreCase("contests")) {
+            String playerName = player.getName();
+            String playerUUID = player.getUniqueId().toString();
+            Inventory createdGUI = contestManager.fetchPlayerContestStatus(playerName, playerUUID, userInterface).getGUI();
+            player.openInventory(createdGUI);
+            return true;
+        }
 
         if (args[0].equalsIgnoreCase("top") && args.length > 1) {
             int size = externalFiles.getConfigFile().getLeaderboardSize();

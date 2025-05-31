@@ -3,10 +3,7 @@ package benloti.holoquiz;
 import benloti.holoquiz.commands.CmdAutoComplete;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.commands.PlayerCmds;
-import benloti.holoquiz.files.ConfigFile;
-import benloti.holoquiz.files.ContestManager;
-import benloti.holoquiz.files.ExternalFiles;
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.*;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.QuizAnswerHandler;
@@ -35,8 +32,9 @@ public final class HoloQuiz extends JavaPlugin {
         this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
         this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
         this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, userInterface, configFile, contestManager);
-        this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, this);
+        this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, contestManager, this);
         this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
+        getServer().getPluginManager().registerEvents(new InvClickListener(contestManager), this);
         getCommand("HoloQuiz").setExecutor(playerCmds);
         getCommand("HoloQuiz").setTabCompleter(cmdAutoComplete);
         if(configFile.isEnableOnStart()) {
