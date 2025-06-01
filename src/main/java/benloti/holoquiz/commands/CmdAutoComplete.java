@@ -32,6 +32,7 @@ public class CmdAutoComplete implements TabCompleter {
         autoCompleteSuggestions.add("toggle");
         autoCompleteSuggestions.add("top");
         autoCompleteSuggestions.add("collect");
+        autoCompleteSuggestions.add("contest");
         if (sender.hasPermission("HoloQuiz.admin")) {
             autoCompleteSuggestions.add("next");
             autoCompleteSuggestions.add("start");

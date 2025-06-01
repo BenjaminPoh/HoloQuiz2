@@ -56,6 +56,9 @@ public class ContestManager {
 
         for(int i = 0; i < 3; i++) {
             ContestInfo currContest = enabledContests.get(i);
+            if(currContest == null) {
+                continue;
+            }
             long endTime = currContest.getEndTime();
             if(currTime < endTime) {
                 continue;
@@ -74,6 +77,9 @@ public class ContestManager {
         }
         ContestProgressGUI contestProgressGUI = new ContestProgressGUI(this, playerName, userInterface);
         for (ContestInfo contest : this.enabledContests) {
+            if(contest == null) {
+                continue;
+            }
             ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(contest);
             PlayerData targetPlayerPlacement = databaseManager.fetchPlayerContestPlacement(contest,playerName,playerUUID);
             contestProgressGUI.addInfo(contest, allContestWinners, targetPlayerPlacement);
