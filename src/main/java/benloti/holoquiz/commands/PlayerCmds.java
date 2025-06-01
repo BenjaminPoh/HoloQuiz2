@@ -112,11 +112,12 @@ public class PlayerCmds implements CommandExecutor {
         this.holoQuiz = plugin;
     }
 
-    public void reload(GameManager gameManager, ExternalFiles externalFiles, UserInterface userInterface) {
+    public void reload(GameManager gameManager, ExternalFiles externalFiles, UserInterface userInterface, ContestManager contestManager) {
         this.gameManager = gameManager;
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userInterface = userInterface;
         this.externalFiles = externalFiles;
+        this.contestManager = contestManager;
     }
 
     @Override

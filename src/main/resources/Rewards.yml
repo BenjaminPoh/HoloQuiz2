@@ -95,7 +95,7 @@ SecretRewards:
           - "&eMore than meets the eye."
           - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
 
-ContestRewards:
+ContestRewards: #DailyBestAvg is omitted from this example. Take note!
   DailyMost:
     Top1:
       Reps: 1
@@ -143,37 +143,6 @@ ContestRewards:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
             - "&bFastest of &a[date]"
-    Top2:
-      Reps: 1
-      Money: 10000
-      Commands:
-        - "bta add [player] 5"
-    Top3:
-      Reps: 1
-      Money: 5000
-      Commands:
-        - "bta add [player] 3"
-    Top4-5:
-      Reps: 2
-      Money: 2500
-      Commands:
-        - "bta add [player] 2"
-  DailyAverage:
-    ActuallyAnyNameCanGoHere:
-      Reps: 1
-      Money: 20000
-      Commands:
-        - "bta add [player] 10"
-      Message:
-        - "&bYou were the best of HoloQuiz for &a[date]&b! Have a cookie!"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward"
-            - "&bFor &a[player]"
-            - "&bBest of &a[date]"
     Top2:
       Reps: 1
       Money: 10000
@@ -251,7 +220,7 @@ ContestRewards:
       Money: 2500
       Commands:
         - "bta add [player] 2"
-  WeeklyAverage:
+  WeeklyBestAvg:
     ActuallyAnyNameCanGoHere:
       Reps: 1
       Money: 20000
@@ -354,7 +323,7 @@ ContestRewards:
       Money: 10000
       Commands:
         - "bta add [player] 10"
-  MonthlyAverage:
+  MonthlyBestAvg:
     Top1:
       Reps: 1
       Money: 100000

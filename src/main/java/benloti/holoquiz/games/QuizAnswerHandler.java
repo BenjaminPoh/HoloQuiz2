@@ -52,10 +52,11 @@ public class QuizAnswerHandler implements Listener {
         this.contestManager = contestManager;
     }
 
-    public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile) {
+    public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
         this.gameManager = gameManager;
         this.userInterface = userInterface;
         this.configFile = configFile;
+        this.contestManager = contestManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
     }
 

@@ -12,7 +12,6 @@ public class InvClickListener implements Listener {
     public InvClickListener(ContestManager contestManager) {
         this.contestManager = contestManager;
     }
-
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!event.getView().getTitle().contains("HoloQuiz Contests")) {

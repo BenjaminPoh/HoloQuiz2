@@ -34,15 +34,15 @@ QuickMath:
 LeaderboardSize: 10
 LeaderboardMinQuestionsNeeded: 50
 
-#Contests feature. ##NOT WORKING, DO NOT ENABLE
+#Contests feature
 Contests: #Edit Rewards in Rewards.yml!
-  Daily: false
+  Daily: true
   DailyAvgMin: 1
-  Weekly: false
-  WeeklyAvgMin: 7
+  Weekly: true
+  WeeklyAvgMin: 3
   WeeklyResetDay: Monday #The day you choose is the start day. Pls spell correctly. //UNUSED
-  Monthly: false
-  MonthlyAvgMin: 10
+  Monthly: true
+  MonthlyAvgMin: 5
   TimeZone: GMT+8 #Used to offset if the server host has a different time zone.
 
 # Easter Eggs!

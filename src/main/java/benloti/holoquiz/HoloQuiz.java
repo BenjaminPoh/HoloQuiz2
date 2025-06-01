@@ -7,6 +7,7 @@ import benloti.holoquiz.files.*;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.QuizAnswerHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class HoloQuiz extends JavaPlugin {
@@ -21,6 +22,7 @@ public final class HoloQuiz extends JavaPlugin {
     private QuizAnswerHandler quizAnswerHandler;
     private PlayerCmds playerCmds;
     private CmdAutoComplete cmdAutoComplete;
+    private InvClickListener invClickListener;
 
     @Override
     public void onEnable() {
@@ -34,7 +36,8 @@ public final class HoloQuiz extends JavaPlugin {
         this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, userInterface, configFile, contestManager);
         this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, contestManager, this);
         this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
-        getServer().getPluginManager().registerEvents(new InvClickListener(contestManager), this);
+        this.invClickListener = new InvClickListener(contestManager);
+        getServer().getPluginManager().registerEvents(invClickListener, this);
         getCommand("HoloQuiz").setExecutor(playerCmds);
         getCommand("HoloQuiz").setTabCompleter(cmdAutoComplete);
         if(configFile.isEnableOnStart()) {
@@ -56,9 +59,12 @@ public final class HoloQuiz extends JavaPlugin {
         this.dependencyHandler = new DependencyHandler(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
         this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
-        //this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
-        quizAnswerHandler.reload(gameManager, userInterface, configFile);
-        playerCmds.reload(gameManager, externalFiles, userInterface);
+        this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
+        quizAnswerHandler.reload(gameManager, userInterface, configFile, contestManager);
+        playerCmds.reload(gameManager, externalFiles, userInterface, contestManager);
+        HandlerList.unregisterAll(invClickListener);
+        this.invClickListener = new InvClickListener(contestManager);
+        getServer().getPluginManager().registerEvents(invClickListener, this);
         cmdAutoComplete.reload(externalFiles);
         if(configFile.isEnableOnStart()) {
             gameManager.startGame();

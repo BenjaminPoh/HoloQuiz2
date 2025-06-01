@@ -40,6 +40,9 @@ public class ContestProgressGUI {
         String contestType = contest.getTypeString();
         String dateRangeDescription = formatDateTime(contest.getStartDate(), contest.getEndDate());
         for(int i = 0; i < allContestWinners.size(); i++) {
+            if(contest.getRewardByCategory(i).size() == 0) {
+                continue;
+            }
             ArrayList<PlayerData> currContestWinners = allContestWinners.get(i);
             ItemStack placeholderItem = new ItemStack(Material.PAPER, 1);
             ItemMeta itemMeta = placeholderItem.getItemMeta();
