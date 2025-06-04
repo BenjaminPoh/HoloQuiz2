@@ -220,7 +220,7 @@ public class ExternalFiles {
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
             loadItemReward(rewardTierItemSection, itemReward);
-            rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward));
+            rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward, new ArrayList<>()));
         }
 
         return categoriesLoaded;

@@ -13,10 +13,9 @@ public class VaultDep {
     private Economy economy = null;
 
     public VaultDep(JavaPlugin plugin) {
-        Bukkit.getLogger().info("Vault Plugin Detected!");
         this.plugin = plugin;
         if (!setupEconomy()) {
-            Bukkit.getLogger().info("Disabled due to no Vault dependency found!");
+            Bukkit.getLogger().info("[HoloQuiz] Disabled due to no Vault dependency found!");
         }
     }
 

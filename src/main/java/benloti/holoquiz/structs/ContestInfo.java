@@ -22,9 +22,9 @@ public class ContestInfo {
     public ContestInfo(int type, long startTime, long endTime) {
         this.typeCode = type;
         this.minAnswersNeeded = 0;
-        this.topAnswerRewards = null;
-        this.fastestRewards = null;
-        this.bestAverageRewards = null;
+        this.topAnswerRewards = new ArrayList<>();
+        this.fastestRewards = new ArrayList<>();
+        this.bestAverageRewards = new ArrayList<>();
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -135,5 +135,11 @@ public class ContestInfo {
             return "Monthly";
         }
         return "You found a bug!";
+    }
+
+    public void setRewards(ContestInfo otherContest) {
+        this.topAnswerRewards.addAll(otherContest.getRewardByCategory(0));
+        this.fastestRewards.addAll(otherContest.getRewardByCategory(1));
+        this.bestAverageRewards.addAll(otherContest.getRewardByCategory(2));
     }
 }

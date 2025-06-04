@@ -83,6 +83,7 @@ public class RewardsHandler {
         int statusCode = giveItemRewards(player, rewardTier.getItemRewards());
         giveMoneyRewards(player, rewardTier.getMoneyReward());
         executeCommandRewards(player, rewardTier.getCommandsExecuted());
+        userInterface.sendMessages(player, rewardTier.getMessages());
         return statusCode;
     }
 

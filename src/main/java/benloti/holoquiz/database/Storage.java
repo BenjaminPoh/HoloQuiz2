@@ -54,6 +54,7 @@ public class Storage {
     public RewardTier retrieveFromStorage(Connection connection, int user_id) {
         ArrayList<String> cmdList = new ArrayList<>();
         ArrayList<ItemStack> itemList = new ArrayList<>();
+        ArrayList<String> msgList = new ArrayList<>();
         int money = 0;
         try {
             PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_RETRIEVE_ITEM);
@@ -83,6 +84,9 @@ public class Storage {
                     itemReward.setItemMeta(itemMeta);
                     itemList.add(itemReward);
                     continue;
+                case "M":
+                    msgList.add(content);
+                    continue;
                 }
                 Bukkit.getLogger().info(ERROR_INVALID_STORAGE_FORMAT);
             }
@@ -91,11 +95,11 @@ public class Storage {
             updateStatement.executeUpdate();
         } catch (NumberFormatException | NullPointerException e) {
             Bukkit.getLogger().info(ERROR_INVALID_STORAGE_FORMAT);
-            return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>());
+            return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         } catch (Exception e) {
             e.printStackTrace();
-            return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>());
+            return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         }
-        return new RewardTier(0, money, cmdList, itemList);
+        return new RewardTier(0, money, cmdList, itemList, msgList);
     }
 }

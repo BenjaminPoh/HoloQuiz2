@@ -63,6 +63,7 @@ public class ContestManager {
             if(currTime < endTime) {
                 continue;
             }
+            logEndedContest(currContest);
             handleEndedContestTasks(currContest);
             currContest.updateTournamentDateToNextCycle(zoneId);
             databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
@@ -100,8 +101,8 @@ public class ContestManager {
         ArrayList<ContestInfo> enabledContestList = initialiseNewContests(externalFiles, configFile);
         //Fetch ongoing contests that were saved
         ArrayList<ContestInfo> savedContestList = databaseManager.fetchSavedContests();
-        //Update the Database for removed and new contests
-        updateContestDB(enabledContestList,savedContestList);
+        //Update the Database for removed and new contests, and savedContestList with the latest rewards
+        updateContestInfo(enabledContestList,savedContestList);
         //Check for ended contests
         initialiseEndedContests(enabledContestList,savedContestList);
         return enabledContestList;
@@ -157,7 +158,7 @@ public class ContestManager {
         return enabledContestList;
     }
 
-    private void updateContestDB(ArrayList<ContestInfo> enabledContests, ArrayList<ContestInfo> savedContests) {
+    private void updateContestInfo(ArrayList<ContestInfo> enabledContests, ArrayList<ContestInfo> savedContests) {
         for(int i = 0; i < 3; i++) {
             ContestInfo currentEnabledContest = enabledContests.get(i);
             ContestInfo currentSavedContest = savedContests.get(i);
@@ -172,12 +173,18 @@ public class ContestManager {
                 //Delete disabled contest.
                 databaseManager.deleteOngoingContest(i);
                 long endingTimestamp = currentSavedContest.getEndTime();
-                ZonedDateTime dateTime = Instant.ofEpochMilli(endingTimestamp).atZone(zoneId);
+                ZonedDateTime dateTime = fetchDateTimeByTimestamp(endingTimestamp);
                 String contestType = getContestTypeByID(i);
                 String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, endingTimestamp);
                 Bukkit.getLogger().info(logMessage);
+            } else if (currentEnabledContest != null && currentSavedContest != null) {
+                currentSavedContest.setRewards(currentEnabledContest);
             }
         }
+    }
+
+    private ZonedDateTime fetchDateTimeByTimestamp(long time) {
+        return Instant.ofEpochMilli(time).atZone(zoneId);
     }
 
     private String getContestTypeByID(int i) {
@@ -208,14 +215,20 @@ public class ContestManager {
             }
 
             //Update Contests
-            handleEndedContestTasks(savedContest);
+            logEndedContest(savedContest);
+            handleEndedContestTasks(currContest);
             databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
         }
     }
 
-    private void handleEndedContestTasks(ContestInfo oldContest) {
-        String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, oldContest.getStartDate(), oldContest.getEndDate());
+    private void logEndedContest(ContestInfo savedContest) {
+        LocalDate startDate = fetchDateTimeByTimestamp(savedContest.getStartTime()).toLocalDate();
+        LocalDate endDate = fetchDateTimeByTimestamp(savedContest.getEndTime()).toLocalDate();
+        String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, startDate, endDate);
         Bukkit.getLogger().info(logMessage);
+    }
+
+    private void handleEndedContestTasks(ContestInfo oldContest) {
         ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
         databaseManager.logContestWinners(allContestWinners, oldContest);
         if(allContestWinners.isEmpty()) {

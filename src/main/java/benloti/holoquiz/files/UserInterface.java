@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,6 +78,13 @@ public class UserInterface {
             return message.replace("[player]", player.getName());
         }
         return message;
+    }
+
+    public void sendMessages(Player player, ArrayList<String> msgList) {
+        for(String msg : msgList) {
+            String formattedMsg = formatColours(msg);
+            attachSuffixAndSend(player, formattedMsg);
+        }
     }
 
     public String attachContestStats(String message, ContestWinner contestWinner, ContestInfo contestInfo) {
