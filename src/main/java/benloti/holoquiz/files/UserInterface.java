@@ -73,9 +73,9 @@ public class UserInterface {
         return (label + message);
     }
     
-    public String attachPlayerName(String message, Player player) {
+    public String attachPlayerName(String message, String playerName) {
         if(message.contains("[player]")) {
-            return message.replace("[player]", player.getName());
+            return message.replace("[player]", playerName);
         }
         return message;
     }
@@ -94,11 +94,11 @@ public class UserInterface {
         }
         if(message.contains("[best]")) {
             String bestTime = contestWinner.getContestWinnerData().getBestTimeInSeconds3DP();
-            message = message.replace("[count]", bestTime);
+            message = message.replace("[best]", bestTime);
         }
         if(message.contains("[avg]")) {
             String avgTime = contestWinner.getContestWinnerData().getAverageTimeInSeconds3DP();
-            message = message.replace("[count]", avgTime);
+            message = message.replace("[avg]", avgTime);
         }
         if(message.contains("[month]")) {
             String monthOfContest = contestInfo.getStartDate().getMonth().toString();
@@ -116,6 +116,20 @@ public class UserInterface {
             String position = String.valueOf(contestWinner.getPosition());
             message = message.replace("[pos]", position);
         }
+        if(message.contains("[pos++]")) {
+            String position = positionFormatter(contestWinner.getPosition());
+            message = message.replace("[pos++]", position);
+        }
         return message;
+    }
+
+    private String positionFormatter(int i) {
+        if(i == 1) {
+            return i + "st";
+        }
+        if(i == 2) {
+            return i + "nd";
+        }
+        return i + "th";
     }
 }

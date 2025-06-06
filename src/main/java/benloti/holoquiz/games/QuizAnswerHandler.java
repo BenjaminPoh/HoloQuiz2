@@ -191,7 +191,7 @@ public class QuizAnswerHandler implements Listener {
         }
         if(timeTaken < configFile.getMinTimeRequired()) {
             for(String peko : configFile.getCheatingCommands()) {
-                String command = userInterface.attachPlayerName(peko, player);
+                String command = userInterface.attachPlayerName(peko, player.getName());
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
                     Bukkit.getLogger().info(command);

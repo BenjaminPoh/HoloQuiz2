@@ -247,7 +247,7 @@ public class ContestManager {
             ArrayList<ContestRewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
             int limit = Math.min(contestCategoryWinnersData.size(), contestRewardTiers.size());
             for(int j = 0; j < limit; j++) {
-                ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j);
+                ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j + 1);
                 contestWinners.add(winner);
             }
         }

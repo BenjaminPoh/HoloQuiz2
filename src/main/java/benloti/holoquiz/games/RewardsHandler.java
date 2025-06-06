@@ -57,10 +57,11 @@ public class RewardsHandler {
             PlayerData contestWinnerData = contestWinner.getContestWinnerData();
             String playerName = contestWinnerData.getPlayerName();
             Player winningPlayer = plugin.getServer().getPlayer(playerName);
+            ContestWinner formattedContestWinner = new ContestWinner(contestWinner, contestInfo, userInterface);
             if (winningPlayer == null || checkSRTS(winningPlayer.getWorld().getName())) {
-                storeContestRewardToStorage(playerName, contestWinner);
+                storeContestRewardToStorage(playerName, formattedContestWinner);
             } else {
-                issueContestReward(winningPlayer, contestWinner, contestInfo);
+                issueContestReward(winningPlayer, formattedContestWinner, contestInfo);
             }
         }
     }
@@ -111,7 +112,7 @@ public class RewardsHandler {
         if(reward == null) {
             return;
         }
-        giveItemRewards(player, reward.getItemRewards(), winner, contestInfo);
+        giveContestItemRewards(player, reward.getItemRewards(), winner, contestInfo);
         giveMoneyRewards(player, reward.getMoneyReward());
         executeCommandRewards(player, reward.getCommandsExecuted());
         String message = userInterface.formatColours(reward.getMessage());
@@ -127,30 +128,15 @@ public class RewardsHandler {
         databaseManager.storeRewardToStorage(name, "I", item.getType().toString(), lore, item.getAmount());
     }
 
-    private void giveItemRewards(Player player, ArrayList<ItemStack> itemRewards,
-                                    ContestWinner winnerStats, ContestInfo contestInfo) {
+    private void giveContestItemRewards(Player player, ArrayList<ItemStack> itemRewards,
+                                        ContestWinner winnerStats, ContestInfo contestInfo) {
         for (ItemStack item : itemRewards) {
-            ItemMeta itemMeta = item.getItemMeta();
-            List<String> itemLore = itemMeta.getLore();
-            if (itemLore == null) {
-                continue;
-            }
-            List<String> itemLoreFormatted = new ArrayList<>();
-            for (String peko : itemLore) {
-                peko = userInterface.attachPlayerName(peko, player);
-                peko = userInterface.attachContestStats(peko, winnerStats, contestInfo);
-                peko = userInterface.formatColours(peko);
-                itemLoreFormatted.add(peko);
-            }
-            itemMeta.setLore(itemLoreFormatted);
-            item.setItemMeta(itemMeta);
+
             HashMap<Integer, ItemStack> notAddedItem = player.getInventory().addItem(item);
             if(!notAddedItem.isEmpty()) {
                 storeItemToStorage(player.getName(), item);
             }
-            //Stupidly reset itemMeta
-            itemMeta.setLore(itemLore);
-            item.setItemMeta(itemMeta);
+
         }
     }
 
@@ -159,7 +145,7 @@ public class RewardsHandler {
         boolean forceSendRewardToStorage = checkSRTS(player.getWorld().getName());
 
         for (ItemStack item : itemRewards) {
-            ItemStack formattedItem = item.clone(); //??
+            ItemStack formattedItem = item.clone(); //Important to prevent overwriting template
             ItemMeta itemMeta = formattedItem.getItemMeta();
             List<String> itemLore = itemMeta.getLore();
             if (itemLore == null) {
@@ -167,7 +153,7 @@ public class RewardsHandler {
             }
             List<String> itemLoreFormatted = new ArrayList<>();
             for (String peko : itemLore) {
-                peko = userInterface.attachPlayerName(peko, player);
+                peko = userInterface.attachPlayerName(peko, player.getName());
                 peko = userInterface.formatColours(peko);
                 itemLoreFormatted.add(peko);
             }
@@ -213,7 +199,7 @@ public class RewardsHandler {
 
     private void executeCommandRewards(Player player, List<String> commandsToExecute) {
         for(String peko : commandsToExecute) {
-            String command = userInterface.attachPlayerName(peko, player);
+            String command = userInterface.attachPlayerName(peko, player.getName());
             Bukkit.getScheduler().runTask(plugin, () ->
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
         }
