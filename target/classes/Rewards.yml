@@ -103,7 +103,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Commands:
         - "bta add [player] 10"
       Message:
-        - "&bYou had the most answers of HoloQuiz for &a[date]&b! Have a cookie!"
+        - "&bYou had the most answers of HoloQuiz for &a[start]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -111,7 +111,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bTop of &a[date]"
+            - "&bTop of &a[start]"
     Top2:
       Reps: 1
       Money: 10000
@@ -134,7 +134,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Commands:
         - "bta add [player] 10"
       Message:
-        - "&bYou had the fastest answer of HoloQuiz for &a[date]&b! Have a cookie!"
+        - "&bYou had the fastest answer of HoloQuiz for &a[start]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -142,7 +142,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bFastest of &a[date]"
+            - "&bFastest of &a[start]"
     Top2:
       Reps: 1
       Money: 10000
@@ -165,7 +165,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Commands:
         - "bta add [player] 10"
       Message:
-        - "&bYou had the most answers of HoloQuiz for &a[week]&b! Have a cookie!"
+        - "&bYou had the most answers of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -173,7 +173,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bTop of &a[week]"
+            - "&bTop from &a[start] &bto &a[end]"
     Top2:
       Reps: 1
       Money: 10000
@@ -196,7 +196,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Commands:
         - "bta add [player] 10"
       Message:
-        - "&bYou had the fastest answer of HoloQuiz for &a[week]&b! Have a cookie!"
+        - "&bYou had the fastest answers of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -204,7 +204,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bFastest of &a[week]"
+            - "&bFastest from &a[start] &bto &a[end]"
     Top2:
       Reps: 1
       Money: 10000
@@ -227,7 +227,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Commands:
         - "bta add [player] 10"
       Message:
-        - "&bYou were the best of HoloQuiz for &a[week]&b! Have a cookie!"
+        - "&bYou had the best average of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -235,7 +235,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bBest of &a[week]"
+            - "&bBest from &a[start] &bto &a[end]"
     Top2:
       Reps: 1
       Money: 10000
@@ -266,7 +266,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bTop of &a[month]"
+            - "&bTop of &a[month] [year]"
     Top2:
       Reps: 1
       Money: 75000
@@ -302,7 +302,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bFastest of &a[month]"
+            - "&bFastest of &a[month] [year]"
     Top2:
       Reps: 1
       Money: 75000
@@ -338,7 +338,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
           Lore:
             - "&bHoloquiz Reward"
             - "&bFor &a[player]"
-            - "&bBest of &a[month]"
+            - "&bBest of &a[month] [year]"
     Top2:
       Reps: 1
       Money: 75000

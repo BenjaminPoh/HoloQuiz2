@@ -2,13 +2,15 @@ package benloti.holoquiz.structs;
 
 import org.bukkit.Bukkit;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 public class ContestInfo {
     private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
-    private final int minAnswersNeeded;
+    private int minAnswersNeeded;
 
     private final ArrayList<ContestRewardTier> topAnswerRewards; // Code 0
     private final ArrayList<ContestRewardTier> fastestRewards; // Code 1
@@ -25,6 +27,7 @@ public class ContestInfo {
         this.topAnswerRewards = new ArrayList<>();
         this.fastestRewards = new ArrayList<>();
         this.bestAverageRewards = new ArrayList<>();
+
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -137,9 +140,12 @@ public class ContestInfo {
         return "You found a bug!";
     }
 
-    public void setRewards(ContestInfo otherContest) {
+    public void updateInfo(ContestInfo otherContest, ZoneId zoneId) {
         this.topAnswerRewards.addAll(otherContest.getRewardByCategory(0));
         this.fastestRewards.addAll(otherContest.getRewardByCategory(1));
         this.bestAverageRewards.addAll(otherContest.getRewardByCategory(2));
+        this.minAnswersNeeded = otherContest.getMinAnswersNeeded();
+        this.startDate = Instant.ofEpochMilli(otherContest.getStartTime()).atZone(zoneId).toLocalDate();
+        this.endDate = Instant.ofEpochMilli(otherContest.getEndTime()).atZone(zoneId).toLocalDate();
     }
 }

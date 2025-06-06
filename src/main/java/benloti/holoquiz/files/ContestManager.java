@@ -63,7 +63,7 @@ public class ContestManager {
             if(currTime < endTime) {
                 continue;
             }
-            logEndedContest(currContest);
+
             handleEndedContestTasks(currContest);
             currContest.updateTournamentDateToNextCycle(zoneId);
             databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
@@ -178,7 +178,7 @@ public class ContestManager {
                 String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, endingTimestamp);
                 Bukkit.getLogger().info(logMessage);
             } else if (currentEnabledContest != null && currentSavedContest != null) {
-                currentSavedContest.setRewards(currentEnabledContest);
+                currentSavedContest.updateInfo(currentEnabledContest, zoneId);
             }
         }
     }
@@ -215,29 +215,27 @@ public class ContestManager {
             }
 
             //Update Contests
-            logEndedContest(savedContest);
-            handleEndedContestTasks(currContest);
+            handleEndedContestTasks(savedContest);
             databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
         }
     }
 
+    private void handleEndedContestTasks(ContestInfo oldContest) {
+        logEndedContest(oldContest);
+        ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
+        databaseManager.logContestWinners(allContestWinners, oldContest);
+        ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, oldContest);
+        rewardsHandler.giveContestRewards(contestWinners, oldContest);
+    }
+
     private void logEndedContest(ContestInfo savedContest) {
-        LocalDate startDate = fetchDateTimeByTimestamp(savedContest.getStartTime()).toLocalDate();
-        LocalDate endDate = fetchDateTimeByTimestamp(savedContest.getEndTime()).toLocalDate();
+        LocalDate startDate = savedContest.getStartDate();
+        LocalDate endDate = savedContest.getEndDate();
         String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, startDate, endDate);
         Bukkit.getLogger().info(logMessage);
     }
 
-    private void handleEndedContestTasks(ContestInfo oldContest) {
-        ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
-        databaseManager.logContestWinners(allContestWinners, oldContest);
-        if(allContestWinners.isEmpty()) {
-            Bukkit.getLogger().info("[HoloQuiz] The contest ended with no winners! Not even one!");
-            return;
-        }
-        ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, oldContest);
-        rewardsHandler.giveContestRewards(contestWinners, oldContest);
-    }
+
 
     private ArrayList<ContestWinner> parseContestWinners
 (ArrayList<ArrayList<PlayerData>> contestWinnersData, ContestInfo contestInfo) {
