@@ -61,7 +61,7 @@ public class RewardsHandler {
             if (winningPlayer == null || checkSRTS(winningPlayer.getWorld().getName())) {
                 storeContestRewardToStorage(playerName, formattedContestWinner);
             } else {
-                issueContestReward(winningPlayer, formattedContestWinner, contestInfo);
+                issueContestReward(winningPlayer, formattedContestWinner);
             }
         }
     }
@@ -107,12 +107,12 @@ public class RewardsHandler {
         }
     }
 
-    private void issueContestReward(Player player, ContestWinner winner, ContestInfo contestInfo) {
+    private void issueContestReward(Player player, ContestWinner winner) {
         ContestRewardTier reward = winner.getContestWinnerPrize();
         if(reward == null) {
             return;
         }
-        giveContestItemRewards(player, reward.getItemRewards(), winner, contestInfo);
+        giveContestItemRewards(player, reward.getItemRewards());
         giveMoneyRewards(player, reward.getMoneyReward());
         executeCommandRewards(player, reward.getCommandsExecuted());
         String message = userInterface.formatColours(reward.getMessage());
@@ -128,15 +128,12 @@ public class RewardsHandler {
         databaseManager.storeRewardToStorage(name, "I", item.getType().toString(), lore, item.getAmount());
     }
 
-    private void giveContestItemRewards(Player player, ArrayList<ItemStack> itemRewards,
-                                        ContestWinner winnerStats, ContestInfo contestInfo) {
+    private void giveContestItemRewards(Player player, ArrayList<ItemStack> itemRewards) {
         for (ItemStack item : itemRewards) {
-
             HashMap<Integer, ItemStack> notAddedItem = player.getInventory().addItem(item);
             if(!notAddedItem.isEmpty()) {
                 storeItemToStorage(player.getName(), item);
             }
-
         }
     }
 

@@ -102,8 +102,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 20000
       Commands:
         - "bta add [player] 10"
-      Message:
-        - "&bYou had the most answers of HoloQuiz for &a[start]&b! Have a cookie!"
+      Message: "&bYou had the most answers of HoloQuiz for &a[start]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -133,8 +132,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 20000
       Commands:
         - "bta add [player] 10"
-      Message:
-        - "&bYou had the fastest answer of HoloQuiz for &a[start]&b! Have a cookie!"
+      Message: "&bYou had the fastest answer of HoloQuiz for &a[start]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -164,8 +162,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 20000
       Commands:
         - "bta add [player] 10"
-      Message:
-        - "&bYou had the most answers of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
+      Message: "&bYou had the most answers of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -195,8 +192,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 20000
       Commands:
         - "bta add [player] 10"
-      Message:
-        - "&bYou had the fastest answers of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
+      Message: "&bYou had the fastest answers of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -226,8 +222,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 20000
       Commands:
         - "bta add [player] 10"
-      Message:
-        - "&bYou had the best average of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
+      Message: "&bYou had the best average of HoloQuiz from &a[start] to &a[end]&b! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -257,8 +252,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 100000
       Commands:
         - "bta add [player] 50"
-      Message:
-        - "&bYou had the most answers of HoloQuiz for [month]! Have a cookie!"
+      Message: "&bYou had the most answers of HoloQuiz for [month]! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -293,8 +287,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 100000
       Commands:
         - "bta add [player] 50"
-      Message:
-        - "&bYou had the fastest answer of HoloQuiz for [month]! Have a cookie!"
+      Message: "&bYou had the fastest answer of HoloQuiz for [month]! Have a cookie!"
       Items:
         1:
           Material: cookie
@@ -329,8 +322,7 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 100000
       Commands:
         - "bta add [player] 50"
-      Message:
-        - "&bYou were the best of HoloQuiz for [month]! Have a cookie!"
+      Message: "&bYou were the best of HoloQuiz for [month]! Have a cookie!"
       Items:
         1:
           Material: cookie

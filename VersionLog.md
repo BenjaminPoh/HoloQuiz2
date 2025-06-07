@@ -1,7 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
-- v 3.A.0 - 28 May 2024 - Is this the sign that Contests will be done?
+- v 3.0.0 - 07 May 2024 - Contests are now a thing!
 - v 2.7.3 - 07 Feb 2025 - Reloading questions no longer force-sends next question.
 - v 2.7.2 - 01 Feb 2025 - Fixed bug where prefix colour was not formatted for messages on unanswered questions
 - v 2.7.1 - 31 Jan 2025 - Fixed bug where running /HoloQuiz with no args threw an error

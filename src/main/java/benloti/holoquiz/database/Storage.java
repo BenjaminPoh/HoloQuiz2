@@ -55,7 +55,7 @@ public class Storage {
         ArrayList<String> cmdList = new ArrayList<>();
         ArrayList<ItemStack> itemList = new ArrayList<>();
         ArrayList<String> msgList = new ArrayList<>();
-        int money = 0;
+        double money = 0;
         try {
             PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_RETRIEVE_ITEM);
             statement.setInt(1, user_id);
@@ -65,13 +65,11 @@ public class Storage {
                 String content = resultSet.getString("contents");
                 switch (type) {
                 case "V":
-                    int value = Integer.parseInt(content);
+                    double value = Double.parseDouble(content);
                     money += value;
-                    resultSet.updateString("contents", "D");
                     continue;
                 case "C":
                     cmdList.add(content);
-                    resultSet.updateString("contents", "D");
                     continue;
                 case "I":
                     String lore = resultSet.getString("details");
@@ -95,6 +93,7 @@ public class Storage {
             updateStatement.executeUpdate();
         } catch (NumberFormatException | NullPointerException e) {
             Bukkit.getLogger().info(ERROR_INVALID_STORAGE_FORMAT);
+            e.printStackTrace();
             return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         } catch (Exception e) {
             e.printStackTrace();

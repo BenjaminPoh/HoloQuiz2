@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 public class ContestInfo {

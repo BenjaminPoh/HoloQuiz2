@@ -21,7 +21,7 @@ public class ContestManager {
             "[HoloQuiz] The set TimeZone is %s, giving a current date of %s (%d)";
     private static final String LOG_CREATED_NEW_CONTEST =  "[HoloQuiz] Scheduled new %s Contest from %s (%d) to %s (%d)";
     private static final String LOG_DELETED_CONTEST =  "[HoloQuiz] Removed old %s Contest that ends on %s (%d)";
-    private static final String LOG_MESSAGE_CONTEST_ENDED = "[HoloQuiz] Contest from %s to %s ended!";
+    private static final String LOG_MESSAGE_CONTEST_ENDED = "[HoloQuiz] Contest from %s (%d) to %s (%d) ended!";
 
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
@@ -231,7 +231,9 @@ public class ContestManager {
     private void logEndedContest(ContestInfo savedContest) {
         LocalDate startDate = savedContest.getStartDate();
         LocalDate endDate = savedContest.getEndDate();
-        String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, startDate, endDate);
+        long startTime = savedContest.getStartTime();
+        long endTime = savedContest.getEndTime();
+        String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, startDate, startTime, endDate, endTime);
         Bukkit.getLogger().info(logMessage);
     }
 
