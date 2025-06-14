@@ -1,10 +1,9 @@
 package benloti.holoquiz.database;
-
 import benloti.holoquiz.structs.PlayerData;
-import org.bukkit.Bukkit;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AnswersLogs {
     private final DatabaseManager databaseManager;
@@ -29,6 +28,8 @@ public class AnswersLogs {
             "SELECT (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count, MIN(took) as best_time " +
             "FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d AND user_id = %d";
 
+    private static final String SQL_STATEMENT_FETCH_PREVIOUS_TIMINGS =
+            "SELECT took FROM answers_logs WHERE user_id = %d ORDER BY timestamp DESC LIMIT %d";
 
     public AnswersLogs(Connection connection, DatabaseManager databaseManager) {
         createTable(connection);
@@ -138,6 +139,22 @@ public class AnswersLogs {
             e.printStackTrace();
         }
         return new PlayerData(name, -1, -1, -1, id);
+    }
+
+    public List<Double> getPreviousTimings(Connection connection, int id, int count) {
+        List<Double> list = new ArrayList<>();
+        String sqlQuery = String.format(SQL_STATEMENT_FETCH_PREVIOUS_TIMINGS, id, count);
+        try {
+            PreparedStatement statement = connection.prepareStatement(sqlQuery);
+            ResultSet resultSet = statement.executeQuery();
+            while(resultSet.next()) {
+                double time = resultSet.getInt("took") / 1000.0;
+                list.add(time);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     /* @Deprecated

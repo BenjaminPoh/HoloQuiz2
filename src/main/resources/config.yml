@@ -14,11 +14,20 @@ IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of
 QuestionCooldown: 3 #The same question will not appear for this number of questions sent. List is reset once server restarts.
 RevealAnswerDelay: 5 #Reveals the answer, and sends question after this amount of seconds. Set to -1 to not reveal answer.
 Cheats:
-  CheatingChecker: true
-  CheatingTimer: 0.5
-  CountAsCorrect: false
-  CommandToPerform:
-    - "msg [player] How did you answer so quickly? Cheats? >:("
+  MinTimeChecker:
+    Checker: true
+    CheatingTimer: 0.5 #In Seconds
+    CountAsCorrect: false
+    CommandToPerform:
+      - "msg [player] How did you answer so quickly? Cheats? >:("
+      - "report [player] might be cheating in HoloQuiz, answering wth a time of [stat]!"
+  ConsistencyChecker:
+    Checker: true
+    NumberOfAnswers: 5
+    AcceptableSD: 1 #In seconds. The higher, the more sensitive it is.
+    CountAsCorrect: true
+    CommandToPerform:
+      - "report [player] might be cheating in HoloQuiz, answering with a SD of [stat]!"
 
 QuickMath:
   #Uses ceil(|X~N(Range, Range/2)|) to generate numbers for Range <=10, and X~U(0, Range) otherwise.

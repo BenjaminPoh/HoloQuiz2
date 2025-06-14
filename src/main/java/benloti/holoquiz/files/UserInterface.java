@@ -72,7 +72,12 @@ public class UserInterface {
     public String attachLabel(String message) {
         return (label + message);
     }
-    
+
+    public String antiCheatCommandFormatter(String cmd, String playerName, double stat) {
+        cmd = cmd.replace("[stat]" , Double.toString(stat));
+        return attachPlayerName(cmd, playerName);
+    }
+
     public String attachPlayerName(String message, String playerName) {
         if(message.contains("[player]")) {
             return message.replace("[player]", playerName);

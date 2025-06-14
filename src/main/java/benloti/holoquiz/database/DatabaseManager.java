@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.sql.*; //Blasphemy
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -287,8 +288,12 @@ public class DatabaseManager {
         connection = getConnection();
         long startTime = contest.getStartTime();
         long endTime = contest.getEndTime();
-        int minAns = contest.getMinAnswersNeeded();
         return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, playerName);
+    }
+
+    public List<Double> fetchPrevTimes(int count, Player player) {
+        int holoQuizID = getHoloQuizIDbyName(player.getName(), player.getUniqueId().toString());
+        return answersLogs.getPreviousTimings(connection, holoQuizID, count);
     }
 
     public int getHoloQuizIDbyName(String playerName, String playerUUID) {

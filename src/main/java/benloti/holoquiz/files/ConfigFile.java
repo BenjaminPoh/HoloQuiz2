@@ -1,5 +1,7 @@
 package benloti.holoquiz.files;
 
+import benloti.holoquiz.structs.MinSDCheatDetector;
+import benloti.holoquiz.structs.MinTimeCheatDetector;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,11 +22,9 @@ public class ConfigFile {
     private final int leaderboardMinReq;
     private final boolean easterEggsEnabled;
     private final String gameMode;
-    private final boolean cheatsDetectorEnabled;
-    private final int minTimeRequired;
     private final int QuestionCooldownLength;
-    private final boolean countAsCorrect;
-    private final List<String> cheatingCommands;
+    private final MinTimeCheatDetector minTimeCheatDetector;
+    private final MinSDCheatDetector minSDCheatDetector;
     private final boolean enableOnStart;
     private final String pluginPrefix;
     private final int mathRange;
@@ -61,10 +61,19 @@ public class ConfigFile {
         this.QuestionCooldownLength = configs.getInt("QuestionCooldown");
 
         ConfigurationSection cheatSection = configs.getConfigurationSection("Cheats");
-        this.cheatsDetectorEnabled = cheatSection.getBoolean("CheatingChecker");
-        this.minTimeRequired = (int) (cheatSection.getDouble("CheatingTimer") * 1000);
-        this.countAsCorrect = cheatSection.getBoolean("CountAsCorrect");
-        this.cheatingCommands = cheatSection.getStringList("CommandToPerform");
+        ConfigurationSection minTimeSection = cheatSection.getConfigurationSection("MinTimeChecker");
+        boolean isEnabled_MT = minTimeSection.getBoolean("Checker");
+        int limit_MT = (int) (minTimeSection.getDouble("CheatingTimer") * 1000);
+        boolean countAsCorrect_MT = minTimeSection.getBoolean("CountAsCorrect");
+        List<String> cheatingCommands_MT = minTimeSection.getStringList("CommandToPerform");
+        this.minTimeCheatDetector = new MinTimeCheatDetector(isEnabled_MT, limit_MT, countAsCorrect_MT, cheatingCommands_MT);
+        ConfigurationSection consistencySection = cheatSection.getConfigurationSection("ConsistencyChecker");
+        boolean isEnabled_SD = consistencySection.getBoolean("Checker");
+        int numOfAnswers_SD = consistencySection.getInt("NumberOfAnswers");
+        double limit_SD = consistencySection.getDouble("AcceptableSD");
+        boolean countAsCorrect_SD = consistencySection.getBoolean("CountAsCorrect");
+        List<String> cheatingCommands_SD = consistencySection.getStringList("CommandToPerform");
+        this.minSDCheatDetector = new MinSDCheatDetector(isEnabled_SD, numOfAnswers_SD, limit_SD, countAsCorrect_SD, cheatingCommands_SD);
 
         ConfigurationSection mathSection = configs.getConfigurationSection("QuickMath");
         this.mathRange = mathSection.getInt("MathRange");
@@ -110,22 +119,6 @@ public class ConfigFile {
 
     public String getGameMode() {
         return gameMode;
-    }
-
-    public boolean isCheatsDetectorEnabled() {
-        return cheatsDetectorEnabled;
-    }
-
-    public int getMinTimeRequired() {
-        return minTimeRequired;
-    }
-
-    public boolean isCountAsCorrect() {
-        return countAsCorrect;
-    }
-
-    public List<String> getCheatingCommands() {
-        return cheatingCommands;
     }
 
     public boolean isEnableOnStart() {
@@ -225,5 +218,13 @@ public class ConfigFile {
             zoneId = ZoneId.of("GMT+0");
         }
         return zoneId;
+    }
+
+    public MinTimeCheatDetector getMinTimeCheatDetector() {
+        return minTimeCheatDetector;
+    }
+
+    public MinSDCheatDetector getMinSDCheatDetector() {
+        return minSDCheatDetector;
     }
 }

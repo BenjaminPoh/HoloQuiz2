@@ -5,6 +5,8 @@ import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ContestManager;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.database.DatabaseManager;
+import benloti.holoquiz.structs.MinSDCheatDetector;
+import benloti.holoquiz.structs.MinTimeCheatDetector;
 import benloti.holoquiz.structs.Question;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -33,12 +35,12 @@ public class QuizAnswerHandler implements Listener {
 
     private final HoloQuiz plugin;
     private final DatabaseManager database;
-
     private GameManager gameManager;
     private RewardsHandler rewardsHandler;
     private UserInterface userInterface;
-    private ConfigFile configFile;
     private ContestManager contestManager;
+    private MinSDCheatDetector sdChecker;
+    private MinTimeCheatDetector timeChecker;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
                              UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
@@ -48,14 +50,16 @@ public class QuizAnswerHandler implements Listener {
         this.database = database;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.userInterface = userInterface;
-        this.configFile = configFile;
         this.contestManager = contestManager;
+        this.sdChecker = configFile.getMinSDCheatDetector();
+        this.timeChecker = configFile.getMinTimeCheatDetector();
     }
 
     public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
         this.gameManager = gameManager;
         this.userInterface = userInterface;
-        this.configFile = configFile;
+        this.sdChecker = configFile.getMinSDCheatDetector();
+        this.timeChecker = configFile.getMinTimeCheatDetector();
         this.contestManager = contestManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
     }
@@ -89,7 +93,7 @@ public class QuizAnswerHandler implements Listener {
         long timeAnswered = System.currentTimeMillis();
         long startTime = gameManager.getTimeQuestionSent();
         int timeTaken = (int)(timeAnswered - startTime);
-        if(cheatHandler(timeTaken, player)) {
+        if(checkIfUnderPermissibleTime(timeTaken, player) || checkIfUnderPermissibleSD(timeTaken, player)) {
             return;
         }
         gameManager.setQuestionAnswered(true);
@@ -184,20 +188,42 @@ public class QuizAnswerHandler implements Listener {
         player.sendTitle(announcement1, announcement2, 10, 60, 10);
     }
 
-    private boolean cheatHandler(int timeTaken, Player player) {
+    public boolean checkIfUnderPermissibleTime(int timeTaken, Player player) {
         //Return true if you need to skip the person caught cheating
-        if(!configFile.isCheatsDetectorEnabled()) {
+        if (!timeChecker.isEnabled()) {
             return false;
         }
-        if(timeTaken < configFile.getMinTimeRequired()) {
-            for(String peko : configFile.getCheatingCommands()) {
-                String command = userInterface.attachPlayerName(peko, player.getName());
+        if (timeTaken < timeChecker.getMinTimeRequired()) {
+            for (String peko : timeChecker.getCheatingCommands()) {
+                String command = userInterface.antiCheatCommandFormatter(peko, player.getName(), timeTaken / 1000.0);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-                    Bukkit.getLogger().info(command);
                 });
             }
-            return !configFile.isCountAsCorrect();
+            return !timeChecker.isCountAsCorrect();
+        }
+        return false;
+    }
+
+    private boolean checkIfUnderPermissibleSD(int timeTaken, Player player) {
+        if(!sdChecker.isEnabled()) {
+            return false;
+        }
+        List<Double> listOfTimes = database.fetchPrevTimes(sdChecker.getMinAnsUsed() - 1, player);
+        if(listOfTimes.size() + 1 < sdChecker.getMinAnsUsed()) {
+            return false;
+        }
+        listOfTimes.add(timeTaken / 1000.0);
+        double stdDev = calculateStdDev(listOfTimes);
+        Bukkit.getLogger().info("[HoloQuiz] LOG - Calculated StdDev: " + stdDev);
+        if(stdDev < sdChecker.getMinSDReq()) {
+            for (String peko : sdChecker.getCheatingCommands()) {
+                String command = userInterface.antiCheatCommandFormatter(peko, player.getName(), stdDev);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                });
+            }
+            return !sdChecker.isCountAsCorrect();
         }
         return false;
     }
@@ -213,5 +239,24 @@ public class QuizAnswerHandler implements Listener {
             String fullInvMessage = userInterface.formatColours(INVENTORY_FULL_MESSAGE);
             userInterface.attachSuffixAndSend(player, fullInvMessage);
         }
+    }
+
+    private double calculateStdDev(List<Double> timings) {
+        int size = timings.size();
+
+        double total = 0;
+        for (double time : timings) {
+            total += time;
+        }
+        double mean = total / size;
+
+        double sumSquaredDiffs = 0.0;
+        for (double time : timings) {
+            double diff = time - mean;
+            sumSquaredDiffs += diff * diff;
+        }
+
+        // Standard deviation = sqrt(variance)
+        return Math.sqrt(sumSquaredDiffs / size);
     }
 }
