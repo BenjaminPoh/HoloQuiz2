@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.1.1 - 16 Jun 2025 - Added additional information on qualifying for "Best Avg" contests
 - v 3.1.0 - 14 Jun 2025 - Simple Anticheat implemented for people using mods to auto-answer
 - v 3.0.0 - 07 Jun 2025 - Contests are now a thing!
 - v 2.7.3 - 07 Feb 2025 - Reloading questions no longer force-sends next question.

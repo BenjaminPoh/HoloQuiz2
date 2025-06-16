@@ -97,6 +97,8 @@ public class QuizAnswerHandler implements Listener {
             return;
         }
         gameManager.setQuestionAnswered(true);
+        long processingTime = System.currentTimeMillis() - timeAnswered;
+        Bukkit.getLogger().info("[HoloQuiz Debug Log] Processing done in " + processingTime + "ms");
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getGameModeIdentifier();
@@ -215,7 +217,6 @@ public class QuizAnswerHandler implements Listener {
         }
         listOfTimes.add(timeTaken / 1000.0);
         double stdDev = calculateStdDev(listOfTimes);
-        Bukkit.getLogger().info("[HoloQuiz] LOG - Calculated StdDev: " + stdDev);
         if(stdDev < sdChecker.getMinSDReq()) {
             for (String peko : sdChecker.getCheatingCommands()) {
                 String command = userInterface.antiCheatCommandFormatter(peko, player.getName(), stdDev);

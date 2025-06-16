@@ -23,6 +23,7 @@ public class ContestProgressGUI {
     private static final String DESCRIPTION_FOR_PLAYER_DQ = "&c%s. %s | %s";
     private static final String DESCRIPTION_FOR_PLAYER = "&a%s. %s | %s";
     private static final String DESCRIPTION_FOR_OTHERS = "&3%s. %s | %s";
+    private static final String DESCRIPTION_REASON_FOR_PLAYER_DQ = "&4You need &c%d &4more questions to qualify!";
 
     public ContestProgressGUI(ContestManager contestManager, String playerName, UserInterface userInterface) {
         this.contestManager = contestManager;
@@ -67,6 +68,11 @@ public class ContestProgressGUI {
                 String score = getScoreByIndex(playerInfo, i);
                 String formattedDescription = String.format(DESCRIPTION_FOR_PLAYER_DQ, "N/A", playerInfo.getPlayerName(), score);
                 description.add(userInterface.formatColours(formattedDescription));
+                if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getMinAnswersNeeded()) {
+                    int remainder =  contest.getMinAnswersNeeded() - playerInfo.getQuestionsAnswered();
+                    formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
+                    description.add(userInterface.formatColours(formattedDescription));
+                }
             }
             itemMeta.setLore(description);
             placeholderItem.setItemMeta(itemMeta);

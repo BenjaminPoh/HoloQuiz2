@@ -1,5 +1,6 @@
 package benloti.holoquiz.database;
 import benloti.holoquiz.structs.PlayerData;
+import org.bukkit.Bukkit;
 
 import java.sql.*;
 import java.util.ArrayList;
