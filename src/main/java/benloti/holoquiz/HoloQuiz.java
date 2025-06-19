@@ -23,6 +23,7 @@ public final class HoloQuiz extends JavaPlugin {
     private PlayerCmds playerCmds;
     private CmdAutoComplete cmdAutoComplete;
     private InvClickListener invClickListener;
+    private PlayerJoinListener playerJoinListener;
 
     @Override
     public void onEnable() {
@@ -37,6 +38,10 @@ public final class HoloQuiz extends JavaPlugin {
         this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, contestManager, this);
         this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
         this.invClickListener = new InvClickListener(contestManager);
+        this.playerJoinListener = new PlayerJoinListener(database, userInterface);
+        if(configFile.isCollectRewardOnJoin()) {
+            getServer().getPluginManager().registerEvents(playerJoinListener, this);
+        }
         getServer().getPluginManager().registerEvents(invClickListener, this);
         getCommand("HoloQuiz").setExecutor(playerCmds);
         getCommand("HoloQuiz").setTabCompleter(cmdAutoComplete);
@@ -55,6 +60,10 @@ public final class HoloQuiz extends JavaPlugin {
         if(!externalFiles.reloadAll()) {
             return false;
         }
+        if(configFile.isCollectRewardOnJoin()) {
+            HandlerList.unregisterAll(playerJoinListener);
+        }
+
         this.configFile = externalFiles.getConfigFile();
         this.dependencyHandler = new DependencyHandler(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
@@ -65,6 +74,10 @@ public final class HoloQuiz extends JavaPlugin {
         HandlerList.unregisterAll(invClickListener);
         this.invClickListener = new InvClickListener(contestManager);
         getServer().getPluginManager().registerEvents(invClickListener, this);
+        this.playerJoinListener = new PlayerJoinListener(database, userInterface);
+        if(configFile.isCollectRewardOnJoin()) {
+            getServer().getPluginManager().registerEvents(playerJoinListener, this);
+        }
         cmdAutoComplete.reload(externalFiles);
         if(configFile.isEnableOnStart()) {
             gameManager.startGame();

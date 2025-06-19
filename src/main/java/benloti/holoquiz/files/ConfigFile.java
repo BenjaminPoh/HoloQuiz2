@@ -27,6 +27,7 @@ public class ConfigFile {
     private final MinSDCheatDetector minSDCheatDetector;
     private final boolean enableOnStart;
     private final String pluginPrefix;
+    private final boolean collectRewardOnJoin;
     private final int mathRange;
     private final String mathDistribution;
     private final boolean mathDivisorLimit;
@@ -40,7 +41,7 @@ public class ConfigFile {
     private final int dailyMin;
     private final int weeklyMin;
     private final int monthlyMin;
-    private final String weeklyResetDay;
+    private final int weeklyResetDay;
     private final ZoneId timezoneOffset;
     private final boolean SRTS_useWhitelist;
     private final List<String> SRTS_WorldList; //Expect list to be small.
@@ -50,6 +51,8 @@ public class ConfigFile {
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
 
         this.pluginPrefix = configs.getString("PluginPrefix");
+        this.collectRewardOnJoin = configs.getBoolean("CollectRewardsOnJoin");
+
         this.interval = configs.getInt("Interval");
         this.intervalCheck = configs.getInt("IntervalCheck");
         this.revealAnswerDelay = configs.getInt("RevealAnswerDelay");
@@ -88,7 +91,7 @@ public class ConfigFile {
         this.dailyContest = contestSection.getBoolean("Daily");
         this.weeklyContest = contestSection.getBoolean("Weekly");
         this.monthlyContest = contestSection.getBoolean("Monthly");
-        this.weeklyResetDay = contestSection.getString("WeeklyResetDay", "Monday");
+        this.weeklyResetDay = parseStartDay(contestSection.getString("WeeklyResetDay", "Monday"));
         this.dailyMin = contestSection.getInt("DailyAvgMin");
         this.weeklyMin = contestSection.getInt("WeeklyAvgMin");
         this.monthlyMin = contestSection.getInt("MonthlyAvgMin");
@@ -169,7 +172,7 @@ public class ConfigFile {
         return monthlyContest;
     }
 
-    public String getWeeklyResetDay() {
+    public int getWeeklyResetDay() {
         return weeklyResetDay;
     }
 
@@ -226,5 +229,35 @@ public class ConfigFile {
 
     public MinSDCheatDetector getMinSDCheatDetector() {
         return minSDCheatDetector;
+    }
+
+    public boolean isCollectRewardOnJoin() {
+        return collectRewardOnJoin;
+    }
+
+    private int parseStartDay(String day) {
+        if(day.equals("Monday")) {
+            return 1;
+        }
+        if(day.equals("Tuesday")) {
+            return 2;
+        }
+        if(day.equals("Wednesday")) {
+            return 3;
+        }
+        if(day.equals("Thursday")) {
+            return 4;
+        }
+        if(day.equals("Friday")) {
+            return 5;
+        }
+        if(day.equals("Saturday")) {
+            return 6;
+        }
+        if(day.equals("Sunday")) {
+            return 7;
+        }
+        Bukkit.getLogger().info("[HoloQuiz] What kind of day is " + day + "?");
+        return 1;
     }
 }

@@ -125,8 +125,9 @@ public class ContestManager {
         }
         if(weeklyEnabled) {
             LocalDate startDate = LocalDate.now(zoneId);
-            int daysFromMonday = startDate.getDayOfWeek().getValue() - 1;
-            startDate = startDate.minusDays(daysFromMonday);
+            int intendedStartDay = configFile.getWeeklyResetDay();
+            int daysFromStartDay = getDaysFromStartDay(startDate.getDayOfWeek().getValue(), intendedStartDay);
+            startDate = startDate.minusDays(daysFromStartDay);
             LocalDate endDate = startDate.plusWeeks(1);
             endDate = endDate.minusDays(1);
 
@@ -156,6 +157,13 @@ public class ContestManager {
             enabledContestList.set(2, monthlyContestInfo);
         }
         return enabledContestList;
+    }
+
+    private int getDaysFromStartDay(int currentDay, int intendedDay) {
+        if(currentDay >= intendedDay) {
+            return currentDay - intendedDay;
+        }
+        return currentDay - intendedDay + 7;
     }
 
     private void updateContestInfo(ArrayList<ContestInfo> enabledContests, ArrayList<ContestInfo> savedContests) {
@@ -237,8 +245,6 @@ public class ContestManager {
         Bukkit.getLogger().info(logMessage);
     }
 
-
-
     private ArrayList<ContestWinner> parseContestWinners
 (ArrayList<ArrayList<PlayerData>> contestWinnersData, ContestInfo contestInfo) {
         ArrayList<ContestWinner> contestWinners = new ArrayList<>();
@@ -254,3 +260,4 @@ public class ContestManager {
         return contestWinners;
     }
 }
+

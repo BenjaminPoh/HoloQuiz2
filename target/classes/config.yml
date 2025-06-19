@@ -1,6 +1,7 @@
 # Plugin Config
 EnableOnStart: false
 PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
+CollectRewardsOnJoin: true
 
 # A special override which directly Sends item Rewards To Storage (SRTS) instead of to their inventory.
 SRTS_useWhitelist: false #Set to true to use whitelist instead!
@@ -49,7 +50,7 @@ Contests: #Edit Rewards in Rewards.yml!
   DailyAvgMin: 1
   Weekly: true
   WeeklyAvgMin: 3
-  WeeklyResetDay: Monday #The day you choose is the start day. Pls spell correctly. //UNUSED
+  WeeklyResetDay: Monday #If changing this midway, turn off Weekly contests, restart
   Monthly: true
   MonthlyAvgMin: 5
   TimeZone: GMT+8 #Used to offset if the server host has a different time zone.
