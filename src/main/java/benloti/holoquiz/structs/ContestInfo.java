@@ -144,7 +144,7 @@ public class ContestInfo {
         this.fastestRewards.addAll(otherContest.getRewardByCategory(1));
         this.bestAverageRewards.addAll(otherContest.getRewardByCategory(2));
         this.minAnswersNeeded = otherContest.getMinAnswersNeeded();
-        this.startDate = Instant.ofEpochMilli(otherContest.getStartTime()).atZone(zoneId).toLocalDate();
-        this.endDate = Instant.ofEpochMilli(otherContest.getEndTime()).atZone(zoneId).toLocalDate();
+        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
+        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
     }
 }
