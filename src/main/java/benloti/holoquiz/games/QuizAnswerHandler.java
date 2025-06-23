@@ -28,6 +28,8 @@ public class QuizAnswerHandler implements Listener {
     public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
     public static final String CORRECT_ANSWER_LOG = "[HoloQuiz] %s answered correctly in %s time.";
 
+    private static final String DEBUG_LOG_RACE_CONDITION = "[HoloQuiz Debug Log] Race Condition occurred. Player %s answered in %s time, with %s processing time";
+
     private static final String INVENTORY_FULL_MESSAGE =
             "&bYour Inventory was full! Rewards has been sent to Storage. Do &a/holoquiz collect &bto get them!";
     private static final String SRTS_TRIGGERED_MESSAGE =
@@ -96,9 +98,15 @@ public class QuizAnswerHandler implements Listener {
         if(checkIfUnderPermissibleTime(timeTaken, player) || checkIfUnderPermissibleSD(timeTaken, player)) {
             return;
         }
+        if(gameManager.isQuestionAnswered()) {
+            long processingTime = System.currentTimeMillis() - timeAnswered;
+            String log = String.format(DEBUG_LOG_RACE_CONDITION, player.getName(), timeTaken, processingTime);
+            Bukkit.getLogger().info( log);
+            return;
+        }
         gameManager.setQuestionAnswered(true);
-        long processingTime = System.currentTimeMillis() - timeAnswered;
-        Bukkit.getLogger().info("[HoloQuiz Debug Log] Processing done in " + processingTime + "ms");
+        //long processingTime = System.currentTimeMillis() - timeAnswered;
+        //Bukkit.getLogger().info("[HoloQuiz Debug Log] Processing done in " + processingTime + "ms");
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getGameModeIdentifier();
