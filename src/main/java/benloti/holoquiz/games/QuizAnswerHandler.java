@@ -44,6 +44,8 @@ public class QuizAnswerHandler implements Listener {
     private MinSDCheatDetector sdChecker;
     private MinTimeCheatDetector timeChecker;
 
+    private int correctAnswerMsgLoc;
+
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
                              UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -55,15 +57,17 @@ public class QuizAnswerHandler implements Listener {
         this.contestManager = contestManager;
         this.sdChecker = configFile.getMinSDCheatDetector();
         this.timeChecker = configFile.getMinTimeCheatDetector();
+        this.correctAnswerMsgLoc = configFile.getCorrectAnswerMessageLoc();
     }
 
     public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
         this.gameManager = gameManager;
         this.userInterface = userInterface;
-        this.sdChecker = configFile.getMinSDCheatDetector();
-        this.timeChecker = configFile.getMinTimeCheatDetector();
         this.contestManager = contestManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
+        this.sdChecker = configFile.getMinSDCheatDetector();
+        this.timeChecker = configFile.getMinTimeCheatDetector();
+        this.correctAnswerMsgLoc = configFile.getCorrectAnswerMessageLoc();
     }
 
     @EventHandler
@@ -101,7 +105,7 @@ public class QuizAnswerHandler implements Listener {
         if(gameManager.isQuestionAnswered()) {
             long processingTime = System.currentTimeMillis() - timeAnswered;
             String log = String.format(DEBUG_LOG_RACE_CONDITION, player.getName(), timeTaken, processingTime);
-            Bukkit.getLogger().info( log);
+            Bukkit.getLogger().info(log);
             return;
         }
         gameManager.setQuestionAnswered(true);
@@ -118,9 +122,8 @@ public class QuizAnswerHandler implements Listener {
         } else {
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
         }
-        //displayActionBar(player); //Not what I want, but the bug is now a feature
         int statusCodeTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
-        displayTitle(player);
+        sendCorrectAnswerAnnouncement(player, correctAnswerMsgLoc);
         new BukkitRunnable() {
             public void run() {
                 makeFireworks(player);
@@ -184,8 +187,17 @@ public class QuizAnswerHandler implements Listener {
         firework.setFireworkMeta(fireworkMeta);
     }
 
+    private void sendCorrectAnswerAnnouncement(Player player, int status) {
+        if(status == 0) {
+            displayTitle(player);
+        }
+        else if(status == 1) {
+            displayActionBar(player);
+        }
+    }
+
     private void displayActionBar(Player player) {
-        String message = "&2Congratulations!\n&3You have answered correctly!";
+        String message = "&2Congratulations! &3You have answered correctly!";
         String announcement = ChatColor.translateAlternateColorCodes('&', message);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(announcement));
     }

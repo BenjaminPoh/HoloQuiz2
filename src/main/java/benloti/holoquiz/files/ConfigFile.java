@@ -15,19 +15,26 @@ import java.util.List;
 public class ConfigFile {
     private static final String WARNING_SRTS_EMPTY_WHITELIST = "[HoloQuiz] Warning: SRTS uses an empty Whitelist - No one can claim reward items!" ;
 
+    private final String pluginPrefix;
+    private final boolean collectRewardOnJoin;
+    private final boolean easterEggsEnabled;
+    private final boolean enableOnStart;
+
+    private final int leaderboardSize;
+    private final int leaderboardMinReq;
+
+    private final boolean SRTS_useWhitelist;
+    private final List<String> SRTS_WorldList; //Expect list to be small.
+
+    private final String gameMode;
     private final int interval;
     private final int intervalCheck;
     private final int revealAnswerDelay;
-    private final int leaderboardSize;
-    private final int leaderboardMinReq;
-    private final boolean easterEggsEnabled;
-    private final String gameMode;
     private final int QuestionCooldownLength;
     private final MinTimeCheatDetector minTimeCheatDetector;
     private final MinSDCheatDetector minSDCheatDetector;
-    private final boolean enableOnStart;
-    private final String pluginPrefix;
-    private final boolean collectRewardOnJoin;
+    private final int correctAnswerMessageLoc; // -1: Disabled. 0:TitleMsg. 1:ActionBar
+
     private final int mathRange;
     private final String mathDistribution;
     private final boolean mathDivisorLimit;
@@ -35,6 +42,8 @@ public class ConfigFile {
     private final boolean mathChaosMode;
     private final String mathQuestionColour;
     private final String mathDifficulty;
+
+    private final ZoneId timezoneOffset;
     private final boolean dailyContest;
     private final boolean weeklyContest;
     private final boolean monthlyContest;
@@ -42,9 +51,6 @@ public class ConfigFile {
     private final int weeklyMin;
     private final int monthlyMin;
     private final int weeklyResetDay;
-    private final ZoneId timezoneOffset;
-    private final boolean SRTS_useWhitelist;
-    private final List<String> SRTS_WorldList; //Expect list to be small.
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
@@ -55,6 +61,7 @@ public class ConfigFile {
 
         this.interval = configs.getInt("Interval");
         this.intervalCheck = configs.getInt("IntervalCheck");
+        this.correctAnswerMessageLoc = parseCorrectAnswerMsgLoc(configs.getString("CorrectAnswerMessageLoc"));
         this.revealAnswerDelay = configs.getInt("RevealAnswerDelay");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
@@ -257,7 +264,25 @@ public class ConfigFile {
         if(day.equals("Sunday")) {
             return 7;
         }
-        Bukkit.getLogger().info("[HoloQuiz] What kind of day is " + day + "?");
+        Bukkit.getLogger().info("[HoloQuiz] Error: What kind of day is " + day + "?");
         return 1;
+    }
+
+    private int parseCorrectAnswerMsgLoc(String toko) {
+        if(toko.equals("TitleMsg")) {
+            return 0;
+        }
+        if(toko.equals("ActionBar")) {
+            return 1;
+        }
+        if(toko.equals("Disabled")) {
+            return -1;
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error: CorrectAnswerMsgLoc: " + toko + " is invalid");
+        return -1;
+    }
+
+    public int getCorrectAnswerMessageLoc() {
+        return correctAnswerMessageLoc;
     }
 }

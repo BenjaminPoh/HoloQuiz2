@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.1.3 - 24 Jun 2025 - Correct Answer messages can now be sent to the Action Bar
 - v 3.1.2 - 19 Jun 2025 - More Features for Storage and Contests
 - v 3.1.1 - 16 Jun 2025 - Added additional information on qualifying for "Best Avg" contests
 - v 3.1.0 - 14 Jun 2025 - Simple Anticheat implemented for people using mods to auto-answer

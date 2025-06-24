@@ -11,6 +11,7 @@ SRTS_WorldList:
 # Game Config
 Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math
+CorrectAnswerMessageLoc: TitleMsg #Available: TitleMsg/ActionBar/Disabled
 IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of ticks. Enable if Server TPS Sucks. Set to 0 to disable.
 QuestionCooldown: 3 #The same question will not appear for this number of questions sent. List is reset once server restarts.
 RevealAnswerDelay: 5 #Reveals the answer, and sends question after this amount of seconds. Set to -1 to not reveal answer.
