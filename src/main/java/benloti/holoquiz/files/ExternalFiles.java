@@ -25,8 +25,9 @@ public class ExternalFiles {
     private static final String REWARDS_FILE_NAME = "Rewards.yml";
 
     private static final String BACKUP_DIRECTORY_PATH = "backup/";
-    private static final String[] CONTEST_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg",
-            "WeeklyMost", "WeeklyFastest", "WeeklyBestAvg","MonthlyMost", "MonthlyFastest", "MonthlyBestAvg",};
+    private static final String[] CONTEST_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg", "DailyBestX",
+            "WeeklyMost", "WeeklyFastest", "WeeklyBestAvg", "WeeklyBestX",
+            "MonthlyMost", "MonthlyFastest", "MonthlyBestAvg", "MonthlyBestX"};
     private static final String CONTEST_LOG_MESSAGE = "[HoloQuiz] TimedCategory %s loaded in %d rewards";
     private static final String TRIVIA_QUESTIONS_LOG_MESSAGE = "[HoloQuiz] Trivia Category loaded %d Questions!";
     public static final String WARNING_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Rewards Section not found!";

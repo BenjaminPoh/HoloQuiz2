@@ -9,37 +9,67 @@ import java.util.ArrayList;
 
 public class ContestInfo {
     private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
-    private int minAnswersNeeded;
-
-    private final ArrayList<ContestRewardTier> topAnswerRewards; // Code 0
-    private final ArrayList<ContestRewardTier> fastestRewards; // Code 1
-    private final ArrayList<ContestRewardTier> bestAverageRewards; // Code 2
-
     private long startTime;
     private long endTime;
     private LocalDate startDate;
     private LocalDate endDate;
 
-    public ContestInfo(int type, long startTime, long endTime) {
-        this.typeCode = type;
-        this.minAnswersNeeded = 0;
-        this.topAnswerRewards = new ArrayList<>();
-        this.fastestRewards = new ArrayList<>();
-        this.bestAverageRewards = new ArrayList<>();
+    private boolean mostAnswerContestEnabled; // Code 0
+    private boolean fastestAnswerContestEnabled; // Code 1
+    private boolean bestAvgContestEnabled; // Code 2
+    private boolean bestXContestEnabled; //Code 3
 
-        this.startTime = startTime;
-        this.endTime = endTime;
+    private ArrayList<ContestRewardTier> mostAnswerRewards; // Code 0
+    private ArrayList<ContestRewardTier> fastestRewards; // Code 1
+    private ArrayList<ContestRewardTier> bestAverageRewards; // Code 2
+    private ArrayList<ContestRewardTier> bestXRewards; //Code 3
+
+    private int bestAvgMinReq;
+    private int bestXMinReq;
+
+    public ContestInfo(int type, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
+                       int twoMinReq, int threeMinReq) {
+        this.typeCode = type;
+        this.bestAvgMinReq = twoMinReq;
+        this.bestXMinReq = threeMinReq;
+        this.mostAnswerContestEnabled = zeroEnabled;
+        this.fastestAnswerContestEnabled = oneEnabled;
+        this.bestAvgContestEnabled = twoEnabled;
+        this.bestXContestEnabled = threeEnabled;
     }
 
-    public ContestInfo(ZoneId zoneId, int type, int minReq, ArrayList<ContestRewardTier> topAnswerRewards,
-                       ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> fastestRewards,
-                       LocalDate startDate, LocalDate endDate) {
+    public ContestInfo(int type, long startTime, long endTime) {
         this.typeCode = type;
-        this.minAnswersNeeded = minReq;
-        this.topAnswerRewards = topAnswerRewards;
+        this.bestAvgMinReq = 0;
+        this.startTime = startTime;
+        this.endTime = endTime;
+
+        this.mostAnswerRewards = new ArrayList<>();
+        this.bestAverageRewards = new ArrayList<>();
+        this.fastestRewards = new ArrayList<>();
+        this.bestXRewards = new ArrayList<>();
+    }
+
+    public void updateInfo(ContestInfo otherContest, ZoneId zoneId) {
+        this.mostAnswerRewards.addAll(otherContest.getRewardByCategory(0));
+        this.fastestRewards.addAll(otherContest.getRewardByCategory(1));
+        this.bestAverageRewards.addAll(otherContest.getRewardByCategory(2));
+        this.bestXRewards.addAll(otherContest.getRewardByCategory(3));
+        this.bestAvgMinReq = otherContest.getBestAvgMinReq();
+        this.bestXMinReq = otherContest.getBestXMinReq();
+        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
+        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
+    }
+
+    public void updateRewards(ArrayList<ContestRewardTier> topAnswerRewards, ArrayList<ContestRewardTier> fastestRewards,
+                       ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> bestXRewards) {
+        this.mostAnswerRewards = topAnswerRewards;
         this.bestAverageRewards = bestAverageRewards;
         this.fastestRewards = fastestRewards;
+        this.bestXRewards = bestXRewards;
+    }
 
+    public void updateTimes(ZoneId zoneId, LocalDate startDate, LocalDate endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
@@ -59,13 +89,21 @@ public class ContestInfo {
         return typeCode;
     }
 
-    public int getMinAnswersNeeded() {
-        return minAnswersNeeded;
+    public boolean isContestEnabled() {
+        return mostAnswerContestEnabled || fastestAnswerContestEnabled || bestAvgContestEnabled || bestXContestEnabled;
+    }
+
+    public int getBestXMinReq() {
+        return bestXMinReq;
+    }
+
+    public int getBestAvgMinReq() {
+        return bestAvgMinReq;
     }
 
     public ArrayList<ContestRewardTier> getRewardByCategory(int code) {
         if(code == 0) {
-            return topAnswerRewards;
+            return mostAnswerRewards;
         }
         if(code == 1) {
             return fastestRewards;
@@ -73,19 +111,25 @@ public class ContestInfo {
         if(code == 2) {
             return bestAverageRewards;
         }
+        if(code == 3) {
+            return bestXRewards;
+        }
         Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
         return null;
     }
 
     public int getRewardCountByCategory(int code) {
         if(code == 0) {
-            return topAnswerRewards.size();
+            return mostAnswerRewards.size();
         }
         if(code == 1) {
             return fastestRewards.size();
         }
         if(code == 2) {
             return bestAverageRewards.size();
+        }
+        if(code == 3) {
+            return bestXRewards.size();
         }
         Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
         return 0;
@@ -137,14 +181,5 @@ public class ContestInfo {
             return "Monthly";
         }
         return "You found a bug!";
-    }
-
-    public void updateInfo(ContestInfo otherContest, ZoneId zoneId) {
-        this.topAnswerRewards.addAll(otherContest.getRewardByCategory(0));
-        this.fastestRewards.addAll(otherContest.getRewardByCategory(1));
-        this.bestAverageRewards.addAll(otherContest.getRewardByCategory(2));
-        this.minAnswersNeeded = otherContest.getMinAnswersNeeded();
-        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
-        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
     }
 }

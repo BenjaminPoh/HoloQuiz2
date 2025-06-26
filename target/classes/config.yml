@@ -47,14 +47,31 @@ LeaderboardMinQuestionsNeeded: 50
 
 #Contests feature
 Contests: #Edit Rewards in Rewards.yml!
-  Daily: true
-  DailyAvgMin: 1
-  Weekly: true
-  WeeklyAvgMin: 3
-  WeeklyResetDay: Monday #If changing this midway, turn off Weekly contests, restart
-  Monthly: true
-  MonthlyAvgMin: 5
+  #If changing the below 2 keys, it is recommended to disable all ongoing contests, changing then re-enabling them.
+  WeeklyResetDay: Monday
   TimeZone: GMT+8 #Used to offset if the server host has a different time zone.
+  Daily:
+    Top: true
+    Fastest: true
+    BestAvg: true
+    BestX: true
+    BestAvgMinReq: 1
+    BestXMinReq: 5
+  Weekly:
+    Top: true
+    Fastest: true
+    BestAvg: true
+    BestX: true
+    BestAvgMinReq: 3
+    BestXMinReq: 10
+  Monthly:
+    Top: true
+    Fastest: true
+    BestAvg: true
+    BestX: true
+    BestAvgMinReq: 5
+    BestXMinReq: 20
+
 
 # Easter Eggs!
 EasterEggs: true

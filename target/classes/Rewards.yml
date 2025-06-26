@@ -156,6 +156,36 @@ ContestRewards: #DailyBestAvg is omitted from this example. Take note!
       Money: 2500
       Commands:
         - "bta add [player] 2"
+  DailyBestX:
+    Top1:
+      Reps: 1
+      Money: 20000
+      Commands:
+        - "bta add [player] 10"
+      Message: "&bYou had the fastest answer of HoloQuiz for &a[start]&b! Have a cookie!"
+      Items:
+        1:
+          Material: cookie
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward"
+            - "&bFor &a[player]"
+            - "&bFastest of &a[start]"
+    Top2:
+      Reps: 1
+      Money: 10000
+      Commands:
+        - "bta add [player] 5"
+    Top3:
+      Reps: 1
+      Money: 5000
+      Commands:
+        - "bta add [player] 3"
+    Top4-5:
+      Reps: 2
+      Money: 2500
+      Commands:
+        - "bta add [player] 2"
   WeeklyMost:
     Top1:
       Reps: 1

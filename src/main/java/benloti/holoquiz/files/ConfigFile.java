@@ -1,5 +1,6 @@
 package benloti.holoquiz.files;
 
+import benloti.holoquiz.structs.ContestInfo;
 import benloti.holoquiz.structs.MinSDCheatDetector;
 import benloti.holoquiz.structs.MinTimeCheatDetector;
 import org.bukkit.Bukkit;
@@ -44,13 +45,10 @@ public class ConfigFile {
     private final String mathDifficulty;
 
     private final ZoneId timezoneOffset;
-    private final boolean dailyContest;
-    private final boolean weeklyContest;
-    private final boolean monthlyContest;
-    private final int dailyMin;
-    private final int weeklyMin;
-    private final int monthlyMin;
     private final int weeklyResetDay;
+    private final ContestInfo dailyContest;
+    private final ContestInfo weeklyContest;
+    private final ContestInfo monthlyContest;
 
     public ConfigFile(JavaPlugin plugin, String fileName) {
         File configFile = new File(plugin.getDataFolder(), fileName);
@@ -95,14 +93,15 @@ public class ConfigFile {
         this.mathDifficulty = mathSection.getString("MathDifficulty");
 
         ConfigurationSection contestSection = configs.getConfigurationSection("Contests");
-        this.dailyContest = contestSection.getBoolean("Daily");
-        this.weeklyContest = contestSection.getBoolean("Weekly");
-        this.monthlyContest = contestSection.getBoolean("Monthly");
         this.weeklyResetDay = parseStartDay(contestSection.getString("WeeklyResetDay", "Monday"));
-        this.dailyMin = contestSection.getInt("DailyAvgMin");
-        this.weeklyMin = contestSection.getInt("WeeklyAvgMin");
-        this.monthlyMin = contestSection.getInt("MonthlyAvgMin");
         this.timezoneOffset = parseTimeZone(contestSection.getString("TimeZone", "GMT+0"));
+
+        ConfigurationSection dailyContestSection = contestSection.getConfigurationSection("Daily");
+        this.dailyContest = parseContestConfig(dailyContestSection, 0);
+        ConfigurationSection weeklyContestSection = contestSection.getConfigurationSection("Weekly");
+        this.weeklyContest = parseContestConfig(weeklyContestSection, 1);
+        ConfigurationSection monthlyContestSection = contestSection.getConfigurationSection("Monthly");
+        this.monthlyContest = parseContestConfig(monthlyContestSection, 2);
 
         this.SRTS_useWhitelist = configs.getBoolean("SRTS_useWhitelist");
         this.SRTS_WorldList = configs.getStringList("SRTS_WorldList");
@@ -167,32 +166,20 @@ public class ConfigFile {
         return mathQuestionColour;
     }
 
-    public boolean isDailyContest() {
+    public ContestInfo getDailyContestConfig() {
         return dailyContest;
     }
 
-    public boolean isWeeklyContest() {
+    public ContestInfo getWeeklyContestConfig()  {
         return weeklyContest;
     }
 
-    public boolean isMonthlyContest() {
+    public ContestInfo getMonthlyContestConfig()  {
         return monthlyContest;
     }
 
     public int getWeeklyResetDay() {
         return weeklyResetDay;
-    }
-
-    public int getDailyMin() {
-        return dailyMin;
-    }
-
-    public int getWeeklyMin() {
-        return weeklyMin;
-    }
-
-    public int getMonthlyMin() {
-        return monthlyMin;
     }
 
     public ZoneId getTimezoneOffset() {
@@ -219,17 +206,6 @@ public class ConfigFile {
         return SRTS_WorldList;
     }
 
-    private ZoneId parseTimeZone(String timeZone) {
-        ZoneId zoneId;
-        try {
-            zoneId = ZoneId.of(timeZone);
-        } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your TimeZone isn't valid! Defaulting to +0.");
-            zoneId = ZoneId.of("GMT+0");
-        }
-        return zoneId;
-    }
-
     public MinTimeCheatDetector getMinTimeCheatDetector() {
         return minTimeCheatDetector;
     }
@@ -240,6 +216,35 @@ public class ConfigFile {
 
     public boolean isCollectRewardOnJoin() {
         return collectRewardOnJoin;
+    }
+
+    public int getCorrectAnswerMessageLoc() {
+        return correctAnswerMessageLoc;
+    }
+
+    private int parseCorrectAnswerMsgLoc(String location) {
+        if(location.equals("TitleMsg")) {
+            return 0;
+        }
+        if(location.equals("ActionBar")) {
+            return 1;
+        }
+        if(location.equals("Disabled")) {
+            return -1;
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error: CorrectAnswerMsgLoc: " + location + " is invalid");
+        return -1;
+    }
+
+    private ZoneId parseTimeZone(String timeZone) {
+        ZoneId zoneId;
+        try {
+            zoneId = ZoneId.of(timeZone);
+        } catch (Exception e) {
+            Bukkit.getLogger().info("[HoloQuiz] Your TimeZone isn't valid! Defaulting to +0.");
+            zoneId = ZoneId.of("GMT+0");
+        }
+        return zoneId;
     }
 
     private int parseStartDay(String day) {
@@ -268,21 +273,27 @@ public class ConfigFile {
         return 1;
     }
 
-    private int parseCorrectAnswerMsgLoc(String toko) {
-        if(toko.equals("TitleMsg")) {
-            return 0;
+    private ContestInfo parseContestConfig(ConfigurationSection section, int code) {
+        if(section == null) {
+            return new ContestInfo(code, false, false, false, false, 0, 0);
         }
-        if(toko.equals("ActionBar")) {
-            return 1;
+
+        boolean mostEnabled = section.getBoolean("Top", false);
+        boolean fastestEnabled = section.getBoolean("Fastest", false);
+        boolean bestAvgEnabled = section.getBoolean("BestAvg", false);
+        boolean bestXEnabled = section.getBoolean("BestX", false);
+        int bestAvgMinReq = section.getInt("BestAvgMinReq", 0);
+        int bestXMinReq = section.getInt("BestXMinReq", 0);
+        if(bestAvgMinReq == 0 && bestAvgEnabled) {
+            bestAvgEnabled = false;
         }
-        if(toko.equals("Disabled")) {
-            return -1;
+        if(bestXMinReq == 0 && bestXEnabled) {
+            bestXEnabled = false;
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error: CorrectAnswerMsgLoc: " + toko + " is invalid");
-        return -1;
+        return new ContestInfo(code, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq);
     }
 
-    public int getCorrectAnswerMessageLoc() {
-        return correctAnswerMessageLoc;
-    }
+
+
+
 }

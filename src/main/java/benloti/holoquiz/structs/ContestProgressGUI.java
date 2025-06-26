@@ -27,7 +27,7 @@ public class ContestProgressGUI {
 
     public ContestProgressGUI(ContestManager contestManager, String playerName, UserInterface userInterface) {
         this.contestManager = contestManager;
-        this.inventory = Bukkit.createInventory(null, 9, "HoloQuiz Contests");
+        this.inventory = Bukkit.createInventory(null, 18, "HoloQuiz Contests");
         this.playerName = playerName;
         this.userInterface = userInterface;
     }
@@ -68,8 +68,8 @@ public class ContestProgressGUI {
                 String score = getScoreByIndex(playerInfo, i);
                 String formattedDescription = String.format(DESCRIPTION_FOR_PLAYER_DQ, "N/A", playerInfo.getPlayerName(), score);
                 description.add(userInterface.formatColours(formattedDescription));
-                if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getMinAnswersNeeded()) {
-                    int remainder =  contest.getMinAnswersNeeded() - playerInfo.getQuestionsAnswered();
+                if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getBestAvgMinReq()) {
+                    int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
                     formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
                     description.add(userInterface.formatColours(formattedDescription));
                 }
@@ -95,6 +95,9 @@ public class ContestProgressGUI {
         }
         if(i == 2) {
             return contestType + " Best Avg";
+        }
+        if(i == 3) {
+            return contestType + " Best X";
         }
         return "Bugged Contest :(";
     }

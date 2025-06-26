@@ -1,6 +1,5 @@
 package benloti.holoquiz.database;
 import benloti.holoquiz.structs.PlayerData;
-import org.bukkit.Bukkit;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,6 +23,10 @@ public class AnswersLogs {
             "SELECT user_id, (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count FROM answers_logs " +
             "WHERE timestamp >= %d AND timestamp <= %d GROUP BY user_id " +
             "HAVING ans_count >= %d ORDER BY average ASC LIMIT %d";
+    private static final String SQL_STATEMENT_FETCH_BEST_X_ANSWERS_WITHIN_TIMESTAMP =
+            "SELECT user_id, (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count FROM answers_logs " +
+                    "WHERE timestamp >= %d AND timestamp <= %d GROUP BY user_id " +
+                    "HAVING ans_count >= %d ORDER BY average ASC LIMIT %d";
 
     private static final String SQL_STATEMENT_FETCH_PLAYER_STATS_WITHIN_TIMESTAMP =
             "SELECT (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count, MIN(took) as best_time " +

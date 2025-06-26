@@ -208,7 +208,8 @@ public class DatabaseManager {
         connection = getConnection();
         long startTime = endedContest.getStartTime();
         long endTime = endedContest.getEndTime();
-        int minAns = endedContest.getMinAnswersNeeded();
+        int minAnsForBestAvg = endedContest.getBestAvgMinReq();
+        int minAnsForBestX = endedContest.getBestXMinReq();
 
         //Fetch All the Winners
         ArrayList<PlayerData> mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
@@ -218,7 +219,11 @@ public class DatabaseManager {
                     startTime, endTime, endedContest.getRewardCountByCategory(1));
 
         ArrayList<PlayerData> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
-                startTime, endTime, endedContest.getRewardCountByCategory(2), minAns);
+                startTime, endTime, endedContest.getRewardCountByCategory(2), minAnsForBestAvg);
+
+        ArrayList<PlayerData> bestXWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
+                startTime, endTime, endedContest.getRewardCountByCategory(3), minAnsForBestX);
+
 
         //Return ArrayLists for issuing rewards
         ArrayList<ArrayList<PlayerData>> fullWinnersList = new ArrayList<>(3);

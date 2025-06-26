@@ -1,0 +1,143 @@
+AgainAnyIDCanGoHere:
+  Page: 1
+  GUISlot: 1
+  GUIItem: COOKIE
+  Type: NORMAL
+  Name: "&bMy First Answer"
+  Description:
+    - "You answered 1 question!"
+    - "Congrats! I guess"
+  Requirement:
+    Answers: 1
+FastBoi:
+  Page: 1
+  GUISlot: 2
+  GUIItem: GOLDEN_APPLE
+  Type: NORMAL
+  Name: "&bFast Answer"
+  Description:
+    - "Answer within 5sec"
+  Requirement:
+    Time: 5000
+FasterBoi:
+  Page: 1
+  GUISlot: 3
+  GUIItem: ENCHANTED_GOLDEN_APPLE
+  Type: NORMAL
+  Name: "&bFaster Answer"
+  Description:
+    - "Answer within 2sec"
+  Requirement:
+    Time: 2000
+FastestBoi:
+  Page: 1
+  GUISlot: 4
+  GUIItem: ENCHANTED_GOLDEN_APPLE
+  Type: NORMAL
+  Name: "&bFastest Answer"
+  Description:
+    - "Answer within 1sec"
+  Requirement:
+    Time: 1000
+SlowestAnswer:
+  Page: 1
+  GUISlot: 5
+  GUIItem: COOKIE
+  Type: HIDDEN
+  Name: "The last second"
+  Description:
+    - "An accomplishment by itself"
+  Requirement:
+    AboveTime: 290000
+SecretiveBoi:
+  Page: 1
+  GUISlot: 9
+  GUIItem: EMERALD
+  Type: SECRET
+  Name: "Find The Secret answer!"
+  Description:
+    - "Answer any secret answers"
+  Requirement:
+    Time: 30000
+    SecretAnswer: true
+QuickSecretiveBoi:
+  Page: 1
+  GUISlot: 10
+  GUIItem: EMERALD
+  Type: SECRET
+  Name: "Find The Secret answer... quickly!"
+  Description:
+    - "Answer any secret answers within 2 sec"
+  Requirement:
+    Time: 2000
+    SecretAnswer: true
+Pekofy:
+  Page: 1
+  GUISlot: 36
+  GUIItem: CARROT
+  Type: NORMAL
+  Name: "Peko Peko Peko!"
+  Description:
+    - "/Holoquiz Pekofy"
+  Requirement:
+    EasterEgg: "Pekofy"
+DeGozaru:
+  Page: 2
+  GUISlot: 1
+  GUIItem: IRON_SWORD
+  Type: HIDDEN
+  Name: "De Gozaru!"
+  Description:
+    - "/Holoquiz DeGozaru"
+  Requirement:
+    EasterEgg: "DeGozaru"
+Nanora:
+  Page: 2
+  GUISlot: 2
+  GUIItem: IRON_SWORD
+  Type: HIDDEN
+  Name: "Nanoranora?"
+  Description:
+    - "Luna nanora?"
+  Requirement:
+    EasterEgg: "Nanora"
+Shuba:
+  Page: 2
+  GUISlot: 3
+  GUIItem: IRON_SWORD
+  Type: HIDDEN
+  Name: "Shuba Shuba Shuba!"
+  Description:
+    - "OMAEEEEEEEE"
+  Requirement:
+    EasterEgg: "Shuba"
+GlassesAreReallyVersatile:
+  Page: 2
+  GUISlot: 4
+  GUIItem: FOX_SPAWN_EGG
+  Type: HIDDEN
+  Name: "Kon Kon Kitsune!"
+  Description:
+    - "FOX NUMBER ONE"
+  Requirement:
+    EasterEgg: "GlassesAreReallyVersatile"
+IsItStillAJoke:
+  Page: 2
+  GUISlot: 5
+  GUIItem: CARROT
+  Type: HIDDEN
+  Name: "So as a joke..."
+  Description:
+    - "Is it really still a joke"
+  Requirement:
+    EasterEgg: "PekoPasta"
+727:
+  Page: 2
+  GUISlot: 9
+  GUIItem: COOKIE
+  Type: HIDDEN
+  Name: "THERE IS NO WAY"
+  Description:
+    - "WHEN YOU SEE IT"
+  Requirement:
+    Macro: "WYSI"

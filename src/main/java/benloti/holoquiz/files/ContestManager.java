@@ -27,9 +27,9 @@ public class ContestManager {
     private final RewardsHandler rewardsHandler;
     private final ZoneId zoneId;
 
-    private final boolean dailyEnabled;
-    private final boolean weeklyEnabled;
-    private final boolean monthlyEnabled;
+    private final ContestInfo dailyContest;
+    private final ContestInfo weeklyContest;
+    private final ContestInfo monthlyContest;
 
     private final ArrayList<ContestInfo> enabledContests;
     private final Set<String> playersWithOpenGUI = new HashSet<>();
@@ -38,9 +38,9 @@ public class ContestManager {
                           ExternalFiles externalFiles, GameManager gameManager) {
         this.databaseManager = databaseManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
-        this.dailyEnabled = configFile.isDailyContest();
-        this.weeklyEnabled = configFile.isWeeklyContest();
-        this.monthlyEnabled = configFile.isMonthlyContest();
+        this.dailyContest = configFile.getDailyContestConfig();
+        this.weeklyContest = configFile.getWeeklyContestConfig();
+        this.monthlyContest = configFile.getMonthlyContestConfig();
         this.zoneId = configFile.getTimezoneOffset();
 
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
@@ -111,19 +111,20 @@ public class ContestManager {
     private ArrayList<ContestInfo> initialiseNewContests(ExternalFiles externalFiles, ConfigFile configFile) {
         // All contest start time is assumed to be 00:00 of the day it is set to be enabled.
         ArrayList<ContestInfo> enabledContestList = new ArrayList<>(Arrays.asList(null,null,null));
-        if(dailyEnabled) {
+        if(dailyContest.isContestEnabled()) {
             LocalDate startDate = LocalDate.now(zoneId); //Also EndDate
 
-            ArrayList<ContestRewardTier> topAnswerRewards = externalFiles.getContestRewardByCategory("DailyMost");
-            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("DailyBestAvg");
+            ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory("DailyMost");
             ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory("DailyFastest");
-            int dailyMin = configFile.getDailyMin();
-            ContestInfo dailyContestInfo = new ContestInfo(zoneId,0, dailyMin,
-                    topAnswerRewards, bestAverageRewards, fastestRewards, startDate, startDate);
+            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("DailyBestAvg");
+            ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory("DailyBestX");
 
-            enabledContestList.set(0, dailyContestInfo);
+            dailyContest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
+            dailyContest.updateTimes(zoneId,startDate,startDate);
+
+            enabledContestList.set(0, dailyContest);
         }
-        if(weeklyEnabled) {
+        if(weeklyContest.isContestEnabled()) {
             LocalDate startDate = LocalDate.now(zoneId);
             int intendedStartDay = configFile.getWeeklyResetDay();
             int daysFromStartDay = getDaysFromStartDay(startDate.getDayOfWeek().getValue(), intendedStartDay);
@@ -131,30 +132,32 @@ public class ContestManager {
             LocalDate endDate = startDate.plusWeeks(1);
             endDate = endDate.minusDays(1);
 
-            ArrayList<ContestRewardTier> topAnswerRewards = externalFiles.getContestRewardByCategory("WeeklyMost");
-            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("WeeklyBestAvg");
+            ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory("WeeklyMost");
             ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory("WeeklyFastest");
-            int weeklyMin = configFile.getWeeklyMin();
-            ContestInfo weeklyContestInfo = new ContestInfo(zoneId, 1, weeklyMin,
-                    topAnswerRewards, bestAverageRewards, fastestRewards, startDate, endDate);
+            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("WeeklyBestAvg");
+            ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory("WeeklyBestX");
 
-            enabledContestList.set(1, weeklyContestInfo);
+            weeklyContest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
+            weeklyContest.updateTimes(zoneId,startDate,endDate);
+
+            enabledContestList.set(1, weeklyContest);
         }
-        if(monthlyEnabled) {
+        if(monthlyContest.isContestEnabled()) {
             LocalDate startDate = LocalDate.now(zoneId);
             int daysFromFirstDayOfMonth = startDate.getDayOfMonth() - 1;
             startDate = startDate.minusDays(daysFromFirstDayOfMonth);
             LocalDate endDate = startDate.plusMonths(1);
             endDate = endDate.minusDays(1);
 
-            ArrayList<ContestRewardTier> topAnswerRewards = externalFiles.getContestRewardByCategory("MonthlyMost");
-            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("MonthlyBestAvg");
+            ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory("MonthlyMost");
             ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory("MonthlyFastest");
-            int monthlyMin = configFile.getMonthlyMin();
-            ContestInfo monthlyContestInfo = new ContestInfo(zoneId, 2, monthlyMin,
-                    topAnswerRewards, bestAverageRewards, fastestRewards, startDate, endDate);
+            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("MonthlyBestAvg");
+            ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory("MonthlyBestX");
 
-            enabledContestList.set(2, monthlyContestInfo);
+            monthlyContest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
+            monthlyContest.updateTimes(zoneId,startDate,endDate);
+
+            enabledContestList.set(2, monthlyContest);
         }
         return enabledContestList;
     }
