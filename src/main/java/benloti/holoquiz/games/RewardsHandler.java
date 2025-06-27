@@ -54,7 +54,7 @@ public class RewardsHandler {
 
     public void giveContestRewards(ArrayList<ContestWinner> allContestWinners, ContestInfo contestInfo) {
         for(ContestWinner contestWinner : allContestWinners) {
-            PlayerData contestWinnerData = contestWinner.getContestWinnerData();
+            PlayerContestStats contestWinnerData = contestWinner.getContestWinnerData();
             String playerName = contestWinnerData.getPlayerName();
             Player winningPlayer = plugin.getServer().getPlayer(playerName);
             ContestWinner formattedContestWinner = new ContestWinner(contestWinner, contestInfo, userInterface);
@@ -210,5 +210,71 @@ public class RewardsHandler {
             }
         }
         return null;
+    }
+
+    public static class MinSDCheatDetector {
+        private final boolean isEnabled;
+        private final int minAnsUsed;
+        private final double minSDReq;
+        private final boolean countAsCorrect;
+        private final List<String> cheatingCommands;
+
+        public MinSDCheatDetector(boolean isEnabled, int minAnsUsed, double minReq, boolean countAsCorrect, List<String>cmdsExecuted) {
+            this.isEnabled = isEnabled;
+            this.minAnsUsed = minAnsUsed;
+            this.minSDReq = minReq;
+            this.countAsCorrect = countAsCorrect;
+            this.cheatingCommands = cmdsExecuted;
+        }
+
+        public boolean isEnabled() {
+            return isEnabled;
+        }
+
+        public boolean isCountAsCorrect() {
+            return countAsCorrect;
+        }
+
+        public List<String> getCheatingCommands() {
+            return cheatingCommands;
+        }
+
+        public int getMinAnsUsed() {
+            return minAnsUsed;
+        }
+
+        public double getMinSDReq() {
+            return minSDReq;
+        }
+    }
+
+    public static class MinTimeCheatDetector {
+        private final boolean isEnabled;
+        private final int minTimeRequired;
+        private final boolean countAsCorrect;
+        private final List<String> cheatingCommands;
+
+        public MinTimeCheatDetector(boolean isEnabled, int minTimeReq, boolean countAsCorrect, List<String>cmdsExecuted) {
+            this.isEnabled = isEnabled;
+            this.minTimeRequired = minTimeReq;
+            this.countAsCorrect = countAsCorrect;
+            this.cheatingCommands = cmdsExecuted;
+        }
+
+        public boolean isEnabled() {
+            return isEnabled;
+        }
+
+        public int getMinTimeRequired() {
+            return minTimeRequired;
+        }
+
+        public boolean isCountAsCorrect() {
+            return countAsCorrect;
+        }
+
+        public List<String> getCheatingCommands() {
+            return cheatingCommands;
+        }
     }
 }

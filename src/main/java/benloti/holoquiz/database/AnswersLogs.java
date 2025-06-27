@@ -1,5 +1,5 @@
 package benloti.holoquiz.database;
-import benloti.holoquiz.structs.PlayerData;
+import benloti.holoquiz.structs.PlayerContestStats;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,13 +24,19 @@ public class AnswersLogs {
             "WHERE timestamp >= %d AND timestamp <= %d GROUP BY user_id " +
             "HAVING ans_count >= %d ORDER BY average ASC LIMIT %d";
     private static final String SQL_STATEMENT_FETCH_BEST_X_ANSWERS_WITHIN_TIMESTAMP =
-            "SELECT user_id, (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count FROM answers_logs " +
-                    "WHERE timestamp >= %d AND timestamp <= %d GROUP BY user_id " +
-                    "HAVING ans_count >= %d ORDER BY average ASC LIMIT %d";
+            "WITH ranked_answers AS (SELECT user_id, took, COUNT(*) OVER (PARTITION BY user_id) AS total, " +
+                    "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY took ASC) AS rank, " +
+                    "FROM answer_logs WHERE timestamp >= %d AND timestamp <= %d) " +
+            "SELECT user_id, SUM(took) as fastest_X FROM ranked_answers WHERE rank >= %d and total >= %d " +
+            "GROUP BY user_id ORDER BY total ASC LIMIT %d";
 
     private static final String SQL_STATEMENT_FETCH_PLAYER_STATS_WITHIN_TIMESTAMP =
             "SELECT (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count, MIN(took) as best_time " +
             "FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d AND user_id = %d";
+    private static final String SQL_STATEMENT_FETCH_PLAYER_BEST_X_WITHIN_TIMESTAMP =
+            "WITH top_answers AS (SELECT took FROM answers_logs " +
+                    "WHERE timestamp >= %d AND timestamp <= %d AND user_id = %d ORDER BY took ASC LIMIT %d) " +
+             "SELECT sum(took) AS total_time FROM top_answers";
 
     private static final String SQL_STATEMENT_FETCH_PREVIOUS_TIMINGS =
             "SELECT took FROM answers_logs WHERE user_id = %d ORDER BY timestamp DESC LIMIT %d";
@@ -61,10 +67,10 @@ public class AnswersLogs {
         }
     }
 
-    public ArrayList<PlayerData> getTopAnswerersWithinTimestamp (Connection connection, long start, long end, int limit) {
-        ArrayList<PlayerData> topAnswerers = new ArrayList<>();
+    public ArrayList<PlayerContestStats> getTopAnswerersWithinTimestamp (Connection connection, long start, long end, int limit) {
+        ArrayList<PlayerContestStats> winnersOfContest = new ArrayList<>();
         if(limit == 0) {
-            return topAnswerers;
+            return winnersOfContest;
         }
         String sqlQuery = String.format(SQL_STATEMENT_FETCH_MOST_ANSWERS_WITHIN_TIMESTAMP, start, end, limit);
         try {
@@ -74,19 +80,19 @@ public class AnswersLogs {
                 int holoQuizID = resultSet.getInt("user_id");
                 int answers = resultSet.getInt("ans_count");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerData contestWinner = new PlayerData(playerName, -1, answers, -1, holoQuizID);
-                topAnswerers.add(contestWinner);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID, answers, -1, -1, -1);
+                winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return topAnswerers;
+        return winnersOfContest;
     }
 
-    public ArrayList<PlayerData> getFastestAnswerersWithinTimestamp(Connection connection, long start, long end, int limit) {
-        ArrayList<PlayerData> fastestAnswerers = new ArrayList<>();
+    public ArrayList<PlayerContestStats> getFastestAnswerersWithinTimestamp(Connection connection, long start, long end, int limit) {
+        ArrayList<PlayerContestStats> winnersOfContest = new ArrayList<>();
         if(limit == 0) {
-            return fastestAnswerers;
+            return winnersOfContest;
         }
         String sqlQuery = String.format(SQL_STATEMENT_FETCH_FASTEST_ANSWERS_WITHIN_TIMESTAMP, start, end, limit);
         try {
@@ -96,19 +102,19 @@ public class AnswersLogs {
                 int holoQuizID = resultSet.getInt("user_id");
                 int took = resultSet.getInt("best_time");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerData contestWinner = new PlayerData(playerName, took, -1, -1, holoQuizID);
-                fastestAnswerers.add(contestWinner);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID,-1, took, -1, -1);
+                winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return fastestAnswerers;
+        return winnersOfContest;
     }
 
-    public ArrayList<PlayerData> getBestAnswerersWithinTimestamp(Connection connection, long start, long end, int limit, int minReq) {
-        ArrayList<PlayerData> bestAnswerers = new ArrayList<>();
+    public ArrayList<PlayerContestStats> getBestAnswerersWithinTimestamp(Connection connection, long start, long end, int limit, int minReq) {
+        ArrayList<PlayerContestStats> winnersOfContest = new ArrayList<>();
         if(limit == 0) {
-            return bestAnswerers;
+            return winnersOfContest;
         }
         String sqlQuery = String.format(SQL_STATEMENT_FETCH_BEST_AVG_ANSWERS_WITHIN_TIMESTAMP, start, end, minReq, limit);
         try {
@@ -119,17 +125,40 @@ public class AnswersLogs {
                 int answers = resultSet.getInt("ans_count");
                 int average = resultSet.getInt("average");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerData contestWinner = new PlayerData(playerName, -1, answers, average, holoQuizID);
-                bestAnswerers.add(contestWinner);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID,answers, -1, average, -1);
+                winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return bestAnswerers;
+        return winnersOfContest;
     }
 
-    public PlayerData getPlayerStatsWithinTimestamp(Connection connection, long start, long end, int id, String name) {
+    public ArrayList<PlayerContestStats> getBestXWithinTimestamp(Connection connection, long start, long end, int limit, int minReq) {
+        ArrayList<PlayerContestStats> winnersOfContest = new ArrayList<>();
+        if(limit == 0) {
+            return winnersOfContest;
+        }
+        String sqlQuery = String.format(SQL_STATEMENT_FETCH_BEST_X_ANSWERS_WITHIN_TIMESTAMP, start, end, minReq, minReq, limit);
+        try {
+            PreparedStatement statement = connection.prepareStatement(sqlQuery);
+            ResultSet resultSet = statement.executeQuery();
+            while(resultSet.next()) {
+                int holoQuizID = resultSet.getInt("user_id");
+                int score = resultSet.getInt("fastest_X");
+                String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID, -1, -1, -1, score);
+                winnersOfContest.add(contestWinner);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return winnersOfContest;
+    }
+
+    public PlayerContestStats getPlayerStatsWithinTimestamp(Connection connection, long start, long end, int id, int minReq, String name) {
         String sqlQuery = String.format(SQL_STATEMENT_FETCH_PLAYER_STATS_WITHIN_TIMESTAMP, start, end, id);
+        String sqlQuery2 = String.format(SQL_STATEMENT_FETCH_PLAYER_BEST_X_WITHIN_TIMESTAMP,start, end, id, minReq);
         try {
             PreparedStatement statement = connection.prepareStatement(sqlQuery);
             ResultSet resultSet = statement.executeQuery();
@@ -137,12 +166,15 @@ public class AnswersLogs {
                 int best = resultSet.getInt("best_time");
                 int answers = resultSet.getInt("ans_count");
                 int average = resultSet.getInt("average");
-                return new PlayerData(name, best, answers, average, id);
+                PreparedStatement statement2 = connection.prepareStatement(sqlQuery2);
+                ResultSet resultSet2 = statement2.executeQuery();
+                int bestX = resultSet2.getInt("total_time");
+                return new PlayerContestStats(name, id, answers, best, average, bestX);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new PlayerData(name, -1, -1, -1, id);
+        return new PlayerContestStats(name, id, -1, -1, -1 ,-1 );
     }
 
     public List<Double> getPreviousTimings(Connection connection, int id, int count) {

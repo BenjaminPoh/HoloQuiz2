@@ -5,8 +5,6 @@ import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ContestManager;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.database.DatabaseManager;
-import benloti.holoquiz.structs.MinSDCheatDetector;
-import benloti.holoquiz.structs.MinTimeCheatDetector;
 import benloti.holoquiz.structs.Question;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -41,8 +39,8 @@ public class QuizAnswerHandler implements Listener {
     private RewardsHandler rewardsHandler;
     private UserInterface userInterface;
     private ContestManager contestManager;
-    private MinSDCheatDetector sdChecker;
-    private MinTimeCheatDetector timeChecker;
+    private RewardsHandler.MinSDCheatDetector sdChecker;
+    private RewardsHandler.MinTimeCheatDetector timeChecker;
 
     private int correctAnswerMsgLoc;
 

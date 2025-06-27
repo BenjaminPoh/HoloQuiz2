@@ -2,6 +2,7 @@ package benloti.holoquiz.database;
 
 import benloti.holoquiz.games.RewardsHandler;
 import benloti.holoquiz.structs.ContestInfo;
+import benloti.holoquiz.structs.PlayerContestStats;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.structs.RewardTier;
 import org.bukkit.Bukkit;
@@ -201,7 +202,7 @@ public class DatabaseManager {
         return contests.getOngoingTournaments(connection);
     }
 
-    public ArrayList<ArrayList<PlayerData>> fetchContestWinners(ContestInfo endedContest) {
+    public ArrayList<ArrayList<PlayerContestStats>> fetchContestWinners(ContestInfo endedContest) {
         if(endedContest == null) {
             return new ArrayList<>();
         }
@@ -212,24 +213,25 @@ public class DatabaseManager {
         int minAnsForBestX = endedContest.getBestXMinReq();
 
         //Fetch All the Winners
-        ArrayList<PlayerData> mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
+        ArrayList<PlayerContestStats> mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
                 startTime, endTime, endedContest.getRewardCountByCategory(0));
 
-        ArrayList<PlayerData> fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
+        ArrayList<PlayerContestStats> fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
                     startTime, endTime, endedContest.getRewardCountByCategory(1));
 
-        ArrayList<PlayerData> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
+        ArrayList<PlayerContestStats> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
                 startTime, endTime, endedContest.getRewardCountByCategory(2), minAnsForBestAvg);
 
-        ArrayList<PlayerData> bestXWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
+        ArrayList<PlayerContestStats> bestXWinners = answersLogs.getBestXWithinTimestamp(connection,
                 startTime, endTime, endedContest.getRewardCountByCategory(3), minAnsForBestX);
 
 
         //Return ArrayLists for issuing rewards
-        ArrayList<ArrayList<PlayerData>> fullWinnersList = new ArrayList<>(3);
+        ArrayList<ArrayList<PlayerContestStats>> fullWinnersList = new ArrayList<>(3);
         fullWinnersList.add(mostAnswerWinners);
         fullWinnersList.add(fastestAnswerWinners);
         fullWinnersList.add(bestAverageWinners);
+        fullWinnersList.add(bestXWinners);
         return fullWinnersList;
     }
 
@@ -279,13 +281,14 @@ public class DatabaseManager {
         contests.deleteOngoingContest(connection, code);
     }
 
-    public void logContestWinners(ArrayList<ArrayList<PlayerData>> allContestWinners, ContestInfo endedContest) {
+    public void logContestWinners(ArrayList<ArrayList<PlayerContestStats>> allContestWinners, ContestInfo endedContest) {
         contests.logContestWinners(connection, allContestWinners.get(0), endedContest, 0);
         contests.logContestWinners(connection, allContestWinners.get(1), endedContest, 1);
         contests.logContestWinners(connection, allContestWinners.get(2), endedContest, 2);
+        contests.logContestWinners(connection, allContestWinners.get(3), endedContest, 3);
     }
 
-    public PlayerData fetchPlayerContestPlacement(ContestInfo contest, String playerName, String playerUUID) {
+    public PlayerContestStats fetchPlayerContestPlacement(ContestInfo contest, String playerName, String playerUUID) {
         int holoQuizID = getHoloQuizIDbyName(playerName, playerUUID);
         if(holoQuizID == 0) {
             return null;
@@ -293,7 +296,7 @@ public class DatabaseManager {
         connection = getConnection();
         long startTime = contest.getStartTime();
         long endTime = contest.getEndTime();
-        return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, playerName);
+        return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, contest.getBestXMinReq(), playerName);
     }
 
     public List<Double> fetchPrevTimes(int count, Player player) {

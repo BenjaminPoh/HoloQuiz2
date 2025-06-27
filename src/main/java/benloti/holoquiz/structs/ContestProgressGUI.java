@@ -37,14 +37,14 @@ public class ContestProgressGUI {
     }
 
     //All java coding standards are violated in this 1 function.
-    public void addInfo(ContestInfo contest, ArrayList<ArrayList<PlayerData>> allContestWinners, PlayerData playerInfo) {
+    public void addInfo(ContestInfo contest, ArrayList<ArrayList<PlayerContestStats>> allContestWinners, PlayerContestStats playerInfo) {
         String contestType = contest.getTypeString();
         String dateRangeDescription = formatDateTime(contest.getStartDate(), contest.getEndDate());
         for(int i = 0; i < allContestWinners.size(); i++) {
-            if(contest.getRewardByCategory(i).size() == 0) {
+            if(contest.getRewardByCategory(i).isEmpty()) {
                 continue;
             }
-            ArrayList<PlayerData> currContestWinners = allContestWinners.get(i);
+            ArrayList<PlayerContestStats> currContestWinners = allContestWinners.get(i);
             ItemStack placeholderItem = new ItemStack(Material.PAPER, 1);
             ItemMeta itemMeta = placeholderItem.getItemMeta();
             assert itemMeta != null;
@@ -54,7 +54,7 @@ public class ContestProgressGUI {
             description.add(userInterface.formatColours(dateRangeDescription));
             boolean playerFound = false;
             for(int j = 0; j < currContestWinners.size(); j++) {
-                PlayerData winner = currContestWinners.get(j);
+                PlayerContestStats winner = currContestWinners.get(j);
                 String score = getScoreByIndex(winner, i);
                 String descriptionFormat = DESCRIPTION_FOR_OTHERS;
                 if(winner.getPlayerName().equals(playerName)) {
@@ -69,6 +69,11 @@ public class ContestProgressGUI {
                 String formattedDescription = String.format(DESCRIPTION_FOR_PLAYER_DQ, "N/A", playerInfo.getPlayerName(), score);
                 description.add(userInterface.formatColours(formattedDescription));
                 if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getBestAvgMinReq()) {
+                    int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
+                    formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
+                    description.add(userInterface.formatColours(formattedDescription));
+                }
+                if(i == 3 && playerInfo.getQuestionsAnswered() < contest.getBestXMinReq()) {
                     int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
                     formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
                     description.add(userInterface.formatColours(formattedDescription));
@@ -102,7 +107,7 @@ public class ContestProgressGUI {
         return "Bugged Contest :(";
     }
 
-    private String getScoreByIndex(PlayerData winner, int index) {
+    private String getScoreByIndex(PlayerContestStats winner, int index) {
         if(index == 0) {
             return Integer.toString(winner.getQuestionsAnswered());
         }
@@ -111,6 +116,9 @@ public class ContestProgressGUI {
         }
         if (index == 2) {
             return winner.getAverageTimeInSeconds3DP();
+        }
+        if (index == 3) {
+            return winner.getBestXTimesInSeconds3DP();
         }
         return "Error?";
     }

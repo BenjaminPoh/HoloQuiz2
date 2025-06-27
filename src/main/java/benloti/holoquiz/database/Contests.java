@@ -1,7 +1,7 @@
 package benloti.holoquiz.database;
 
 import benloti.holoquiz.structs.ContestInfo;
-import benloti.holoquiz.structs.PlayerData;
+import benloti.holoquiz.structs.PlayerContestStats;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -69,10 +69,10 @@ public class Contests {
         }
     }
 
-    public void logContestWinners(Connection connection, ArrayList<PlayerData> contestWinners, ContestInfo contestInfo, int contestCategory) {
+    public void logContestWinners(Connection connection, ArrayList<PlayerContestStats> contestWinners, ContestInfo contestInfo, int contestCategory) {
         try {
             int position = 1;
-            for (PlayerData contestWinner: contestWinners) {
+            for (PlayerContestStats contestWinner: contestWinners) {
                 PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_ADD_CONTEST_WINNER);
                 statement.setInt(1, contestInfo.getTypeCode());
                 statement.setInt(2,contestCategory);

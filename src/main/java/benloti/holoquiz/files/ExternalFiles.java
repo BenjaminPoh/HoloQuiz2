@@ -266,7 +266,7 @@ public class ExternalFiles {
 
             ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
             contestRewards.put(category, rewardsList);
-            if(rewardsList.size() > 0) {
+            if(!rewardsList.isEmpty()) {
                 String logMessage = String.format(CONTEST_LOG_MESSAGE, category, rewardsList.size());
                 Bukkit.getLogger().info(logMessage);
             }
@@ -329,7 +329,7 @@ public class ExternalFiles {
             ConfigurationSection questionConfig = config.getConfigurationSection(key);
             String question = questionConfig.getString("Question");
             List<String> answers = questionConfig.getStringList("Answers");
-            if(question == null || answers.size() == 0) {
+            if(question == null || answers.isEmpty()) {
                 Bukkit.getLogger().info("[HoloQuiz] Error with loading question: " + question);
                 continue;
             }

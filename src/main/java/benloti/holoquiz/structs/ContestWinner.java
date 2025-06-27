@@ -5,10 +5,10 @@ import benloti.holoquiz.files.UserInterface;
 public class ContestWinner {
 
     private final ContestRewardTier contestPrize;
-    private final PlayerData contestWinnerData;
+    private final PlayerContestStats contestWinnerData;
     private final int position;
 
-    public ContestWinner(ContestRewardTier prizes, PlayerData winner, int position) {
+    public ContestWinner(ContestRewardTier prizes, PlayerContestStats winner, int position) {
         this.contestPrize = prizes;
         this.contestWinnerData = winner;
         this.position = position;
@@ -24,7 +24,7 @@ public class ContestWinner {
         return contestPrize;
     }
 
-    public PlayerData getContestWinnerData() {
+    public PlayerContestStats getContestWinnerData() {
         return contestWinnerData;
     }
 

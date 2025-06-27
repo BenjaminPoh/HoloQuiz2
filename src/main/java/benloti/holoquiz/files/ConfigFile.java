@@ -1,8 +1,7 @@
 package benloti.holoquiz.files;
 
+import benloti.holoquiz.games.RewardsHandler;
 import benloti.holoquiz.structs.ContestInfo;
-import benloti.holoquiz.structs.MinSDCheatDetector;
-import benloti.holoquiz.structs.MinTimeCheatDetector;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,8 +31,8 @@ public class ConfigFile {
     private final int intervalCheck;
     private final int revealAnswerDelay;
     private final int QuestionCooldownLength;
-    private final MinTimeCheatDetector minTimeCheatDetector;
-    private final MinSDCheatDetector minSDCheatDetector;
+    private final RewardsHandler.MinTimeCheatDetector minTimeCheatDetector;
+    private final RewardsHandler.MinSDCheatDetector minSDCheatDetector;
     private final int correctAnswerMessageLoc; // -1: Disabled. 0:TitleMsg. 1:ActionBar
 
     private final int mathRange;
@@ -74,14 +73,14 @@ public class ConfigFile {
         int limit_MT = (int) (minTimeSection.getDouble("CheatingTimer") * 1000);
         boolean countAsCorrect_MT = minTimeSection.getBoolean("CountAsCorrect");
         List<String> cheatingCommands_MT = minTimeSection.getStringList("CommandToPerform");
-        this.minTimeCheatDetector = new MinTimeCheatDetector(isEnabled_MT, limit_MT, countAsCorrect_MT, cheatingCommands_MT);
+        this.minTimeCheatDetector = new RewardsHandler.MinTimeCheatDetector(isEnabled_MT, limit_MT, countAsCorrect_MT, cheatingCommands_MT);
         ConfigurationSection consistencySection = cheatSection.getConfigurationSection("ConsistencyChecker");
         boolean isEnabled_SD = consistencySection.getBoolean("Checker");
         int numOfAnswers_SD = consistencySection.getInt("NumberOfAnswers");
         double limit_SD = consistencySection.getDouble("AcceptableSD");
         boolean countAsCorrect_SD = consistencySection.getBoolean("CountAsCorrect");
         List<String> cheatingCommands_SD = consistencySection.getStringList("CommandToPerform");
-        this.minSDCheatDetector = new MinSDCheatDetector(isEnabled_SD, numOfAnswers_SD, limit_SD, countAsCorrect_SD, cheatingCommands_SD);
+        this.minSDCheatDetector = new RewardsHandler.MinSDCheatDetector(isEnabled_SD, numOfAnswers_SD, limit_SD, countAsCorrect_SD, cheatingCommands_SD);
 
         ConfigurationSection mathSection = configs.getConfigurationSection("QuickMath");
         this.mathRange = mathSection.getInt("MathRange");
@@ -206,11 +205,11 @@ public class ConfigFile {
         return SRTS_WorldList;
     }
 
-    public MinTimeCheatDetector getMinTimeCheatDetector() {
+    public RewardsHandler.MinTimeCheatDetector getMinTimeCheatDetector() {
         return minTimeCheatDetector;
     }
 
-    public MinSDCheatDetector getMinSDCheatDetector() {
+    public RewardsHandler.MinSDCheatDetector getMinSDCheatDetector() {
         return minSDCheatDetector;
     }
 

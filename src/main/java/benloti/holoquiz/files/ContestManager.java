@@ -81,8 +81,8 @@ public class ContestManager {
             if(contest == null) {
                 continue;
             }
-            ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(contest);
-            PlayerData targetPlayerPlacement = databaseManager.fetchPlayerContestPlacement(contest,playerName,playerUUID);
+            ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(contest);
+            PlayerContestStats targetPlayerPlacement = databaseManager.fetchPlayerContestPlacement(contest,playerName,playerUUID);
             contestProgressGUI.addInfo(contest, allContestWinners, targetPlayerPlacement);
         }
         return contestProgressGUI;
@@ -233,7 +233,7 @@ public class ContestManager {
 
     private void handleEndedContestTasks(ContestInfo oldContest) {
         logEndedContest(oldContest);
-        ArrayList<ArrayList<PlayerData>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
+        ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
         databaseManager.logContestWinners(allContestWinners, oldContest);
         ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, oldContest);
         rewardsHandler.giveContestRewards(contestWinners, oldContest);
@@ -249,10 +249,10 @@ public class ContestManager {
     }
 
     private ArrayList<ContestWinner> parseContestWinners
-(ArrayList<ArrayList<PlayerData>> contestWinnersData, ContestInfo contestInfo) {
+(ArrayList<ArrayList<PlayerContestStats>> contestWinnersData, ContestInfo contestInfo) {
         ArrayList<ContestWinner> contestWinners = new ArrayList<>();
         for(int i = 0; i < contestWinnersData.size(); i++) {
-            ArrayList<PlayerData> contestCategoryWinnersData = contestWinnersData.get(i);
+            ArrayList<PlayerContestStats> contestCategoryWinnersData = contestWinnersData.get(i);
             ArrayList<ContestRewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
             int limit = Math.min(contestCategoryWinnersData.size(), contestRewardTiers.size());
             for(int j = 0; j < limit; j++) {

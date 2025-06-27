@@ -9,7 +9,6 @@ import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.structs.PlayerSettings;
 import benloti.holoquiz.database.DatabaseManager;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -68,8 +67,7 @@ public class PlayerCmds implements CommandExecutor {
     public static final String MSG_HOLOQUIZ_MESSAGES_ENABLED = "&bHoloQuiz will now be&a shown to you%s!";
     public static final String MSG_HOLOQUIZ_MESSAGES_DISABLED = "&bHoloQuiz will&c no longer be shown to you%s!";
 
-    public static final String HELP_TABLE = "" +
-            "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n" +
+    public static final String HELP_TABLE = "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n" +
             "&a/HoloQuiz info: &bShows information on the current question\n" +
             "&a/HoloQuiz top <best/average/answers>: &bShows the best of the best!\n" +
             "&a/HoloQuiz stats [player]: &bShows your own / someone else's statistics\n" +
@@ -272,13 +270,12 @@ public class PlayerCmds implements CommandExecutor {
         if (args[0].equalsIgnoreCase("top") && args.length > 1) {
             int size = externalFiles.getConfigFile().getLeaderboardSize();
             int minReq = externalFiles.getConfigFile().getLeaderboardMinReq();
+            ArrayList<PlayerData> topPlayersList;
+            String[] topPlayers;
             switch (args[1]) {
-            default:
-                formatInformationForPlayer(ERROR_INCORRECT_COMMAND, player);
-                return false;
             case "best":
-                ArrayList<PlayerData> topPlayersList = databaseManager.loadLeaderboard(size, minReq, "best", true);
-                String[] topPlayers = displayTopPlayers(topPlayersList,
+                topPlayersList = databaseManager.loadLeaderboard(size, minReq, "best", true);
+                topPlayers = displayTopPlayers(topPlayersList,
                         MSG_LEADERBOARD_HEADER_FASTEST_ANSWERS, MSG_LEADERBOARD_BODY_FASTEST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
@@ -294,6 +291,9 @@ public class PlayerCmds implements CommandExecutor {
                         MSG_LEADERBOARD_HEADER_MOST_ANSWERS, MSG_LEADERBOARD_BODY_MOST_ANSWERS_FORMAT);
                 formatInformationForPlayer(topPlayers, player);
                 return true;
+            default:
+                formatInformationForPlayer(ERROR_INCORRECT_COMMAND, player);
+                return false;
             }
         }
         return false;
