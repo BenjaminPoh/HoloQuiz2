@@ -1,7 +1,8 @@
 ## Version Log!
 For my own entertainment I suppose.
 
-- v 3.3.0 - ?? ??? 2025 - BestX contest made, with improved configurations
+- v 3.3.1 - 30 Jun 2025 - Improved debugging messages, with archive for broken files
+- v 3.3.0 - 29 Jun 2025 - BestX contest made, with improved configurations
 - v 3.2.0 - 24 Jun 2025 - Correct Answer messages can now be sent to the Action Bar
 - v 3.1.3 - 22 Jun 2025 - Fixed the possibility of Race Condition causing multiple accepted answers
 - v 3.1.2 - 19 Jun 2025 - More Features for Storage and Contests

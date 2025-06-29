@@ -40,10 +40,8 @@ public class ContestProgressGUI {
     public void addInfo(ContestInfo contest, ArrayList<ArrayList<PlayerContestStats>> allContestWinners, PlayerContestStats playerInfo) {
         String contestType = contest.getTypeString();
         String dateRangeDescription = formatDateTime(contest.getStartDate(), contest.getEndDate());
-        Bukkit.getLogger().info("Size is .... " + allContestWinners.size());
         for(int i = 0; i < allContestWinners.size(); i++) {
             if(contest.getRewardByCategory(i).isEmpty()) {
-                Bukkit.getLogger().info("This category is empty " + i );
                 continue;
             }
             ArrayList<PlayerContestStats> currContestWinners = allContestWinners.get(i);

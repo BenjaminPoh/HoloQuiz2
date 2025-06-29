@@ -13,7 +13,11 @@ import java.time.ZoneId;
 import java.util.List;
 
 public class ConfigFile {
+    private static final String ERROR_MISSING_CONFIG = "[HoloQuiz] ERROR: Missing Config Key %s!" ;
     private static final String WARNING_SRTS_EMPTY_WHITELIST = "[HoloQuiz] Warning: SRTS uses an empty Whitelist - No one can claim reward items!" ;
+    private static final String WARNING_CONTEST_INVALID_MIN = "[HoloQuiz] Warning: Minimum Requirement for %s cannot be lower than 1!";
+    private static final String WARNING_INVALID_CONFIG = "[HoloQuiz] Warning: The Value %s for %s is invalid!" ;
+    private static final String EASTER_EGG_EXTRA_SASS = " What sort of day is %s anyway?";
 
     private final String pluginPrefix;
     private final boolean collectRewardOnJoin;
@@ -58,7 +62,7 @@ public class ConfigFile {
 
         this.interval = configs.getInt("Interval");
         this.intervalCheck = configs.getInt("IntervalCheck");
-        this.correctAnswerMessageLoc = parseCorrectAnswerMsgLoc(configs.getString("CorrectAnswerMessageLoc"));
+        this.correctAnswerMessageLoc = parseCorrectAnswerMsgLoc(configs);
         this.revealAnswerDelay = configs.getInt("RevealAnswerDelay");
         this.leaderboardSize = configs.getInt("LeaderboardSize");
         this.leaderboardMinReq = configs.getInt("LeaderboardMinQuestionsNeeded");
@@ -92,17 +96,13 @@ public class ConfigFile {
         this.mathDifficulty = mathSection.getString("MathDifficulty");
 
         ConfigurationSection contestSection = configs.getConfigurationSection("Contests");
-        this.weeklyResetDay = parseStartDay(contestSection.getString("WeeklyResetDay", "Monday"));
-        this.timezoneOffset = parseTimeZone(contestSection.getString("TimeZone", "GMT+0"));
+        this.weeklyResetDay = parseStartDay(contestSection);
+        this.timezoneOffset = parseTimeZone(contestSection);
+        this.dailyContest = parseContestConfig(contestSection, "Daily", 0);
+        this.weeklyContest = parseContestConfig(contestSection, "Weekly",  1);
+        this.monthlyContest = parseContestConfig(contestSection, "Monthly",  2);
 
-        ConfigurationSection dailyContestSection = contestSection.getConfigurationSection("Daily");
-        this.dailyContest = parseContestConfig(dailyContestSection, 0);
-        ConfigurationSection weeklyContestSection = contestSection.getConfigurationSection("Weekly");
-        this.weeklyContest = parseContestConfig(weeklyContestSection, 1);
-        ConfigurationSection monthlyContestSection = contestSection.getConfigurationSection("Monthly");
-        this.monthlyContest = parseContestConfig(monthlyContestSection, 2);
-
-        this.SRTS_useWhitelist = configs.getBoolean("SRTS_useWhitelist");
+        this.SRTS_useWhitelist = parseSRTSListType(configs);
         this.SRTS_WorldList = configs.getStringList("SRTS_WorldList");
         if(this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
             Bukkit.getLogger().info(WARNING_SRTS_EMPTY_WHITELIST);
@@ -221,59 +221,62 @@ public class ConfigFile {
         return correctAnswerMessageLoc;
     }
 
-    private int parseCorrectAnswerMsgLoc(String location) {
-        if(location.equals("TitleMsg")) {
-            return 0;
+    private int parseCorrectAnswerMsgLoc(FileConfiguration configs) {
+        String location = configs.getString("CorrectAnswerMessageLoc", "TitleMsg");
+        switch (location) {
+            case "TitleMsg":
+                return 0;
+            case "ActionBar":
+                return 1;
+            case "Disabled":
+                return -1;
         }
-        if(location.equals("ActionBar")) {
-            return 1;
-        }
-        if(location.equals("Disabled")) {
-            return -1;
-        }
-        Bukkit.getLogger().info("[HoloQuiz] Error: CorrectAnswerMsgLoc: " + location + " is invalid");
-        return -1;
+        String logMessage = String.format(WARNING_INVALID_CONFIG, location, "CorrectAnswerMsgLoc");
+        Bukkit.getLogger().info(logMessage);
+        return 0;
     }
 
-    private ZoneId parseTimeZone(String timeZone) {
+    private ZoneId parseTimeZone(ConfigurationSection section) {
+        String timeZone = section.getString("TimeZone", "GMT+0");
         ZoneId zoneId;
         try {
             zoneId = ZoneId.of(timeZone);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your TimeZone isn't valid! Defaulting to +0.");
+            String logMessage = String.format(WARNING_INVALID_CONFIG, timeZone, "TimeZone");
+            Bukkit.getLogger().info(logMessage);
             zoneId = ZoneId.of("GMT+0");
         }
         return zoneId;
     }
 
-    private int parseStartDay(String day) {
-        if(day.equals("Monday")) {
-            return 1;
+    private int parseStartDay(ConfigurationSection section) {
+        String day = section.getString("WeeklyResetDay", "Monday");
+        switch (day) {
+            case "Monday":
+                return 1;
+            case "Tuesday":
+                return 2;
+            case "Wednesday":
+                return 3;
+            case "Thursday":
+                return 4;
+            case "Friday":
+                return 5;
+            case "Saturday":
+                return 6;
+            case "Sunday":
+                return 7;
         }
-        if(day.equals("Tuesday")) {
-            return 2;
-        }
-        if(day.equals("Wednesday")) {
-            return 3;
-        }
-        if(day.equals("Thursday")) {
-            return 4;
-        }
-        if(day.equals("Friday")) {
-            return 5;
-        }
-        if(day.equals("Saturday")) {
-            return 6;
-        }
-        if(day.equals("Sunday")) {
-            return 7;
-        }
-        Bukkit.getLogger().info("[HoloQuiz] Error: What kind of day is " + day + "?");
+        String logMessage = String.format(WARNING_INVALID_CONFIG, day, "WeeklyResetDay") + String.format(EASTER_EGG_EXTRA_SASS, day);
+        Bukkit.getLogger().info(logMessage);
         return 1;
     }
 
-    private ContestInfo parseContestConfig(ConfigurationSection section, int code) {
+    private ContestInfo parseContestConfig(ConfigurationSection contestSection, String key, int code) {
+        ConfigurationSection section = contestSection.getConfigurationSection(key);
         if(section == null) {
+            String logMessage = String.format(ERROR_MISSING_CONFIG, key);
+            Bukkit.getLogger().info(logMessage);
             return new ContestInfo(code, false, false, false, false, 0, 0);
         }
 
@@ -281,18 +284,31 @@ public class ConfigFile {
         boolean fastestEnabled = section.getBoolean("Fastest", false);
         boolean bestAvgEnabled = section.getBoolean("BestAvg", false);
         boolean bestXEnabled = section.getBoolean("BestX", false);
-        int bestAvgMinReq = section.getInt("BestAvgMinReq", 0);
-        int bestXMinReq = section.getInt("BestXMinReq", 0);
-        if(bestAvgMinReq == 0 && bestAvgEnabled) {
+        int bestAvgMinReq = section.getInt("BestAvgMinReq", 1);
+        int bestXMinReq = section.getInt("BestXMinReq", 1);
+        if(bestAvgMinReq < 1 && bestAvgEnabled) {
+            String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestAvgMinReq");
+            Bukkit.getLogger().info(logMessage);
             bestAvgEnabled = false;
         }
-        if(bestXMinReq == 0 && bestXEnabled) {
+        if(bestXMinReq < 1 && bestXEnabled) {
+            String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestXMinReq");
+            Bukkit.getLogger().info(logMessage);
             bestXEnabled = false;
         }
         return new ContestInfo(code, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq);
     }
 
-
-
-
+    private boolean parseSRTSListType(FileConfiguration configs) {
+        String listType = configs.getString("SRTS_listType", "Whitelist");
+        switch (listType) {
+            case "Whitelist":
+                return true;
+            case "Blacklist":
+                return false;
+        }
+        String logMessage = String.format(WARNING_INVALID_CONFIG, listType, "SRTS_listType");
+        Bukkit.getLogger().info(logMessage);
+        return false;
+    }
 }

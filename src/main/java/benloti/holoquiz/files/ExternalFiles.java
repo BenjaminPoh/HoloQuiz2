@@ -23,15 +23,27 @@ public class ExternalFiles {
     private static final String CONFIG_FILE_NAME = "config.yml";
     private static final String QUESTION_BANK_FILE_NAME = "QuestionBank.yml";
     private static final String REWARDS_FILE_NAME = "Rewards.yml";
-
     private static final String BACKUP_DIRECTORY_PATH = "backup/";
+    private static final String ARCHIVE_DIRECTORY_PATH = "archive/";
+    private static final String ARCHIVE_CONFIG_FILE_NAME = "config_%d.yml";
+    private static final String ARCHIVE_QUESTION_BANK_FILE_NAME = "QuestionBank_%d.yml";
+    private static final String ARCHIVE_REWARDS_FILE_NAME = "Rewards_%d.yml";
+
     private static final String[] CONTEST_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg", "DailyBestX",
             "WeeklyMost", "WeeklyFastest", "WeeklyBestAvg", "WeeklyBestX",
             "MonthlyMost", "MonthlyFastest", "MonthlyBestAvg", "MonthlyBestX"};
-    private static final String CONTEST_LOG_MESSAGE = "[HoloQuiz] TimedCategory %s loaded in %d rewards";
-    private static final String TRIVIA_QUESTIONS_LOG_MESSAGE = "[HoloQuiz] Trivia Category loaded %d Questions!";
+
+    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest Type %s loaded in %d rewards";
+    public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "[HoloQuiz] Trivia Category loaded %d Questions!";
+    public static final String WARNING_MISSING_PLUGIN_FOLDER = "[HoloQuiz] Warning: Plugin Folder Missing! Loading from Resource...";
+    public static final String WARNING_MISSING_BACKUP_FOLDER = "[HoloQuiz] Warning: Backup Folder Missing! Loading from Resource...";
+    public static final String WARNING_MISSING_ARCHIVE_FOLDER = "[HoloQuiz] Warning: Archive Folder Missing! Making a new one...";
     public static final String WARNING_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Rewards Section not found!";
-    public static final String WARNING_CONTEST_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Contest Rewards Section not found!";
+    public static final String WARNING_INVALID_MATERIAL = "[HoloQuiz] Warning: Failed to load item with the name - %s";
+    public static final String WARNING_INVALID_QUESTION = "[HoloQuiz] Error with loading question: %s";
+    public static final String ERROR_MSG_BROKEN_FILE = "[HoloQuiz] ERROR: Your %s file is broken! Loading from backups...";
+    public static final String ERROR_MSG_BROKEN_FILE_ON_RELOAD = "[HoloQuiz] ERROR: Your %s file is broken! Reload has been Terminated!";
+    public static final String ERROR_MSG_BROKEN_BACKUP_FILE = "[HoloQuiz] ERROR: Your %s backup file is also broken! Loading from Resource...";
 
     private final JavaPlugin plugin;
     private ConfigFile configFile;
@@ -44,7 +56,7 @@ public class ExternalFiles {
         this.plugin = plugin;
         //If plugin's data folder exists, all the necessary files are fetched from the resource section.
         if (!plugin.getDataFolder().exists()) {
-            Bukkit.getLogger().info("[HoloQuiz] Plugin Folder Missing! Loading from Resource...");
+            Bukkit.getLogger().info(WARNING_MISSING_PLUGIN_FOLDER);
             plugin.getDataFolder().mkdirs();
             loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
             loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
@@ -52,27 +64,36 @@ public class ExternalFiles {
         }
         File backupDir = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH);
         if(!backupDir.exists()) {
-            Bukkit.getLogger().info("[HoloQuiz] Backup Folder Missing! Loading from Resource...");
+            Bukkit.getLogger().info(WARNING_MISSING_BACKUP_FOLDER);
             backupDir.mkdirs();
             loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
             loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
             loadFromResource(REWARDS_FILE_NAME  ,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
         }
+        File archiveDir = new File(plugin.getDataFolder(), ARCHIVE_DIRECTORY_PATH);
+        if(!archiveDir.exists()) {
+            Bukkit.getLogger().info(WARNING_MISSING_ARCHIVE_FOLDER);
+            backupDir.mkdirs();
+        }
 
         //Tries to load all the external files. If successful, the backup is updated with the most recent version.
-        //If unsuccessful, the backup file is used. Broken files are replaced.
+        //If unsuccessful, the backup file is used. Broken files are replaced, with a copy of it moved to the Archive.
         //If still unsuccessful, the resource file is used.
         try {
-            Bukkit.getLogger().info("[HoloQuiz] Loading config.yml ...");
             this.configFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
             updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your config.yml file is broken! Loading from backups...");
+            String logMessage = String.format(ERROR_MSG_BROKEN_FILE, CONFIG_FILE_NAME);
+            Bukkit.getLogger().info(logMessage);
+            Bukkit.getLogger().info(e.toString());
+            storeToArchive(CONFIG_FILE_NAME, ARCHIVE_CONFIG_FILE_NAME);
             try {
                 this.configFile = new ConfigFile(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 updateFile(CONFIG_FILE_NAME, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
             } catch (Exception e2) {
-                Bukkit.getLogger().info("[HoloQuiz] Your config.yml backup file is also broken! Loading from Resource...");
+                logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, CONFIG_FILE_NAME);
+                Bukkit.getLogger().info(logMessage);
+                Bukkit.getLogger().info(e2.toString());
                 loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
                 this.configFile = new ConfigFile(plugin,CONFIG_FILE_NAME);
@@ -84,18 +105,22 @@ public class ExternalFiles {
         this.contestRewards = new HashMap<>();
 
         try {
-            Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-            loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
+            loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards, this.contestRewards);
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken! Loading from backups...");
+            String logMessage = String.format(ERROR_MSG_BROKEN_FILE, REWARDS_FILE_NAME);
+            Bukkit.getLogger().info(logMessage);
+            Bukkit.getLogger().info(e.toString());
+            storeToArchive(REWARDS_FILE_NAME, ARCHIVE_REWARDS_FILE_NAME);
             try {
                 File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
                 updateFile(REWARDS_FILE_NAME, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
             } catch (Exception e2) {
-                Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml backup file is also broken! Loading from Resource...");
+                logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, REWARDS_FILE_NAME);
+                Bukkit.getLogger().info(logMessage);
+                Bukkit.getLogger().info(e2.toString());
                 loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
                 File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
@@ -104,18 +129,22 @@ public class ExternalFiles {
         }
 
         try {
-            Bukkit.getLogger().info("[HoloQuiz] Loading QuestionBank.yml ...");
             File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
             this.allQuestions = loadQuestions(questionsYml);
             updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml file is broken! Loading from backups...");
+            String logMessage = String.format(ERROR_MSG_BROKEN_FILE, QUESTION_BANK_FILE_NAME);
+            Bukkit.getLogger().info(logMessage);
+            Bukkit.getLogger().info(e.toString());
+            storeToArchive(QUESTION_BANK_FILE_NAME, ARCHIVE_QUESTION_BANK_FILE_NAME);
             try {
                 File questionsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 this.allQuestions = loadQuestions(questionsYml);
                 updateFile(QUESTION_BANK_FILE_NAME, BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
             } catch (Exception e2) {
-                Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml backup file is also broken! Loading from Resource...");
+                logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, QUESTION_BANK_FILE_NAME);
+                Bukkit.getLogger().info(logMessage);
+                Bukkit.getLogger().info(e2.toString());
                 loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
                 loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
                 File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
@@ -142,26 +171,26 @@ public class ExternalFiles {
         ArrayList<Question> newQuestions;
 
         try {
-            Bukkit.getLogger().info("[HoloQuiz] Loading config.yml ...");
             newConfigFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your config.yml file is broken! Loading from backups...");
+            String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, CONFIG_FILE_NAME);
+            Bukkit.getLogger().info(logMessage);
             return false;
         }
         try {
-            Bukkit.getLogger().info("[HoloQuiz] Loading Rewards.yml ...");
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
             loadAllRewards(rewardsYml, newAllNormalRewards, newSecretRewards, newContestRewards);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your Rewards.yml file is broken!");
+            String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, REWARDS_FILE_NAME);
+            Bukkit.getLogger().info(logMessage);
             return false;
         }
         try {
-            Bukkit.getLogger().info("[HoloQuiz] Loading QuestionBank.yml ...");
             File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
             newQuestions = loadQuestions(questionsYml);
         } catch (Exception e) {
-            Bukkit.getLogger().info("[HoloQuiz] Your QuestionBank.yml file is broken!");
+            String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, QUESTION_BANK_FILE_NAME);
+            Bukkit.getLogger().info(logMessage);
             return false;
         }
 
@@ -214,9 +243,9 @@ public class ExternalFiles {
         for (String key : rewardsSection.getKeys(false)) {
             categoriesLoaded += 1;
             ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
-            double maxTime = rewardTierSection.getDouble("MaxAnswerTime");
+            double maxTime = rewardTierSection.getDouble("MaxAnswerTime", 0);
             int maxTimeInMilliseconds = (int) maxTime * 1000;
-            double moneyReward = rewardTierSection.getDouble("Money");
+            double moneyReward = rewardTierSection.getDouble("Money", 0);
             List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
@@ -237,7 +266,7 @@ public class ExternalFiles {
             Material itemMaterial = Material.matchMaterial(itemType);
             if (itemMaterial == null) {
                 itemMaterial = Material.CARROT;
-                Bukkit.getLogger().info("[HoloQuiz] Error! Failed to load item of name: " + itemType);
+                Bukkit.getLogger().info(String.format(WARNING_INVALID_MATERIAL,itemType));
             }
             int itemQty = rewardTierItem.getInt("Qty");
             List<String> itemLore = rewardTierItem.getStringList("Lore");
@@ -257,7 +286,6 @@ public class ExternalFiles {
     private void loadContestRewards(ConfigurationSection rewardsSection,
                                     Map<String, ArrayList<ContestRewardTier>> contestRewards) {
         if(rewardsSection == null) {
-            Bukkit.getLogger().info(WARNING_CONTEST_REWARDS_SECTION_NOT_FOUND);
             return;
         }
 
@@ -266,10 +294,8 @@ public class ExternalFiles {
 
             ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
             contestRewards.put(category, rewardsList);
-            if(!rewardsList.isEmpty()) {
-                String logMessage = String.format(CONTEST_LOG_MESSAGE, category, rewardsList.size());
-                Bukkit.getLogger().info(logMessage);
-            }
+            String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, category, rewardsList.size());
+            Bukkit.getLogger().info(logMessage);
         }
     }
 
@@ -314,7 +340,7 @@ public class ExternalFiles {
             ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
             questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
         }
-        String logMessage = String.format(TRIVIA_QUESTIONS_LOG_MESSAGE, questionList.size());
+        String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS, questionList.size());
         Bukkit.getLogger().info(logMessage);
         return questionList;
     }
@@ -330,7 +356,7 @@ public class ExternalFiles {
             String question = questionConfig.getString("Question");
             List<String> answers = questionConfig.getStringList("Answers");
             if(question == null || answers.isEmpty()) {
-                Bukkit.getLogger().info("[HoloQuiz] Error with loading question: " + question);
+                Bukkit.getLogger().info(String.format(WARNING_INVALID_QUESTION, question));
                 continue;
             }
             question = prefix + question;
@@ -396,10 +422,17 @@ public class ExternalFiles {
             outputStream.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().info(e.toString());
         }
     }
 
+
+    /**
+     * Used to update Files
+     *
+     * @param oldFileName The file to be replaced
+     * @param newFileName The file that is used to replace the other file
+     */
     private void updateFile (String oldFileName, String newFileName) {
         Bukkit.getLogger().info("[HoloQuiz] Replacing " + oldFileName + " with " + newFileName);
         File oldFile = new File(plugin.getDataFolder(), oldFileName);
@@ -414,8 +447,13 @@ public class ExternalFiles {
             }
             outputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().info(e.toString());
         }
+    }
+
+    private void storeToArchive (String brokenFileName, String archiveFileNameFormat) {
+        String archiveFileName = String.format(archiveFileNameFormat, System.currentTimeMillis());
+        updateFile(archiveFileName, brokenFileName);
     }
 }
 

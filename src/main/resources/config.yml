@@ -4,7 +4,7 @@ PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 CollectRewardsOnJoin: true
 
 # A special override which directly Sends item Rewards To Storage (SRTS) instead of to their inventory.
-SRTS_useWhitelist: false #Set to true to use whitelist instead!
+SRTS_listType: Blacklist #Available: Whitelist/Blacklist
 SRTS_WorldList:
   - world_nether #No HoloQuiz in the Nether!
 
@@ -26,7 +26,7 @@ Cheats:
   ConsistencyChecker:
     Checker: true
     NumberOfAnswers: 5
-    AcceptableSD: 1 #In seconds. The higher, the more sensitive it is.
+    AcceptableSD: 0.1 #In seconds. The higher, the more sensitive it is.
     CountAsCorrect: true
     CommandToPerform:
       - "report [player] might be cheating in HoloQuiz, answering with a SD of [stat]!"
@@ -53,24 +53,24 @@ Contests: #Edit Rewards in Rewards.yml!
   Daily:
     Top: true
     Fastest: true
-    BestAvg: true
-    BestX: true
-    BestAvgMinReq: 1
+    BestAvg: false
+    BestX: false
+    BestAvgMinReq: 5
     BestXMinReq: 5
   Weekly:
     Top: true
     Fastest: true
     BestAvg: true
-    BestX: true
-    BestAvgMinReq: 3
-    BestXMinReq: 10
+    BestX: false
+    BestAvgMinReq: 10
+    BestXMinReq: 30
   Monthly:
     Top: true
     Fastest: true
     BestAvg: true
-    BestX: true
-    BestAvgMinReq: 5
-    BestXMinReq: 20
+    BestX: false
+    BestAvgMinReq: 30
+    BestXMinReq: 60
 
 
 # Easter Eggs!
