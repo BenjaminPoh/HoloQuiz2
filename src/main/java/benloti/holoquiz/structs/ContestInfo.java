@@ -69,14 +69,6 @@ public class ContestInfo {
         this.bestXRewards = bestXRewards;
     }
 
-    public void updateTimes(ZoneId zoneId, LocalDate startDate, LocalDate endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
-        LocalDate tempEndDate = endDate.plusDays(1);
-        this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
-    }
-
     public long getStartTime() {
         return this.startTime;
     }
@@ -89,50 +81,12 @@ public class ContestInfo {
         return typeCode;
     }
 
-    public boolean isContestEnabled() {
-        return mostAnswerContestEnabled || fastestAnswerContestEnabled || bestAvgContestEnabled || bestXContestEnabled;
-    }
-
     public int getBestXMinReq() {
         return bestXMinReq;
     }
 
     public int getBestAvgMinReq() {
         return bestAvgMinReq;
-    }
-
-    public ArrayList<ContestRewardTier> getRewardByCategory(int code) {
-        if(code == 0) {
-            return mostAnswerRewards;
-        }
-        if(code == 1) {
-            return fastestRewards;
-        }
-        if(code == 2) {
-            return bestAverageRewards;
-        }
-        if(code == 3) {
-            return bestXRewards;
-        }
-        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
-        return null;
-    }
-
-    public int getRewardCountByCategory(int code) {
-        if(code == 0) {
-            return mostAnswerRewards.size();
-        }
-        if(code == 1) {
-            return fastestRewards.size();
-        }
-        if(code == 2) {
-            return bestAverageRewards.size();
-        }
-        if(code == 3) {
-            return bestXRewards.size();
-        }
-        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
-        return 0;
     }
 
     public LocalDate getStartDate() {
@@ -143,6 +97,23 @@ public class ContestInfo {
         return endDate;
     }
 
+    public boolean isMostAnswerContestEnabled() {
+        return mostAnswerContestEnabled;
+    }
+
+    public boolean isFastestAnswerContestEnabled() {
+        return fastestAnswerContestEnabled;
+    }
+
+    public boolean isBestAvgContestEnabled() {
+        return bestAvgContestEnabled;
+    }
+
+    public boolean isBestXContestEnabled() {
+        return bestXContestEnabled;
+    }
+
+    //Methods related to Intervals
     public void updateTournamentDateToNextCycle(ZoneId zoneId) {
         boolean theSafeguardThatShouldNeverTrigger = true;
         if(this.typeCode == 0) {
@@ -181,5 +152,48 @@ public class ContestInfo {
             return "Monthly";
         }
         return "You found a bug!";
+    }
+
+    public void updateTimes(ZoneId zoneId, LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        LocalDate tempEndDate = endDate.plusDays(1);
+        this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
+    }
+
+    //Methods related to Rewards
+    public ArrayList<ContestRewardTier> getRewardByCategory(int code) {
+        if(code == 0) {
+            return mostAnswerRewards;
+        }
+        if(code == 1) {
+            return fastestRewards;
+        }
+        if(code == 2) {
+            return bestAverageRewards;
+        }
+        if(code == 3) {
+            return bestXRewards;
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
+        return null;
+    }
+
+    public int getRewardCountByCategory(int code) {
+        if(code == 0) {
+            return mostAnswerRewards.size();
+        }
+        if(code == 1) {
+            return fastestRewards.size();
+        }
+        if(code == 2) {
+            return bestAverageRewards.size();
+        }
+        if(code == 3) {
+            return bestXRewards.size();
+        }
+        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
+        return 0;
     }
 }

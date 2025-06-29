@@ -109,57 +109,45 @@ public class ContestManager {
     }
 
     private ArrayList<ContestInfo> initialiseNewContests(ExternalFiles externalFiles, ConfigFile configFile) {
+        //Load Rewards
+        loadRewardsForContest(externalFiles, dailyContest.getTypeString(), dailyContest);
+        loadRewardsForContest(externalFiles, weeklyContest.getTypeString(), weeklyContest);
+        loadRewardsForContest(externalFiles, monthlyContest.getTypeString(), monthlyContest);
+
         // All contest start time is assumed to be 00:00 of the day it is set to be enabled.
+        LocalDate startDate = LocalDate.now(zoneId);
+        //Load End Dates for Daily...
+        dailyContest.updateTimes(zoneId,startDate,startDate);
+
+        //Weekly
+        int intendedStartDay = configFile.getWeeklyResetDay();
+        int daysFromStartDayOfWeek = getDaysFromStartDay(startDate.getDayOfWeek().getValue(), intendedStartDay);
+        LocalDate startDateOfWeek = startDate.minusDays(daysFromStartDayOfWeek);
+        LocalDate endDateOfWeek = startDateOfWeek.plusWeeks(1);
+        endDateOfWeek = endDateOfWeek.minusDays(1);
+        weeklyContest.updateTimes(zoneId,startDateOfWeek,endDateOfWeek);
+
+        //Monthly
+        int daysFromFirstDayOfMonth = startDate.getDayOfMonth() - 1;
+        LocalDate startDateOfMonth = startDate.minusDays(daysFromFirstDayOfMonth);
+        LocalDate endDateOfMonth = startDateOfMonth.plusMonths(1);
+        endDateOfMonth = endDateOfMonth.minusDays(1);
+        monthlyContest.updateTimes(zoneId,startDateOfMonth,endDateOfMonth);
+
+        //Set contest
         ArrayList<ContestInfo> enabledContestList = new ArrayList<>(Arrays.asList(null,null,null));
-        if(dailyContest.isContestEnabled()) {
-            LocalDate startDate = LocalDate.now(zoneId); //Also EndDate
-
-            ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory("DailyMost");
-            ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory("DailyFastest");
-            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("DailyBestAvg");
-            ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory("DailyBestX");
-
-            dailyContest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
-            dailyContest.updateTimes(zoneId,startDate,startDate);
-
-            enabledContestList.set(0, dailyContest);
-        }
-        if(weeklyContest.isContestEnabled()) {
-            LocalDate startDate = LocalDate.now(zoneId);
-            int intendedStartDay = configFile.getWeeklyResetDay();
-            int daysFromStartDay = getDaysFromStartDay(startDate.getDayOfWeek().getValue(), intendedStartDay);
-            startDate = startDate.minusDays(daysFromStartDay);
-            LocalDate endDate = startDate.plusWeeks(1);
-            endDate = endDate.minusDays(1);
-
-            ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory("WeeklyMost");
-            ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory("WeeklyFastest");
-            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("WeeklyBestAvg");
-            ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory("WeeklyBestX");
-
-            weeklyContest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
-            weeklyContest.updateTimes(zoneId,startDate,endDate);
-
-            enabledContestList.set(1, weeklyContest);
-        }
-        if(monthlyContest.isContestEnabled()) {
-            LocalDate startDate = LocalDate.now(zoneId);
-            int daysFromFirstDayOfMonth = startDate.getDayOfMonth() - 1;
-            startDate = startDate.minusDays(daysFromFirstDayOfMonth);
-            LocalDate endDate = startDate.plusMonths(1);
-            endDate = endDate.minusDays(1);
-
-            ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory("MonthlyMost");
-            ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory("MonthlyFastest");
-            ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory("MonthlyBestAvg");
-            ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory("MonthlyBestX");
-
-            monthlyContest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
-            monthlyContest.updateTimes(zoneId,startDate,endDate);
-
-            enabledContestList.set(2, monthlyContest);
-        }
+        enabledContestList.set(0, dailyContest);
+        enabledContestList.set(1, weeklyContest);
+        enabledContestList.set(2, monthlyContest);
         return enabledContestList;
+    }
+
+    private void loadRewardsForContest(ExternalFiles externalFiles, String type, ContestInfo contest) {
+        ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory(type + "Most", contest.isMostAnswerContestEnabled());
+        ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory(type + "Fastest", contest.isFastestAnswerContestEnabled());
+        ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory(type + "BestAvg", contest.isBestAvgContestEnabled());
+        ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory(type + "BestX", contest.isBestXContestEnabled());
+        contest.updateRewards(mostAnswerRewards,fastestRewards,bestAverageRewards,bestXRewards);
     }
 
     private int getDaysFromStartDay(int currentDay, int intendedDay) {

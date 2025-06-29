@@ -23,7 +23,7 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         int statusCode = dbMan.getRewardsFromStorage(player);
-        if(statusCode == 2) {
+        if(statusCode == -2) {
             // Empty Storage
             return;
         }

@@ -375,7 +375,10 @@ public class ExternalFiles {
         return this.secretRewards;
     }
 
-    public ArrayList<ContestRewardTier> getContestRewardByCategory(String category) {
+    public ArrayList<ContestRewardTier> getContestRewardByCategory(String category, boolean isEnabled) {
+        if(!isEnabled) {
+          return new ArrayList<>();
+        }
         return contestRewards.get(category);
     }
 

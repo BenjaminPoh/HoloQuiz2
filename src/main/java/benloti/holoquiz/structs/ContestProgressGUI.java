@@ -40,8 +40,10 @@ public class ContestProgressGUI {
     public void addInfo(ContestInfo contest, ArrayList<ArrayList<PlayerContestStats>> allContestWinners, PlayerContestStats playerInfo) {
         String contestType = contest.getTypeString();
         String dateRangeDescription = formatDateTime(contest.getStartDate(), contest.getEndDate());
+        Bukkit.getLogger().info("Size is .... " + allContestWinners.size());
         for(int i = 0; i < allContestWinners.size(); i++) {
             if(contest.getRewardByCategory(i).isEmpty()) {
+                Bukkit.getLogger().info("This category is empty " + i );
                 continue;
             }
             ArrayList<PlayerContestStats> currContestWinners = allContestWinners.get(i);
@@ -74,7 +76,7 @@ public class ContestProgressGUI {
                     description.add(userInterface.formatColours(formattedDescription));
                 }
                 if(i == 3 && playerInfo.getQuestionsAnswered() < contest.getBestXMinReq()) {
-                    int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
+                    int remainder =  contest.getBestXMinReq() - playerInfo.getQuestionsAnswered();
                     formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
                     description.add(userInterface.formatColours(formattedDescription));
                 }
