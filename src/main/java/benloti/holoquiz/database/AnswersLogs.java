@@ -27,8 +27,8 @@ public class AnswersLogs {
             "WITH ranked_answers AS (SELECT user_id, took, COUNT(*) OVER (PARTITION BY user_id) AS total, " +
                     "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY took ASC) AS rank " +
                     "FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d) " +
-            "SELECT user_id, SUM(took) as fastest_X FROM ranked_answers WHERE rank >= %d and total >= %d " +
-            "GROUP BY user_id ORDER BY total ASC LIMIT %d";
+            "SELECT user_id, SUM(took) as fastest_X FROM ranked_answers WHERE rank <= %d and total >= %d " +
+            "GROUP BY user_id ORDER BY fastest_X ASC LIMIT %d";
 
     private static final String SQL_STATEMENT_FETCH_PLAYER_STATS_WITHIN_TIMESTAMP =
             "SELECT (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count, MIN(took) as best_time " +
