@@ -29,18 +29,10 @@ public class UserInfo {
             "[HoloQuiz] Detected that Player %s changed name to %s. New name will now be used.";
     private static final String LOG_MSG_UPDATED_USERNAME_FOR_UUID_FAILED =
             "[HoloQuiz] Error: Detected that Player %s changed name to %s, but NOT updated due to unknown error";
+    public static final String IMPOSSIBLE_ERROR_HOLOQUIZ_CREATED_ID_0 = "[HoloQuiz] Impossible Error: If you see this, I retire from coding";
 
     public UserInfo(Connection connection) {
         createTable(connection);
-    }
-
-    private void createTable(Connection connection) {
-        try {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(SQL_STATEMENT_CREATE_USERINFO_TABLE);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public int getHoloQuizIDByUUID(Connection connection, String PlayerUUID, String PlayerName) {
@@ -57,7 +49,7 @@ public class UserInfo {
                 int newId = getSize(connection) + 1;
                 Bukkit.getLogger().info("[HoloQuiz] Assigning new player with ID:" + newId);
                 if(newId == 0) {
-                    Bukkit.getLogger().info("[HoloQuiz] Error: If you see this, I retire from coding");
+                    Bukkit.getLogger().info(IMPOSSIBLE_ERROR_HOLOQUIZ_CREATED_ID_0);
                 }
                 infoStatement.setInt(1, newId);
                 infoStatement.setString(2, PlayerUUID);
@@ -137,7 +129,7 @@ public class UserInfo {
 
     public String getPlayerNameByHoloQuizID(Connection connection, int holoQuizID) {
         try {
-            PreparedStatement statement = connection.prepareStatement(  SQL_STATEMENT_OBTAIN_USER_NAME);
+            PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_OBTAIN_USER_NAME);
             statement.setInt(1, holoQuizID);
             ResultSet resultSet = statement.executeQuery();
             return resultSet.getString("username");
@@ -145,6 +137,15 @@ public class UserInfo {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void createTable(Connection connection) {
+        try {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(SQL_STATEMENT_CREATE_USERINFO_TABLE);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }

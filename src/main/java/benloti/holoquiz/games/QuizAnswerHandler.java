@@ -113,6 +113,10 @@ public class QuizAnswerHandler implements Listener {
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getGameModeIdentifier();
         //The actual tasks
+        //Update database
+        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);
+
+        //Give Rewards
         int statusCodeOne = -1;
         if(secretAnswerTriggered) {
             sendSecretAnnouncement(player, timeTaken, answeredQuestion);
@@ -121,18 +125,17 @@ public class QuizAnswerHandler implements Listener {
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
         }
         int statusCodeTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
+
+        //Send some Messages
         sendCorrectAnswerAnnouncement(player, correctAnswerMsgLoc);
         new BukkitRunnable() {
             public void run() {
                 makeFireworks(player);
             }
         }.runTask(plugin);
-
         sendUserMessage(player, statusCodeOne, statusCodeTwo);
-        //Update database
-        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);
 
-        //Log it
+        //Log to Console
         String logInfo = String.format(CORRECT_ANSWER_LOG, player.getName(), timeTaken);
         Bukkit.getLogger().info(logInfo);
 

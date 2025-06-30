@@ -178,10 +178,6 @@ public class DatabaseManager {
         return -1;
     }
 
-    /**
-     * In version 1.3.0, Database was completely rewritten
-     * This allowed for leaderboards to be maintained without funny tricks.
-     */
     public ArrayList<PlayerData> loadLeaderboard(int size, int minReq, String column, boolean order) {
         ArrayList<PlayerData> leaderboardList = new ArrayList<>();
         String formattedColumn = column;

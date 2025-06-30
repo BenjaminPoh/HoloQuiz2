@@ -35,11 +35,12 @@ public class ExternalFiles {
 
     public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest Type %s loaded in %d rewards";
     public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "[HoloQuiz] Trivia Category loaded %d Questions!";
+    public static final String LOG_MESSAGE_REPLACED_FILE = "[HoloQuiz] Replaced %s with %s successfully!";
+    public static final String LOG_MESSAGE_MOVED_BROKEN_FILE_TO_ARCHIVE = "[HoloQuiz] Moved %s to %s successfully!";
     public static final String WARNING_MISSING_PLUGIN_FOLDER = "[HoloQuiz] Warning: Plugin Folder Missing! Loading from Resource...";
     public static final String WARNING_MISSING_BACKUP_FOLDER = "[HoloQuiz] Warning: Backup Folder Missing! Loading from Resource...";
     public static final String WARNING_MISSING_ARCHIVE_FOLDER = "[HoloQuiz] Warning: Archive Folder Missing! Making a new one...";
     public static final String WARNING_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Rewards Section not found!";
-    public static final String WARNING_INVALID_MATERIAL = "[HoloQuiz] Warning: Failed to load item with the name - %s";
     public static final String WARNING_INVALID_QUESTION = "[HoloQuiz] Error with loading question: %s";
     public static final String ERROR_MSG_BROKEN_FILE = "[HoloQuiz] ERROR: Your %s file is broken! Loading from backups...";
     public static final String ERROR_MSG_BROKEN_FILE_ON_RELOAD = "[HoloQuiz] ERROR: Your %s file is broken! Reload has been Terminated!";
@@ -47,6 +48,7 @@ public class ExternalFiles {
 
     private final JavaPlugin plugin;
     private ConfigFile configFile;
+    private ConfigLoader configLoader;
     private ArrayList<RewardTier> allNormalRewards;
     private ArrayList<RewardTier> secretRewards;
     private Map<String, ArrayList<ContestRewardTier>> contestRewards;
@@ -54,6 +56,7 @@ public class ExternalFiles {
 
     public ExternalFiles(JavaPlugin plugin) {
         this.plugin = plugin;
+        this.configLoader = new ConfigLoader();
         //If plugin's data folder exists, all the necessary files are fetched from the resource section.
         if (!plugin.getDataFolder().exists()) {
             Bukkit.getLogger().info(WARNING_MISSING_PLUGIN_FOLDER);
@@ -73,14 +76,15 @@ public class ExternalFiles {
         File archiveDir = new File(plugin.getDataFolder(), ARCHIVE_DIRECTORY_PATH);
         if(!archiveDir.exists()) {
             Bukkit.getLogger().info(WARNING_MISSING_ARCHIVE_FOLDER);
-            backupDir.mkdirs();
+            archiveDir.mkdirs();
         }
 
         //Tries to load all the external files. If successful, the backup is updated with the most recent version.
         //If unsuccessful, the backup file is used. Broken files are replaced, with a copy of it moved to the Archive.
         //If still unsuccessful, the resource file is used.
+        configLoader.setCurrentFile("Config.yml");
         try {
-            this.configFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
+            this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
             updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
         } catch (Exception e) {
             String logMessage = String.format(ERROR_MSG_BROKEN_FILE, CONFIG_FILE_NAME);
@@ -88,7 +92,7 @@ public class ExternalFiles {
             Bukkit.getLogger().info(e.toString());
             storeToArchive(CONFIG_FILE_NAME, ARCHIVE_CONFIG_FILE_NAME);
             try {
-                this.configFile = new ConfigFile(plugin, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
+                this.configFile = new ConfigFile(plugin, configLoader,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 updateFile(CONFIG_FILE_NAME, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
             } catch (Exception e2) {
                 logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, CONFIG_FILE_NAME);
@@ -96,13 +100,14 @@ public class ExternalFiles {
                 Bukkit.getLogger().info(e2.toString());
                 loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
-                this.configFile = new ConfigFile(plugin,CONFIG_FILE_NAME);
+                this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
             }
         }
 
         this.allNormalRewards = new ArrayList<>();
         this.secretRewards = new ArrayList<>();
         this.contestRewards = new HashMap<>();
+        configLoader.setCurrentFile("Rewards.yml");
 
         try {
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
@@ -128,6 +133,7 @@ public class ExternalFiles {
             }
         }
 
+        configLoader.setCurrentFile("QuestionBank.yml");
         try {
             File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
             this.allQuestions = loadQuestions(questionsYml);
@@ -170,13 +176,15 @@ public class ExternalFiles {
         Map<String, ArrayList<ContestRewardTier>> newContestRewards = new HashMap<>();
         ArrayList<Question> newQuestions;
 
+        configLoader.setCurrentFile("config.yml");
         try {
-            newConfigFile = new ConfigFile(plugin, CONFIG_FILE_NAME);
+            newConfigFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
         } catch (Exception e) {
             String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, CONFIG_FILE_NAME);
             Bukkit.getLogger().info(logMessage);
             return false;
         }
+        configLoader.setCurrentFile("Rewards.yml");
         try {
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
             loadAllRewards(rewardsYml, newAllNormalRewards, newSecretRewards, newContestRewards);
@@ -185,6 +193,7 @@ public class ExternalFiles {
             Bukkit.getLogger().info(logMessage);
             return false;
         }
+        configLoader.setCurrentFile("QuestionBank.yml");
         try {
             File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
             newQuestions = loadQuestions(questionsYml);
@@ -205,173 +214,6 @@ public class ExternalFiles {
         this.configFile = newConfigFile;
 
         return true;
-    }
-
-    /**
-     * Used to load all 3 categories of rewards
-     * @param rewardsYml the Rewards.yml File
-     */
-    private void loadAllRewards(File rewardsYml, ArrayList<RewardTier> allNormalRewards, ArrayList<RewardTier> secretRewards,
-                                Map<String, ArrayList<ContestRewardTier>> contestRewards) {
-        FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
-
-        ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
-        int normalRewardsLoaded = loadRewardsTier(normalRewardsSection, allNormalRewards);
-        if (normalRewardsLoaded == 0) {
-            Bukkit.getLogger().info(WARNING_REWARDS_SECTION_NOT_FOUND);
-        }
-        ConfigurationSection secretRewardsSection = rewardsFile.getConfigurationSection("SecretRewards");
-        loadRewardsTier(secretRewardsSection, secretRewards);
-
-        ConfigurationSection contestRewardsSection = rewardsFile.getConfigurationSection("ContestRewards");
-        loadContestRewards(contestRewardsSection, contestRewards);
-    }
-
-    /**
-     * Used to update the ArrayList of rewards used.
-     * Invalid materials are replaced with a carrot. I don't know why a carrot.
-     *
-     * @param rewardsSection The section that has all the Trivia rewards.
-     * @param rewardsList The ArrayList to be filled.
-     */
-    private int loadRewardsTier(ConfigurationSection rewardsSection, ArrayList<RewardTier> rewardsList) {
-        int categoriesLoaded = 0;
-        if(rewardsSection == null) {
-            return categoriesLoaded;
-        }
-
-        for (String key : rewardsSection.getKeys(false)) {
-            categoriesLoaded += 1;
-            ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
-            double maxTime = rewardTierSection.getDouble("MaxAnswerTime", 0);
-            int maxTimeInMilliseconds = (int) maxTime * 1000;
-            double moneyReward = rewardTierSection.getDouble("Money", 0);
-            List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
-            ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
-            ArrayList<ItemStack> itemReward = new ArrayList<>();
-            loadItemReward(rewardTierItemSection, itemReward);
-            rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward, new ArrayList<>()));
-        }
-
-        return categoriesLoaded;
-    }
-
-    private void loadItemReward(ConfigurationSection rewardTierItemSection, ArrayList<ItemStack> itemReward) {
-        if(rewardTierItemSection == null) {
-            return;
-        }
-        for (String key : rewardTierItemSection.getKeys(false)) {
-            ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key);
-            String itemType = rewardTierItem.getString("Material", "");
-            Material itemMaterial = Material.matchMaterial(itemType);
-            if (itemMaterial == null) {
-                itemMaterial = Material.CARROT;
-                Bukkit.getLogger().info(String.format(WARNING_INVALID_MATERIAL,itemType));
-            }
-            int itemQty = rewardTierItem.getInt("Qty");
-            List<String> itemLore = rewardTierItem.getStringList("Lore");
-            ItemStack itemStack = new ItemStack(itemMaterial, itemQty);
-
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.setLore(itemLore);
-            itemStack.setItemMeta(itemMeta);
-            itemReward.add(itemStack);
-        }
-    }
-
-    /**
-     * Used to load the contest rewards.
-     * @param rewardsSection The section that has all the Contest rewards.
-     */
-    private void loadContestRewards(ConfigurationSection rewardsSection,
-                                    Map<String, ArrayList<ContestRewardTier>> contestRewards) {
-        if(rewardsSection == null) {
-            return;
-        }
-
-        for(String category: CONTEST_CATEGORIES) {
-            ConfigurationSection section = rewardsSection.getConfigurationSection(category);
-
-            ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
-            contestRewards.put(category, rewardsList);
-            String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, category, rewardsList.size());
-            Bukkit.getLogger().info(logMessage);
-        }
-    }
-
-    private ArrayList<ContestRewardTier> loadContestRewardsTier(ConfigurationSection section) {
-        ArrayList<ContestRewardTier> rewardsList = new ArrayList<>();
-        if(section == null) {
-            return rewardsList;
-        }
-
-        for (String key : section.getKeys(false)) {
-            ConfigurationSection rewardTierSection = section.getConfigurationSection(key);
-            int reps = rewardTierSection.getInt("Reps", 0);
-            double moneyReward = rewardTierSection.getDouble("Money", 0);
-            String message = rewardTierSection.getString("Message", "");
-            List<String> commandsExecuted = rewardTierSection.getStringList("Commands");
-            ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
-            ArrayList<ItemStack> itemReward = new ArrayList<>();
-            loadItemReward(rewardTierItemSection, itemReward);
-            ContestRewardTier rewardTier = new ContestRewardTier(moneyReward, commandsExecuted, itemReward, message);
-            for(int i = 0; i < reps; i++) {
-                rewardsList.add(rewardTier);
-            }
-        }
-        return rewardsList;
-    }
-
-    /**
-     * Used to create the ArrayList of Questions used for the Trivia Mode
-     * Missing fields are replaced with an empty string
-     *
-     * @param questionYml The file that has all the questions.
-     */
-    private ArrayList<Question> loadQuestions(File questionYml) {
-        ArrayList<Question> questionList = new ArrayList<>();
-        FileConfiguration config = YamlConfiguration.loadConfiguration(questionYml);
-        for (String key : config.getKeys(false)) {
-            ConfigurationSection configSection = config.getConfigurationSection(key);
-            String questionColourCode = configSection.getString("QuestionColour", "");
-            String messageColourCode = configSection.getString("MessageColour", "");
-            String categoryLabel = configSection.getString("CategoryLabel", "");
-            String categoryPrefix = categoryLabel + questionColourCode;
-            ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
-            questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
-        }
-        String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS, questionList.size());
-        Bukkit.getLogger().info(logMessage);
-        return questionList;
-    }
-
-    /**
-     * Helper function used to load the ArrayList of Questions in a specific category.
-     * Question and Answer cannot be empty, and hence will be skipped and logged if so.
-     */
-    private void questionListLoader(ArrayList<Question> questionList, ConfigurationSection config,
-                                    String prefix, String msgColorCode) {
-        for (String key : config.getKeys(false)) {
-            ConfigurationSection questionConfig = config.getConfigurationSection(key);
-            String question = questionConfig.getString("Question");
-            List<String> answers = questionConfig.getStringList("Answers");
-            if(question == null || answers.isEmpty()) {
-                Bukkit.getLogger().info(String.format(WARNING_INVALID_QUESTION, question));
-                continue;
-            }
-            question = prefix + question;
-            String message = questionConfig.getString("Message", "");
-            message = msgColorCode + " " + message;
-            List<String> secretAnswers = questionConfig.getStringList("SecretAnswers");
-            String secretMessage = questionConfig.getString("SecretMessage");
-            secretMessage = msgColorCode + secretMessage;
-
-            secretAnswers.replaceAll(String::trim);
-            answers.replaceAll(String::trim);
-            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage);
-
-            questionList.add(newQuestion);
-        }
     }
 
     public boolean reloadQuestions() {
@@ -403,9 +245,165 @@ public class ExternalFiles {
 
     public ArrayList<ContestRewardTier> getContestRewardByCategory(String category, boolean isEnabled) {
         if(!isEnabled) {
-          return new ArrayList<>();
+            return new ArrayList<>();
         }
         return contestRewards.get(category);
+    }
+
+    /**
+     * Used to load all 3 categories of rewards
+     * @param rewardsYml the Rewards.yml File
+     */
+    private void loadAllRewards(File rewardsYml, ArrayList<RewardTier> allNormalRewards, ArrayList<RewardTier> secretRewards,
+                                Map<String, ArrayList<ContestRewardTier>> contestRewards) {
+        FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
+
+        ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
+        loadRewardsTier(normalRewardsSection, allNormalRewards);
+        if (allNormalRewards.isEmpty()) {
+            Bukkit.getLogger().info(WARNING_REWARDS_SECTION_NOT_FOUND);
+        }
+        ConfigurationSection secretRewardsSection = rewardsFile.getConfigurationSection("SecretRewards");
+        loadRewardsTier(secretRewardsSection, secretRewards);
+
+        ConfigurationSection contestRewardsSection = rewardsFile.getConfigurationSection("ContestRewards");
+        loadContestRewards(contestRewardsSection, contestRewards);
+    }
+
+    /**
+     * Used to update the ArrayList of rewards used.
+     * Invalid materials are replaced with a carrot. I don't know why a carrot.
+     *
+     * @param rewardsSection The section that has all the Trivia rewards.
+     * @param rewardsList The ArrayList to be filled.
+     */
+    private void loadRewardsTier(ConfigurationSection rewardsSection, ArrayList<RewardTier> rewardsList) {
+        if(rewardsSection == null) {
+            return;
+        }
+        for (String key : rewardsSection.getKeys(false)) {
+            ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
+            double maxTime = configLoader.getDouble(rewardTierSection,"MaxAnswerTime", 0);
+            int maxTimeInMilliseconds = (int) maxTime * 1000;
+            double moneyReward = configLoader.getDouble(rewardTierSection,"Money", 0);
+            List<String> commandsExecuted = configLoader.getStringList(rewardTierSection,"Commands");
+            ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
+            ArrayList<ItemStack> itemReward = new ArrayList<>();
+            loadItemReward(rewardTierItemSection, itemReward);
+            rewardsList.add(new RewardTier(maxTimeInMilliseconds, moneyReward, commandsExecuted, itemReward, new ArrayList<>()));
+        }
+    }
+
+    /**
+     * Used to load the contest rewards.
+     * @param rewardsSection The section that has all the Contest rewards.
+     */
+    private void loadContestRewards(ConfigurationSection rewardsSection,
+                                    Map<String, ArrayList<ContestRewardTier>> contestRewards) {
+        if(rewardsSection == null) {
+            return;
+        }
+
+        for(String category: CONTEST_CATEGORIES) {
+            ConfigurationSection section = rewardsSection.getConfigurationSection(category);
+            ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
+            contestRewards.put(category, rewardsList);
+            String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, category, rewardsList.size());
+            Bukkit.getLogger().info(logMessage);
+        }
+    }
+
+    private ArrayList<ContestRewardTier> loadContestRewardsTier(ConfigurationSection section) {
+        ArrayList<ContestRewardTier> rewardsList = new ArrayList<>();
+        if(section == null) {
+            return rewardsList;
+        }
+
+        for (String key : section.getKeys(false)) {
+            ConfigurationSection rewardTierSection = section.getConfigurationSection(key);
+            int reps = configLoader.getInt(rewardTierSection,"Reps", 1);
+            double moneyReward = configLoader.getDoubleOptional(rewardTierSection,"Money", 0);
+            String message = configLoader.getStringOptional(rewardTierSection,"Message", "");
+            List<String> commandsExecuted = configLoader.getStringListOptional(rewardTierSection,"Commands");
+            ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
+            ArrayList<ItemStack> itemReward = new ArrayList<>();
+            loadItemReward(rewardTierItemSection, itemReward);
+            ContestRewardTier rewardTier = new ContestRewardTier(moneyReward, commandsExecuted, itemReward, message);
+            for(int i = 0; i < reps; i++) {
+                rewardsList.add(rewardTier);
+            }
+        }
+        return rewardsList;
+    }
+
+    private void loadItemReward(ConfigurationSection rewardTierItemSection, ArrayList<ItemStack> itemReward) {
+        if(rewardTierItemSection == null) {
+            return;
+        }
+        for (String key : rewardTierItemSection.getKeys(false)) {
+            ConfigurationSection rewardTierItem = rewardTierItemSection.getConfigurationSection(key);
+            Material itemMaterial = configLoader.getMaterial(rewardTierItem, "Material", "CARROT");
+            int itemQty = configLoader.getInt(rewardTierItem, "Qty", 1);
+            List<String> itemLore = configLoader.getStringList(rewardTierItem, "Lore");
+            ItemStack itemStack = new ItemStack(itemMaterial, itemQty);
+
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            itemMeta.setLore(itemLore);
+            itemStack.setItemMeta(itemMeta);
+            itemReward.add(itemStack);
+        }
+    }
+
+    /**
+     * Used to create the ArrayList of Questions used for the Trivia Mode
+     * Missing fields are replaced with an empty string
+     *
+     * @param questionYml The file that has all the questions.
+     */
+    private ArrayList<Question> loadQuestions(File questionYml) {
+        ArrayList<Question> questionList = new ArrayList<>();
+        FileConfiguration config = YamlConfiguration.loadConfiguration(questionYml);
+        for (String key : config.getKeys(false)) {
+            ConfigurationSection configSection = config.getConfigurationSection(key);
+            String questionColourCode = configLoader.getString(configSection,"QuestionColour", "");
+            String messageColourCode = configLoader.getString(configSection,"MessageColour", "");
+            String categoryLabel = configLoader.getString(configSection,"CategoryLabel", "");
+            String categoryPrefix = categoryLabel + questionColourCode;
+            ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
+            questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
+        }
+        String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS, questionList.size());
+        Bukkit.getLogger().info(logMessage);
+        return questionList;
+    }
+
+    /**
+     * Helper function used to load the ArrayList of Questions in a specific category.
+     * Question and Answer cannot be empty, and hence will be skipped and logged if so.
+     */
+    private void questionListLoader(ArrayList<Question> questionList, ConfigurationSection config,
+                                    String prefix, String msgColorCode) {
+        for (String key : config.getKeys(false)) {
+            ConfigurationSection questionConfig = config.getConfigurationSection(key);
+            String question = configLoader.getString(questionConfig, "Question", "");
+            List<String> answers = configLoader.getStringList(questionConfig, "Answers");
+            if(question.isEmpty() || answers.isEmpty()) {
+                Bukkit.getLogger().info(String.format(WARNING_INVALID_QUESTION, question));
+                continue;
+            }
+            question = prefix + question;
+            String message = configLoader.getStringOptional(questionConfig,"Message", "");
+            message = msgColorCode + " " + message;
+            List<String> secretAnswers = configLoader.getStringListOptional(questionConfig, "SecretAnswers");
+            String secretMessage = configLoader.getStringOptional(questionConfig, "SecretMessage", "");
+            secretMessage = msgColorCode + secretMessage;
+
+            secretAnswers.replaceAll(String::trim);
+            answers.replaceAll(String::trim);
+            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage);
+
+            questionList.add(newQuestion);
+        }
     }
 
     private void loadFromResource(String fileName, String dest) {
@@ -434,9 +432,9 @@ public class ExternalFiles {
      * @param newFileName The file that is used to replace the other file
      */
     private void updateFile (String oldFileName, String newFileName) {
-        Bukkit.getLogger().info("[HoloQuiz] Replacing " + oldFileName + " with " + newFileName);
         File oldFile = new File(plugin.getDataFolder(), oldFileName);
         File newFile = new File(plugin.getDataFolder(), newFileName);
+        boolean oldFileExists = oldFile.exists();
         try {
             FileInputStream inputStream = new FileInputStream(newFile);
             FileOutputStream outputStream = new FileOutputStream(oldFile);
@@ -446,13 +444,19 @@ public class ExternalFiles {
                 outputStream.write(buffer, 0, length);
             }
             outputStream.close();
+            if(oldFileExists) {
+                Bukkit.getLogger().info(String.format(LOG_MESSAGE_REPLACED_FILE, oldFileName, newFileName));
+            } else {
+                Bukkit.getLogger().info(String.format(LOG_MESSAGE_MOVED_BROKEN_FILE_TO_ARCHIVE, newFileName, oldFileName));
+            }
+
         } catch (IOException e) {
             Bukkit.getLogger().info(e.toString());
         }
     }
 
     private void storeToArchive (String brokenFileName, String archiveFileNameFormat) {
-        String archiveFileName = String.format(archiveFileNameFormat, System.currentTimeMillis());
+        String archiveFileName = ARCHIVE_DIRECTORY_PATH+String.format(archiveFileNameFormat, System.currentTimeMillis());
         updateFile(archiveFileName, brokenFileName);
     }
 }

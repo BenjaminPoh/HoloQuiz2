@@ -30,31 +30,6 @@ public class UserPersonalisation {
         this.addList = new HashMap<>();
     }
 
-    private void createTable(Connection connection) {
-        try {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(SQL_STATEMENT_CREATE_USER_PERSONALISATION_TABLE);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void initialiseHashMap(Connection connection) {
-        try {
-            PreparedStatement fetchPlayerStatsQuery = connection.prepareStatement(SQL_STATEMENT_FETCH_ALL_INFO);
-            ResultSet resultSet = fetchPlayerStatsQuery.executeQuery();
-            while(resultSet.next()) {
-                String player_uuid = resultSet.getString("player_uuid");
-                boolean quizEnabled = resultSet.getBoolean("toggle_quiz");
-                String suffix = resultSet.getString("suffix");
-                PlayerSettings playerSetting = new PlayerSettings(suffix, quizEnabled);
-                userSettings.put(player_uuid, playerSetting);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void setSuffix(String player_uuid, String suffix) {
         PlayerSettings newPlayerSettings;
         //Check if in master listing. If not, the player must be a new entry, and must be added to the addList.
@@ -129,5 +104,31 @@ public class UserPersonalisation {
             }
         }
     }
+
+    private void createTable(Connection connection) {
+        try {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(SQL_STATEMENT_CREATE_USER_PERSONALISATION_TABLE);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initialiseHashMap(Connection connection) {
+        try {
+            PreparedStatement fetchPlayerStatsQuery = connection.prepareStatement(SQL_STATEMENT_FETCH_ALL_INFO);
+            ResultSet resultSet = fetchPlayerStatsQuery.executeQuery();
+            while(resultSet.next()) {
+                String player_uuid = resultSet.getString("player_uuid");
+                boolean quizEnabled = resultSet.getBoolean("toggle_quiz");
+                String suffix = resultSet.getString("suffix");
+                PlayerSettings playerSetting = new PlayerSettings(suffix, quizEnabled);
+                userSettings.put(player_uuid, playerSetting);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

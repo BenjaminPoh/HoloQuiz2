@@ -41,7 +41,7 @@ SuiseiQuestions:
       SecretAnswers:
         - "Me"
       SecretMessage: "&dVery funny!"
-#Example section of things that break.
+#Example section of things that will throw errors.
 MissingInfoArea:
   QuestionColour:
   CategoryLabel:

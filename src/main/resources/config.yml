@@ -37,7 +37,7 @@ QuickMath:
   Distribution: Default  #Overrides the above if you wish. Available: Default/Normal/Uniform
   DivisorLimit: true #Ensures divisor <= 10
   OperationsLimit: 4 #Min(ceil(|X~N(Limit, 1)|),4) taken.
-  MathDifficulty: Normal #Harder increases the chance of * and / appearing. #Available: Easy/Normal/Hard
+  MathDifficulty: Normal #Available: Easy/Normal/Hard. Higher difficulty increases the chance of * and / appearing.
   ChaosMode: false #I am not liable for what you see next
   QuestionColour: "&6"
 

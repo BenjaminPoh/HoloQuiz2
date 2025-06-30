@@ -14,6 +14,8 @@ import java.util.*;
 
 public class GameManager {
     private static final String MESSAGE_REVEAL_ANSWER = "&bNo one got the answer! The answer was &a%s&b.";
+    private static final String LOG_MESSAGE_QUESTION_SENT = "[HoloQuiz] Question Sent: %s";
+    private static final String IMPOSSIBLE_ERROR_INVALID_MODE = "[HoloQuiz] Impossible Error: Invalid mode %s. There is no way you ever see this.";
 
     private final JavaPlugin plugin;
     private final UserInterface userInterface;
@@ -114,7 +116,7 @@ public class GameManager {
 
     private void sendQuestion() {
         Question question = getRandomQuestion();
-        Bukkit.getLogger().info("[HoloQuiz] Question Sent: " + question.getQuestion());
+        Bukkit.getLogger().info(String.format(LOG_MESSAGE_QUESTION_SENT, question.getQuestion()));
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
         setQuestionAnswered(false);
@@ -133,7 +135,6 @@ public class GameManager {
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             userInterface.attachSuffixAndSend(player, formattedAnnouncement);
         }
-        Bukkit.getLogger().info("[HoloQuiz] No one got the answer!");
     }
 
     public Question getRandomQuestion() {
@@ -145,7 +146,7 @@ public class GameManager {
             this.currentQuestion = getRandomTriviaQuestion();
             return this.currentQuestion;
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error: Invalid mode.");
+        Bukkit.getLogger().info(String.format(IMPOSSIBLE_ERROR_INVALID_MODE, gameMode));
         return null;
     }
 
@@ -176,7 +177,7 @@ public class GameManager {
         if(gameMode.equals("Trivia")) {
             return "T";
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error: There is no way you ever see this message.");
+        Bukkit.getLogger().info(String.format(IMPOSSIBLE_ERROR_INVALID_MODE, gameMode));
         return gameMode.substring(0, 1);
     }
 
@@ -215,7 +216,6 @@ public class GameManager {
     }
 
     //Getters and Setters
-
     public Question getCurrentQuestion() {
         return this.currentQuestion;
     }
