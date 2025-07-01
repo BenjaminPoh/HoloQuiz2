@@ -138,7 +138,6 @@ public class ContestManager {
             enabledContestList.add(contest);
         }
 
-
         //Update the Database for removed and new contests, and savedContestList with the latest rewards
         return enabledContestList;
     }
@@ -168,10 +167,7 @@ public class ContestManager {
             String contestType = getContestTypeByID(i);
             String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, endingTimestamp);
             Bukkit.getLogger().info(logMessage);
-        } else if (currentEnabledContest != null && currentSavedContestTimes != null) {
-            currentEnabledContest.updateTimes(currentSavedContestTimes, zoneId);
         }
-
     }
 
     private ZonedDateTime fetchDateTimeByTimestamp(long time) {
