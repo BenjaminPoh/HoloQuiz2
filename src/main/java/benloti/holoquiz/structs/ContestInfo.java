@@ -9,6 +9,9 @@ import java.util.ArrayList;
 
 public class ContestInfo {
     private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
+    private final String contestName;
+    private final String rewardCategoryName;
+
     private long startTime;
     private long endTime;
     private LocalDate startDate;
@@ -30,6 +33,8 @@ public class ContestInfo {
     public ContestInfo(int type, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
                        int twoMinReq, int threeMinReq) {
         this.typeCode = type;
+        this.contestName = getTypeString();
+        this.rewardCategoryName = getTypeString();
         this.bestAvgMinReq = twoMinReq;
         this.bestXMinReq = threeMinReq;
         this.mostAnswerContestEnabled = zeroEnabled;
@@ -38,35 +43,39 @@ public class ContestInfo {
         this.bestXContestEnabled = threeEnabled;
     }
 
-    public ContestInfo(int type, long startTime, long endTime) {
-        this.typeCode = type;
-        this.bestAvgMinReq = 0;
+    public ContestInfo(boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
+                       int twoMinReq, int threeMinReq, long startTime, long endTime, String name, String rewardCategory) {
+        this.typeCode = 3;
+        this.contestName = name;
+        this.rewardCategoryName = rewardCategory;
+        this.bestAvgMinReq = twoMinReq;
+        this.bestXMinReq = threeMinReq;
+        this.mostAnswerContestEnabled = zeroEnabled;
+        this.fastestAnswerContestEnabled = oneEnabled;
+        this.bestAvgContestEnabled = twoEnabled;
+        this.bestXContestEnabled = threeEnabled;
         this.startTime = startTime;
         this.endTime = endTime;
-
-        this.mostAnswerRewards = new ArrayList<>();
-        this.bestAverageRewards = new ArrayList<>();
-        this.fastestRewards = new ArrayList<>();
-        this.bestXRewards = new ArrayList<>();
     }
 
-    public void updateInfo(ContestInfo otherContest, ZoneId zoneId) {
-        this.mostAnswerRewards.addAll(otherContest.getRewardByCategory(0));
-        this.fastestRewards.addAll(otherContest.getRewardByCategory(1));
-        this.bestAverageRewards.addAll(otherContest.getRewardByCategory(2));
-        this.bestXRewards.addAll(otherContest.getRewardByCategory(3));
+    public ContestInfo(ContestInfo otherContest, long startTime, long endTime, ZoneId zoneId) {
+        this.typeCode = otherContest.getTypeCode();
+        this.contestName = otherContest.getContestName();
+        this.rewardCategoryName = otherContest.getRewardCategoryName();
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.mostAnswerContestEnabled = otherContest.isMostAnswerContestEnabled();
+        this.fastestAnswerContestEnabled = otherContest.isFastestAnswerContestEnabled();
+        this.bestAvgContestEnabled = otherContest.isBestAvgContestEnabled();
+        this.bestXContestEnabled = otherContest.isBestXContestEnabled();
+        this.mostAnswerRewards = otherContest.getRewardByCategory(0);
+        this.fastestRewards = otherContest.getRewardByCategory(1);
+        this.bestAverageRewards = otherContest.getRewardByCategory(2);
+        this.bestXRewards = otherContest.getRewardByCategory(3);
         this.bestAvgMinReq = otherContest.getBestAvgMinReq();
         this.bestXMinReq = otherContest.getBestXMinReq();
-        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
-        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
-    }
+        updateTimes(zoneId);
 
-    public void updateRewards(ArrayList<ContestRewardTier> topAnswerRewards, ArrayList<ContestRewardTier> fastestRewards,
-                       ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> bestXRewards) {
-        this.mostAnswerRewards = topAnswerRewards;
-        this.bestAverageRewards = bestAverageRewards;
-        this.fastestRewards = fastestRewards;
-        this.bestXRewards = bestXRewards;
     }
 
     public long getStartTime() {
@@ -113,6 +122,35 @@ public class ContestInfo {
         return bestXContestEnabled;
     }
 
+    public String getRewardCategoryName() {
+        return rewardCategoryName;
+    }
+
+    public String getContestName() {
+        return contestName;
+    }
+
+    //Used for Initialisation
+    public void updateTimes(Pair<Long, Long> newTimes, ZoneId zoneId) {
+        this.startTime = newTimes.getLeft();
+        this.endTime = newTimes.getRight();
+        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
+        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
+    }
+
+    public void updateTimes(ZoneId zoneId) {
+        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
+        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
+    }
+
+    public void updateRewards(ArrayList<ContestRewardTier> topAnswerRewards, ArrayList<ContestRewardTier> fastestRewards,
+                              ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> bestXRewards) {
+        this.mostAnswerRewards = topAnswerRewards;
+        this.bestAverageRewards = bestAverageRewards;
+        this.fastestRewards = fastestRewards;
+        this.bestXRewards = bestXRewards;
+    }
+
     //Methods related to Intervals
     public void updateTournamentDateToNextCycle(ZoneId zoneId) {
         boolean theSafeguardThatShouldNeverTrigger = true;
@@ -154,14 +192,6 @@ public class ContestInfo {
         return "You found a bug!";
     }
 
-    public void updateTimes(ZoneId zoneId, LocalDate startDate, LocalDate endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
-        LocalDate tempEndDate = endDate.plusDays(1);
-        this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
-    }
-
     //Methods related to Rewards
     public ArrayList<ContestRewardTier> getRewardByCategory(int code) {
         if(code == 0) {
@@ -195,5 +225,50 @@ public class ContestInfo {
         }
         Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
         return 0;
+    }
+
+    //Methods related to setting up Intervals
+    public void generateDailyIntervalForContest(ZoneId zoneId, LocalDate startDate) {
+        if(typeCode != 0) {
+            return;
+        }
+        setTimestampForRegularContests(zoneId, startDate, startDate);
+    }
+
+    public void generateWeeklyIntervalForContest(ZoneId zoneId, LocalDate startDate, int intendedStartDay) {
+        if(typeCode != 1) {
+            return;
+        }
+        int daysFromStartDayOfWeek = getDaysFromStartDay(startDate.getDayOfWeek().getValue(), intendedStartDay);
+        LocalDate startDateOfWeek = startDate.minusDays(daysFromStartDayOfWeek);
+        LocalDate endDateOfWeek = startDateOfWeek.plusWeeks(1);
+        endDateOfWeek = endDateOfWeek.minusDays(1);
+        setTimestampForRegularContests(zoneId,startDateOfWeek,endDateOfWeek);
+    }
+
+    public void generateMonthlyIntervalForContest(ZoneId zoneId, LocalDate startDate) {
+        if(typeCode != 2) {
+            return;
+        }
+        int daysFromFirstDayOfMonth = startDate.getDayOfMonth() - 1;
+        LocalDate startDateOfMonth = startDate.minusDays(daysFromFirstDayOfMonth);
+        LocalDate endDateOfMonth = startDateOfMonth.plusMonths(1);
+        endDateOfMonth = endDateOfMonth.minusDays(1);
+        setTimestampForRegularContests(zoneId,startDateOfMonth,endDateOfMonth);
+    }
+
+    private int getDaysFromStartDay(int currentDay, int intendedDay) {
+        if(currentDay >= intendedDay) {
+            return currentDay - intendedDay;
+        }
+        return currentDay - intendedDay + 7;
+    }
+
+    private void setTimestampForRegularContests(ZoneId zoneId, LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        LocalDate tempEndDate = endDate.plusDays(1);
+        this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
     }
 }

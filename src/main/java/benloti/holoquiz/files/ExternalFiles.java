@@ -29,11 +29,9 @@ public class ExternalFiles {
     private static final String ARCHIVE_QUESTION_BANK_FILE_NAME = "QuestionBank_%d.yml";
     private static final String ARCHIVE_REWARDS_FILE_NAME = "Rewards_%d.yml";
 
-    private static final String[] CONTEST_CATEGORIES = {"DailyMost", "DailyFastest", "DailyBestAvg", "DailyBestX",
-            "WeeklyMost", "WeeklyFastest", "WeeklyBestAvg", "WeeklyBestX",
-            "MonthlyMost", "MonthlyFastest", "MonthlyBestAvg", "MonthlyBestX"};
+    private static final String[] CONTEST_CATEGORIES = {"Most", "Fastest", "BestAvg", "BestX"};
 
-    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest Type %s loaded in %d rewards";
+    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest %s %s loaded in %d rewards";
     public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "[HoloQuiz] Trivia Category loaded %d Questions!";
     public static final String LOG_MESSAGE_REPLACED_FILE = "[HoloQuiz] Replaced %s with %s successfully!";
     public static final String LOG_MESSAGE_MOVED_BROKEN_FILE_TO_ARCHIVE = "[HoloQuiz] Moved %s to %s successfully!";
@@ -78,11 +76,14 @@ public class ExternalFiles {
             Bukkit.getLogger().info(WARNING_MISSING_ARCHIVE_FOLDER);
             archiveDir.mkdirs();
         }
+        verifyFileExistence(CONFIG_FILE_NAME);
+        verifyFileExistence(QUESTION_BANK_FILE_NAME);
+        verifyFileExistence(REWARDS_FILE_NAME);
 
         //Tries to load all the external files. If successful, the backup is updated with the most recent version.
         //If unsuccessful, the backup file is used. Broken files are replaced, with a copy of it moved to the Archive.
         //If still unsuccessful, the resource file is used.
-        configLoader.setCurrentFile("Config.yml");
+        configLoader.setCurrentFile("config.yml");
         try {
             this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
             updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
@@ -251,6 +252,8 @@ public class ExternalFiles {
     }
 
     /**
+     * Warning: Passing in the 3 Reward structures as Local Variables is done for the reload function
+     *
      * Used to load all 3 categories of rewards
      * @param rewardsYml the Rewards.yml File
      */
@@ -267,7 +270,7 @@ public class ExternalFiles {
         loadRewardsTier(secretRewardsSection, secretRewards);
 
         ConfigurationSection contestRewardsSection = rewardsFile.getConfigurationSection("ContestRewards");
-        loadContestRewards(contestRewardsSection, contestRewards);
+        loadAllContestRewards(contestRewardsSection, contestRewards);
     }
 
     /**
@@ -298,17 +301,23 @@ public class ExternalFiles {
      * Used to load the contest rewards.
      * @param rewardsSection The section that has all the Contest rewards.
      */
-    private void loadContestRewards(ConfigurationSection rewardsSection,
-                                    Map<String, ArrayList<ContestRewardTier>> contestRewards) {
+    private void loadAllContestRewards(ConfigurationSection rewardsSection, Map<String, ArrayList<ContestRewardTier>> contestRewards) {
         if(rewardsSection == null) {
             return;
         }
+        for(String key : rewardsSection.getKeys(false)) {
+            ConfigurationSection contestSection = rewardsSection.getConfigurationSection(key);
+            loadIndividualContestRewards(key, contestSection, contestRewards);
+        }
 
+    }
+
+    private void loadIndividualContestRewards(String key, ConfigurationSection rewardsSection, Map<String, ArrayList<ContestRewardTier>> contestRewards) {
         for(String category: CONTEST_CATEGORIES) {
             ConfigurationSection section = rewardsSection.getConfigurationSection(category);
             ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
-            contestRewards.put(category, rewardsList);
-            String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, category, rewardsList.size());
+            contestRewards.put(key + category, rewardsList);
+            String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, key,  category, rewardsList.size());
             Bukkit.getLogger().info(logMessage);
         }
     }
@@ -458,6 +467,13 @@ public class ExternalFiles {
     private void storeToArchive (String brokenFileName, String archiveFileNameFormat) {
         String archiveFileName = ARCHIVE_DIRECTORY_PATH+String.format(archiveFileNameFormat, System.currentTimeMillis());
         updateFile(archiveFileName, brokenFileName);
+    }
+
+    private void verifyFileExistence(String fileName) {
+        File file = new File(plugin.getDataFolder(), fileName);
+        if(!file.exists()) {
+            loadFromResource(fileName, fileName);
+        }
     }
 }
 

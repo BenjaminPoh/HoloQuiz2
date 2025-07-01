@@ -107,7 +107,8 @@ public class UserInterface {
         }
         if(message.contains("[month]")) {
             String monthOfContest = contestInfo.getStartDate().getMonth().toString();
-            message = message.replace("[month]", monthOfContest);
+            String formattedMonth = monthOfContest.charAt(0) + monthOfContest.substring(1).toLowerCase();
+            message = message.replace("[month]", formattedMonth);
         }
         if(message.contains("[year]")) {
             String yearOfContest = Integer.toString(contestInfo.getStartDate().getYear());

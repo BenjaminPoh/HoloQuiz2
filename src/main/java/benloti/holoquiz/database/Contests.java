@@ -1,6 +1,7 @@
 package benloti.holoquiz.database;
 
 import benloti.holoquiz.structs.ContestInfo;
+import benloti.holoquiz.structs.Pair;
 import benloti.holoquiz.structs.PlayerContestStats;
 
 import java.sql.*;
@@ -28,8 +29,8 @@ public class Contests {
         createTable(connection);
     }
 
-    public ArrayList<ContestInfo> getOngoingTournaments(Connection connection) {
-        ArrayList<ContestInfo> incompleteTournamentsCode = new ArrayList<>(Arrays.asList(null, null, null));
+    public ArrayList<Pair<Long, Long>> getOngoingTournaments(Connection connection) {
+        ArrayList<Pair<Long, Long>> incompleteTournamentsCode = new ArrayList<>(Arrays.asList(null, null, null));
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_STATEMENT_FETCH_ONGOING_CONTESTS);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -37,7 +38,8 @@ public class Contests {
                 int type = resultSet.getInt("type");
                 long startTime = resultSet.getLong("start");
                 long endTime = resultSet.getLong("end");
-                incompleteTournamentsCode.set(type,new ContestInfo(type, startTime, endTime));
+
+                incompleteTournamentsCode.set(type, new Pair<>(startTime, endTime));
             }
             return incompleteTournamentsCode;
 

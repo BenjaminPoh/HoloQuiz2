@@ -39,8 +39,8 @@ public class QuizAnswerHandler implements Listener {
     private RewardsHandler rewardsHandler;
     private UserInterface userInterface;
     private ContestManager contestManager;
-    private RewardsHandler.MinSDCheatDetector sdChecker;
-    private RewardsHandler.MinTimeCheatDetector timeChecker;
+    private MinSDCheatDetector sdChecker;
+    private MinTimeCheatDetector timeChecker;
 
     private int correctAnswerMsgLoc;
 

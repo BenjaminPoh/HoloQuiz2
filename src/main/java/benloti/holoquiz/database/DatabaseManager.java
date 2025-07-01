@@ -1,10 +1,7 @@
 package benloti.holoquiz.database;
 
 import benloti.holoquiz.games.RewardsHandler;
-import benloti.holoquiz.structs.ContestInfo;
-import benloti.holoquiz.structs.PlayerContestStats;
-import benloti.holoquiz.structs.PlayerData;
-import benloti.holoquiz.structs.RewardTier;
+import benloti.holoquiz.structs.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -194,7 +191,7 @@ public class DatabaseManager {
         return userInfo.getPlayerNameByHoloQuizID(connection, holoQuizID);
     }
 
-    public ArrayList<ContestInfo> fetchSavedContests() {
+    public ArrayList<Pair<Long, Long>> fetchSavedContests() {
         return contests.getOngoingTournaments(connection);
     }
 

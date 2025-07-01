@@ -95,520 +95,536 @@ SecretRewards:
           - "&eMore than meets the eye."
           - "{#61A8E7>}=-=-=-=-=-=-=-=-=-=-=-={#A161E7<}"
 
-#Available Keys:
-#"DailyMost", "DailyFastest", "DailyBestAvg", "DailyBestX",
-#"WeeklyMost", "WeeklyFastest", "WeeklyBestAvg", "WeeklyBestX",
-#"MonthlyMost", "MonthlyFastest", "MonthlyBestAvg", "MonthlyBestX"
+#Standard Contest Types: Daily / Weekly / Monthly
+#Standard Contest Categories: Most / Fastest / BestX / BestAvg
+#Custom Contest Types is supported.
 ContestRewards:
-  DailyMost:
-    Top1:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Message: "&bYou had the most answers of HoloQuiz for &a[start]&b! Have a cookie!"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward For &a[player]"
-            - "&bTop of &a[start]"
-    Top2:
-      Reps: 1
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-        - "ac key give [player] vipcrate 1"
-    Top3:
-      Reps: 1
-      Money: 15000
-      Commands:
-        - "bta add [player] 3"
-    Top4-5:
-      Reps: 2
-      Money: 10000
-      Commands:
-        - "bta add [player] 2"
-  DailyFastest:
-    Top1:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Message: "&bYou had the fastest answer of HoloQuiz for &a[start]&b! Have a cookie!"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward For &a[player]"
-            - "&bFastest of &a[start]"
-    Top2:
-      Reps: 1
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-        - "ac key give [player] vipcrate 1"
-    Top3:
-      Reps: 1
-      Money: 15000
-      Commands:
-        - "bta add [player] 3"
-    Top4-5:
-      Reps: 2
-      Money: 10000
-      Commands:
-        - "bta add [player] 2"
-  DailyBestX:
-    Top1:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Message: "&bYou are the best of HoloQuiz for &a[start]&b! Have a cookie!"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward For &a[player]"
-            - "&bBest of &a[start]"
-    Top2:
-      Reps: 1
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-        - "ac key give [player] vipcrate 1"
-    Top3:
-      Reps: 1
-      Money: 15000
-      Commands:
-        - "bta add [player] 3"
-    Top4-5:
-      Reps: 2
-      Money: 10000
-      Commands:
-        - "bta add [player] 2"
-  WeeklyMost:
-    Top1:
-      Reps: 1
-      Money: 150000
-      Commands:
-        - "bta add [player] 25"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 3"
-      Message: "&bYou had the most answers of HoloQuiz from &a[start] &bto &a[end]&b!"
-    Top2:
-      Reps: 1
-      Money: 100000
-      Commands:
-        - "bta add [player] 15"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 2"
-    Top3:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-    Top4-5:
-      Reps: 2
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-  WeeklyFastest:
-    Top1:
-      Reps: 1
-      Money: 150000
-      Commands:
-        - "bta add [player] 25"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 3"
-      Message: "&bYou had the fastest answer of HoloQuiz from &a[start] &bto &a[end]&b!"
-    Top2:
-      Reps: 1
-      Money: 100000
-      Commands:
-        - "bta add [player] 15"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 2"
-    Top3:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-    Top4-5:
-      Reps: 2
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-  WeeklyBestAvg:
-    Top1:
-      Reps: 1
-      Money: 150000
-      Commands:
-        - "bta add [player] 25"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 3"
-      Message: "&bYou had the best average time of HoloQuiz from &a[start] &bto &a[end]&b!"
-    Top2:
-      Reps: 1
-      Money: 100000
-      Commands:
-        - "bta add [player] 15"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 2"
-    Top3:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-    Top4-5:
-      Reps: 2
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-  WeeklyBestX:
-    Top1:
-      Reps: 1
-      Money: 150000
-      Commands:
-        - "bta add [player] 25"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 3"
-      Message: "&bYou are the best of HoloQuiz from &a[start] &bto &a[end]&b!"
-    Top2:
-      Reps: 1
-      Money: 100000
-      Commands:
-        - "bta add [player] 15"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 2"
-    Top3:
-      Reps: 1
-      Money: 50000
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-    Top4-5:
-      Reps: 2
-      Money: 25000
-      Commands:
-        - "bta add [player] 5"
-  MonthlyMost:
-    Top1:
-      Reps: 1
-      Money: 500000
-      Commands:
-        - "bta add [player] 50"
-        - "ac key give [player] holocrate 5"
-        - "ac key give [player] vipcrate 5"
-      Message: "&eYou had the most answers of HoloQuiz for &a[month]&e! Have a Cake!"
-      Items:
-        1:
-          Material: cake
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&eMost Answers &bof &a[month] [year]"
-    Top2:
-      Reps: 1
-      Money: 400000
-      Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 40"
-        - "ac key give [player] holocrate 4"
-        - "ac key give [player] vipcrate 4"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bMost Answers of &a[month] [year]"
-    Top3:
-      Reps: 1
-      Money: 300000
-      Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 30"
-        - "ac key give [player] holocrate 3"
-        - "ac key give [player] vipcrate 3"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bMost Answers of &a[month] [year]"
-    Top4-5:
-      Reps: 2
-      Money: 200000
-      Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 2"
-        - "ac key give [player] vipcrate 2"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bMost Answers of &a[month] [year]"
-    Top6-10:
-      Reps: 5
-      Money: 100000
-      Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bMost Answers of &a[month] [year]"
-  MonthlyFastest:
-    Top1:
-      Reps: 1
-      Money: 500000
-      Commands:
-        - "bta add [player] 50"
-        - "ac key give [player] holocrate 5"
-        - "ac key give [player] vipcrate 5"
-      Message: "&eYou had the fastest answer of HoloQuiz for &a[month]&e! Have a Cake!"
-      Items:
-        1:
-          Material: cake
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&eFastest Answer &bof &a[month] [year]"
-    Top2:
-      Reps: 1
-      Money: 400000
-      Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 40"
-        - "ac key give [player] holocrate 4"
-        - "ac key give [player] vipcrate 4"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bFastest Answer of &a[month] [year]"
-    Top3:
-      Reps: 1
-      Money: 300000
-      Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 30"
-        - "ac key give [player] holocrate 3"
-        - "ac key give [player] vipcrate 3"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bFastest Answer of &a[month] [year]"
-    Top4-5:
-      Reps: 2
-      Money: 200000
-      Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 2"
-        - "ac key give [player] vipcrate 2"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bFastest Answer of &a[month] [year]"
-    Top6-10:
-      Reps: 5
-      Money: 100000
-      Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bFastest Answer of &a[month] [year]"
-  MonthlyBestAvg:
-    Top1:
-      Reps: 1
-      Money: 500000
-      Commands:
-        - "bta add [player] 50"
-        - "ac key give [player] holocrate 5"
-        - "ac key give [player] vipcrate 5"
-      Message: "&eYou had the best average time of HoloQuiz for &a[month]&e! Have a Cake!"
-      Items:
-        1:
-          Material: cake
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&eBest Average &bof &a[month] [year]"
-    Top2:
-      Reps: 1
-      Money: 400000
-      Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 40"
-        - "ac key give [player] holocrate 4"
-        - "ac key give [player] vipcrate 4"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest Average of &a[month] [year]"
-    Top3:
-      Reps: 1
-      Money: 300000
-      Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 30"
-        - "ac key give [player] holocrate 3"
-        - "ac key give [player] vipcrate 3"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest Average of &a[month] [year]"
-    Top4-5:
-      Reps: 2
-      Money: 200000
-      Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 2"
-        - "ac key give [player] vipcrate 2"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest Average of &a[month] [year]"
-    Top6-10:
-      Reps: 5
-      Money: 100000
-      Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest Average of &a[month] [year]"
-  MonthlyBestX:
-    Top1:
-      Reps: 1
-      Money: 500000
-      Commands:
-        - "bta add [player] 50"
-        - "ac key give [player] holocrate 5"
-        - "ac key give [player] vipcrate 5"
-      Message: "&eYou are the best of HoloQuiz for &a[month]&e! Have a Cake!"
-      Items:
-        1:
-          Material: cake
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&eBest &bof &a[month] [year]"
-    Top2:
-      Reps: 1
-      Money: 400000
-      Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 40"
-        - "ac key give [player] holocrate 4"
-        - "ac key give [player] vipcrate 4"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest of &a[month] [year]"
-    Top3:
-      Reps: 1
-      Money: 300000
-      Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 30"
-        - "ac key give [player] holocrate 3"
-        - "ac key give [player] vipcrate 3"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest of &a[month] [year]"
-    Top4-5:
-      Reps: 2
-      Money: 200000
-      Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 20"
-        - "ac key give [player] holocrate 2"
-        - "ac key give [player] vipcrate 2"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest of &a[month] [year]"
-    Top6-10:
-      Reps: 5
-      Money: 100000
-      Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
-      Commands:
-        - "bta add [player] 10"
-        - "ac key give [player] holocrate 1"
-        - "ac key give [player] vipcrate 1"
-      Items:
-        1:
-          Material: cookie
-          Qty: 1
-          Lore:
-            - "&bHoloquiz Reward for &a[player]"
-            - "&a[pos++] &bBest of &a[month] [year]"
+  Daily:
+    Most:
+      Top1:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Message: "&bYou had the most answers of HoloQuiz for &a[start]&b! Have a cookie!"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward For &a[player]"
+              - "&bTop of &a[start]"
+      Top2:
+        Reps: 1
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+          - "ac key give [player] vipcrate 1"
+      Top3:
+        Reps: 1
+        Money: 15000
+        Commands:
+          - "bta add [player] 3"
+      Top4-5:
+        Reps: 2
+        Money: 10000
+        Commands:
+          - "bta add [player] 2"
+    Fastest:
+      Top1:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Message: "&bYou had the fastest answer of HoloQuiz for &a[start]&b! Have a cookie!"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward For &a[player]"
+              - "&bFastest of &a[start]"
+      Top2:
+        Reps: 1
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+          - "ac key give [player] vipcrate 1"
+      Top3:
+        Reps: 1
+        Money: 15000
+        Commands:
+          - "bta add [player] 3"
+      Top4-5:
+        Reps: 2
+        Money: 10000
+        Commands:
+          - "bta add [player] 2"
+    BestX:
+      Top1:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Message: "&bYou are the best of HoloQuiz for &a[start]&b! Have a cookie!"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward For &a[player]"
+              - "&bBest of &a[start]"
+      Top2:
+        Reps: 1
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+          - "ac key give [player] vipcrate 1"
+      Top3:
+        Reps: 1
+        Money: 15000
+        Commands:
+          - "bta add [player] 3"
+      Top4-5:
+        Reps: 2
+        Money: 10000
+        Commands:
+          - "bta add [player] 2"
+  Weekly:
+    Most:
+      Top1:
+        Reps: 1
+        Money: 150000
+        Commands:
+          - "bta add [player] 25"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 3"
+        Message: "&bYou had the most answers of HoloQuiz from &a[start] &bto &a[end]&b!"
+      Top2:
+        Reps: 1
+        Money: 100000
+        Commands:
+          - "bta add [player] 15"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 2"
+      Top3:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+      Top4-5:
+        Reps: 2
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+    Fastest:
+      Top1:
+        Reps: 1
+        Money: 150000
+        Commands:
+          - "bta add [player] 25"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 3"
+        Message: "&bYou had the fastest answer of HoloQuiz from &a[start] &bto &a[end]&b!"
+      Top2:
+        Reps: 1
+        Money: 100000
+        Commands:
+          - "bta add [player] 15"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 2"
+      Top3:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+      Top4-5:
+        Reps: 2
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+    BestAvg:
+      Top1:
+        Reps: 1
+        Money: 150000
+        Commands:
+          - "bta add [player] 25"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 3"
+        Message: "&bYou had the best average time of HoloQuiz from &a[start] &bto &a[end]&b!"
+      Top2:
+        Reps: 1
+        Money: 100000
+        Commands:
+          - "bta add [player] 15"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 2"
+      Top3:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+      Top4-5:
+        Reps: 2
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+    BestX:
+      Top1:
+        Reps: 1
+        Money: 150000
+        Commands:
+          - "bta add [player] 25"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 3"
+        Message: "&bYou are the best of HoloQuiz from &a[start] &bto &a[end]&b!"
+      Top2:
+        Reps: 1
+        Money: 100000
+        Commands:
+          - "bta add [player] 15"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 2"
+      Top3:
+        Reps: 1
+        Money: 50000
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+      Top4-5:
+        Reps: 2
+        Money: 25000
+        Commands:
+          - "bta add [player] 5"
+  Monthly:
+    Most:
+      Top1:
+        Reps: 1
+        Money: 500000
+        Commands:
+          - "bta add [player] 50"
+          - "ac key give [player] holocrate 5"
+          - "ac key give [player] vipcrate 5"
+        Message: "&eYou had the most answers of HoloQuiz for &a[month]&e! Have a Cake!"
+        Items:
+          1:
+            Material: cake
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&eMost Answers &bof &a[month] [year]"
+      Top2:
+        Reps: 1
+        Money: 400000
+        Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 40"
+          - "ac key give [player] holocrate 4"
+          - "ac key give [player] vipcrate 4"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bMost Answers of &a[month] [year]"
+      Top3:
+        Reps: 1
+        Money: 300000
+        Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 30"
+          - "ac key give [player] holocrate 3"
+          - "ac key give [player] vipcrate 3"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bMost Answers of &a[month] [year]"
+      Top4-5:
+        Reps: 2
+        Money: 200000
+        Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 2"
+          - "ac key give [player] vipcrate 2"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bMost Answers of &a[month] [year]"
+      Top6-10:
+        Reps: 5
+        Money: 100000
+        Message: "&bYou had the &e[pos++] &bmost answers of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bMost Answers of &a[month] [year]"
+    Fastest:
+      Top1:
+        Reps: 1
+        Money: 500000
+        Commands:
+          - "bta add [player] 50"
+          - "ac key give [player] holocrate 5"
+          - "ac key give [player] vipcrate 5"
+        Message: "&eYou had the fastest answer of HoloQuiz for &a[month]&e! Have a Cake!"
+        Items:
+          1:
+            Material: cake
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&eFastest Answer &bof &a[month] [year]"
+      Top2:
+        Reps: 1
+        Money: 400000
+        Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 40"
+          - "ac key give [player] holocrate 4"
+          - "ac key give [player] vipcrate 4"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bFastest Answer of &a[month] [year]"
+      Top3:
+        Reps: 1
+        Money: 300000
+        Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 30"
+          - "ac key give [player] holocrate 3"
+          - "ac key give [player] vipcrate 3"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bFastest Answer of &a[month] [year]"
+      Top4-5:
+        Reps: 2
+        Money: 200000
+        Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 2"
+          - "ac key give [player] vipcrate 2"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bFastest Answer of &a[month] [year]"
+      Top6-10:
+        Reps: 5
+        Money: 100000
+        Message: "&bYou had the &e[pos++] &bfastest answer of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bFastest Answer of &a[month] [year]"
+    BestAvg:
+      Top1:
+        Reps: 1
+        Money: 500000
+        Commands:
+          - "bta add [player] 50"
+          - "ac key give [player] holocrate 5"
+          - "ac key give [player] vipcrate 5"
+        Message: "&eYou had the best average time of HoloQuiz for &a[month]&e! Have a Cake!"
+        Items:
+          1:
+            Material: cake
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&eBest Average &bof &a[month] [year]"
+      Top2:
+        Reps: 1
+        Money: 400000
+        Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 40"
+          - "ac key give [player] holocrate 4"
+          - "ac key give [player] vipcrate 4"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest Average of &a[month] [year]"
+      Top3:
+        Reps: 1
+        Money: 300000
+        Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 30"
+          - "ac key give [player] holocrate 3"
+          - "ac key give [player] vipcrate 3"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest Average of &a[month] [year]"
+      Top4-5:
+        Reps: 2
+        Money: 200000
+        Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 2"
+          - "ac key give [player] vipcrate 2"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest Average of &a[month] [year]"
+      Top6-10:
+        Reps: 5
+        Money: 100000
+        Message: "&bYou had the &e[pos++] &bbest average time of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest Average of &a[month] [year]"
+    BestX:
+      Top1:
+        Reps: 1
+        Money: 500000
+        Commands:
+          - "bta add [player] 50"
+          - "ac key give [player] holocrate 5"
+          - "ac key give [player] vipcrate 5"
+        Message: "&eYou are the best of HoloQuiz for &a[month]&e! Have a Cake!"
+        Items:
+          1:
+            Material: cake
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&eBest &bof &a[month] [year]"
+      Top2:
+        Reps: 1
+        Money: 400000
+        Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 40"
+          - "ac key give [player] holocrate 4"
+          - "ac key give [player] vipcrate 4"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest of &a[month] [year]"
+      Top3:
+        Reps: 1
+        Money: 300000
+        Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 30"
+          - "ac key give [player] holocrate 3"
+          - "ac key give [player] vipcrate 3"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest of &a[month] [year]"
+      Top4-5:
+        Reps: 2
+        Money: 200000
+        Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 20"
+          - "ac key give [player] holocrate 2"
+          - "ac key give [player] vipcrate 2"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest of &a[month] [year]"
+      Top6-10:
+        Reps: 5
+        Money: 100000
+        Message: "&bYou are the &e[pos++] &bbest of HoloQuiz for [month]! Have a cookie!"
+        Commands:
+          - "bta add [player] 10"
+          - "ac key give [player] holocrate 1"
+          - "ac key give [player] vipcrate 1"
+        Items:
+          1:
+            Material: cookie
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward for &a[player]"
+              - "&a[pos++] &bBest of &a[month] [year]"
+  Pioneers:
+    Most:
+      PartyTime:
+        Reps: 1000
+        Money: 100
+        Commands:
+        Message: "&bHappy Birthday AZKi!"
+        Items:
+          1:
+            Material: compass
+            Qty: 1
+            Lore:
+              - "&bHoloquiz Reward For &a[player]"
+              - "&bAnswered on 1st July 2025"

@@ -73,6 +73,13 @@ public class ConfigLoader {
         return configs.getBoolean(key);
     }
 
+    public long getLong(ConfigurationSection configs, String key, long defaultValue) {
+        if(!configs.contains(key)) {
+            handleMissingKey(configs.getCurrentPath(), key);
+            return defaultValue;
+        }
+        return configs.getLong(key);
+    }
 
     public double getDouble(ConfigurationSection configs, String key, double defaultValue) {
         if(!configs.contains(key)) {
@@ -93,8 +100,7 @@ public class ConfigLoader {
     public ConfigurationSection getSection(ConfigurationSection config, String key) {
         ConfigurationSection section = config.getConfigurationSection(key);
         if(section == null) {
-            String logMessage = String.format(ERROR_MISSING_CONFIG, key);
-            Bukkit.getLogger().info(logMessage);
+            handleMissingKey(config.getCurrentPath(), key);
         }
         return section;
     }

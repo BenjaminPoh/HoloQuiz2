@@ -15,7 +15,6 @@ import java.util.List;
 public class ContestProgressGUI {
 
     private Inventory inventory;
-    private ContestManager contestManager;
     private int nextIndex = 0;
     private String playerName;
     private UserInterface userInterface;
@@ -26,8 +25,9 @@ public class ContestProgressGUI {
     private static final String DESCRIPTION_REASON_FOR_PLAYER_DQ = "&4You need &c%d &4more questions to qualify!";
 
     public ContestProgressGUI(ContestManager contestManager, String playerName, UserInterface userInterface) {
-        this.contestManager = contestManager;
-        this.inventory = Bukkit.createInventory(null, 18, "HoloQuiz Contests");
+        int size = contestManager.getTotalEnabledSubcontests();
+        size = ((size + 8)/ 9) * 9;
+        this.inventory = Bukkit.createInventory(null, size, "HoloQuiz Contests");
         this.playerName = playerName;
         this.userInterface = userInterface;
     }
@@ -38,7 +38,6 @@ public class ContestProgressGUI {
 
     //All java coding standards are violated in this 1 function.
     public void addInfo(ContestInfo contest, ArrayList<ArrayList<PlayerContestStats>> allContestWinners, PlayerContestStats playerInfo) {
-        String contestType = contest.getTypeString();
         String dateRangeDescription = formatDateTime(contest.getStartDate(), contest.getEndDate());
         for(int i = 0; i < allContestWinners.size(); i++) {
             if(contest.getRewardByCategory(i).isEmpty()) {
@@ -48,20 +47,20 @@ public class ContestProgressGUI {
             ItemStack placeholderItem = new ItemStack(Material.PAPER, 1);
             ItemMeta itemMeta = placeholderItem.getItemMeta();
             assert itemMeta != null;
-            String contestTitle = formatContestName(contestType, i);
+            String contestTitle = formatContestName(contest.getContestName(), i);
             itemMeta.setDisplayName(userInterface.formatColours("&6" + contestTitle));
             List<String> description = new ArrayList<>();
             description.add(userInterface.formatColours(dateRangeDescription));
             boolean playerFound = false;
-            for(int j = 0; j < currContestWinners.size(); j++) {
-                PlayerContestStats winner = currContestWinners.get(j);
+            for(int k = 0; k < currContestWinners.size(); k++) {
+                PlayerContestStats winner = currContestWinners.get(k);
                 String score = getScoreByIndex(winner, i);
                 String descriptionFormat = DESCRIPTION_FOR_OTHERS;
                 if(winner.getPlayerName().equals(playerName)) {
                     descriptionFormat = DESCRIPTION_FOR_PLAYER;
                     playerFound = true;
                 }
-                String formattedDescription = String.format(descriptionFormat, j + 1, winner.getPlayerName(), score);
+                String formattedDescription = String.format(descriptionFormat, k + 1, winner.getPlayerName(), score);
                 description.add(userInterface.formatColours(formattedDescription));
             }
             if(!playerFound) {
@@ -102,7 +101,7 @@ public class ContestProgressGUI {
             return contestType + " Best Avg";
         }
         if(i == 3) {
-            return contestType + " Best X";
+            return contestType + " Best";
         }
         return "Bugged Contest :(";
     }

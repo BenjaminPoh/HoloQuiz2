@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.4.0 - 01 Jul 2025 - Custom contests are now supported
 - v 3.3.2 - 30 Jun 2025 - Fixed a 15-month bug, where new players answering with full inventory don't get their rewards stored
 - v 3.3.1 - 30 Jun 2025 - Improved debugging messages, with archive for broken files
 - v 3.3.0 - 29 Jun 2025 - BestX contest made, with improved configurations
