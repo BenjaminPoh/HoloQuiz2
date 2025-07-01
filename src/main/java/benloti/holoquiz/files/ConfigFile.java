@@ -292,7 +292,7 @@ public class ConfigFile {
     }
 
     private boolean parseSRTSListType(FileConfiguration configs, ConfigLoader configLoader) {
-        String listType = configLoader.getString(configs, "SRTS_listType", "WhiteList");
+        String listType = configLoader.getString(configs, "SRTS_listType", "Whitelist");
         switch (listType) {
             case "Whitelist":
                 return true;
