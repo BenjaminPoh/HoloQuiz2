@@ -50,6 +50,7 @@ in item rewards and commands for answering questions too.
 | `[end]`     | Contest end date          | 2025-05-31      |
 | `[pos]`     | Player's numeric rank     | 1               |
 | `[pos++]`   | Player's rank (formatted) | 1st             |
+
 Note: Someone asked me "Why does `[start]` and `[end]` return the same result for Daily contests?" I don't feel like answering.
 
 
