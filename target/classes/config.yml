@@ -50,6 +50,7 @@ Contests: #Edit Rewards in Rewards.yml!
   #If changing the below 2 keys, it is recommended to disable all ongoing contests, changing then re-enabling them.
   WeeklyResetDay: Monday
   TimeZone: GMT+8 #Used to offset if the server host has a different time zone.
+  LeaderboardMaxSize: 20 #For if you have a lot of placements, but don't want to flood the GUI. Shows top (X-1) and the last place.
   #These 3 Standard Contest Types are required: Daily / Weekly / Monthly
   Daily:
     Top: true
@@ -83,7 +84,7 @@ Contests: #Edit Rewards in Rewards.yml!
       BestAvgMinReq: 100
       BestXMinReq: 50
       StartTimestamp: 1710604800000 #17th March 2024, the day INNK Reunited on HoloFes
-      EndTimestamp: 1782921599999 #1st July 2026 because idk what other day to put
+      EndTimestamp: 1782921599999 #1st July 2026
       RewardCategory: Pioneers
 
 

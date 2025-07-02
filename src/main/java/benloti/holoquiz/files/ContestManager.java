@@ -29,6 +29,7 @@ public class ContestManager {
     private final ArrayList<ContestInfo> allContests;
     private final int totalEnabledSubcontests;
     private final Set<String> playersWithOpenGUI = new HashSet<>();
+    private final int contestLeaderboardMaxSize;
 
     public ContestManager(DatabaseManager databaseManager, ConfigFile configFile,
                           ExternalFiles externalFiles, GameManager gameManager) {
@@ -43,6 +44,7 @@ public class ContestManager {
 
         this.allContests = initialiseContestInfo(externalFiles, configFile);
         this.totalEnabledSubcontests = countEnabledContests();
+        this.contestLeaderboardMaxSize = configFile.getContestLeaderboardMaxSize();
     }
 
     public void updateContestsStatus() {
@@ -77,7 +79,7 @@ public class ContestManager {
             }
             ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(contest);
             PlayerContestStats targetPlayerPlacement = databaseManager.fetchPlayerContestPlacement(contest, playerName, playerUUID);
-            contestProgressGUI.addInfo(contest, allContestWinners, targetPlayerPlacement);
+            contestProgressGUI.addContestInfo(contest, allContestWinners, targetPlayerPlacement);
         }
         return contestProgressGUI;
     }
@@ -88,6 +90,14 @@ public class ContestManager {
             return;
         }
         this.playersWithOpenGUI.remove(playerName);
+    }
+
+    public int getTotalEnabledSubcontests() {
+        return totalEnabledSubcontests;
+    }
+
+    public int getContestLeaderboardMaxSize() {
+        return contestLeaderboardMaxSize;
     }
 
     private ArrayList<ContestInfo> initialiseContestInfo(ExternalFiles externalFiles, ConfigFile configFile) {
@@ -265,10 +275,6 @@ public class ContestManager {
 
         }
         return count;
-    }
-
-    public int getTotalEnabledSubcontests() {
-        return totalEnabledSubcontests;
     }
 }
 

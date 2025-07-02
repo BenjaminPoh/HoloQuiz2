@@ -16,9 +16,9 @@ import java.util.List;
 
 public class ConfigFile {
 
-    private static final String WARNING_SRTS_EMPTY_WHITELIST = "[HoloQuiz] Warning: SRTS uses an empty Whitelist - No one can claim reward items!" ;
+    private static final String WARNING_SRTS_EMPTY_WHITELIST = "[HoloQuiz] Warning: SRTS uses an empty Whitelist - No one can claim reward items!";
     private static final String WARNING_CONTEST_INVALID_MIN = "[HoloQuiz] Warning: Minimum Requirement for %s cannot be lower than 1!";
-    private static final String WARNING_INVALID_CONFIG = "[HoloQuiz] Warning: The Value %s for %s is invalid!" ;
+    private static final String WARNING_INVALID_CONFIG = "[HoloQuiz] Warning: The Value %s for %s is invalid!";
     private static final String EASTER_EGG_EXTRA_SASS = " What sort of day is %s anyway?";
     public static final String ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD = "[HoloQuiz] Error: Failed to load contest of name %s";
 
@@ -52,6 +52,7 @@ public class ConfigFile {
 
     private final ZoneId timezoneOffset;
     private final int weeklyResetDay;
+    private final int contestLeaderboardMaxSize;
     private final ContestInfo dailyContest;
     private final ContestInfo weeklyContest;
     private final ContestInfo monthlyContest;
@@ -61,7 +62,7 @@ public class ConfigFile {
         File configFile = new File(plugin.getDataFolder(), fileName);
         FileConfiguration configs = YamlConfiguration.loadConfiguration(configFile);
 
-        this.pluginPrefix = configLoader.getString(configs,"PluginPrefix", "&7[&bHoloQuiz&7] ");
+        this.pluginPrefix = configLoader.getString(configs, "PluginPrefix", "&7[&bHoloQuiz&7] ");
         this.collectRewardOnJoin = configLoader.getBoolean(configs, "CollectRewardsOnJoin", true);
         this.easterEggsEnabled = configLoader.getBoolean(configs, "EasterEggs", false);
         this.enableOnStart = configLoader.getBoolean(configs, "EnableOnStart", false);
@@ -77,10 +78,10 @@ public class ConfigFile {
 
         ConfigurationSection cheatSection = configs.getConfigurationSection("Cheats");
         ConfigurationSection minTimeSection = cheatSection.getConfigurationSection("MinTimeChecker");
-        boolean isEnabled_MT = configLoader.getBoolean(minTimeSection,"Checker", true);
-        int limit_MT = (int) (configLoader.getDouble(minTimeSection,"CheatingTimer", 0.5) * 1000);
-        boolean countAsCorrect_MT = configLoader.getBoolean(minTimeSection,"CountAsCorrect", false);
-        List<String> cheatingCommands_MT = configLoader.getStringList(minTimeSection,"CommandToPerform");
+        boolean isEnabled_MT = configLoader.getBoolean(minTimeSection, "Checker", true);
+        int limit_MT = (int) (configLoader.getDouble(minTimeSection, "CheatingTimer", 0.5) * 1000);
+        boolean countAsCorrect_MT = configLoader.getBoolean(minTimeSection, "CountAsCorrect", false);
+        List<String> cheatingCommands_MT = configLoader.getStringList(minTimeSection, "CommandToPerform");
         this.minTimeCheatDetector = new MinTimeCheatDetector(isEnabled_MT, limit_MT, countAsCorrect_MT, cheatingCommands_MT);
         ConfigurationSection consistencySection = cheatSection.getConfigurationSection("ConsistencyChecker");
         boolean isEnabled_SD = configLoader.getBoolean(consistencySection, "Checker", true);
@@ -102,14 +103,15 @@ public class ConfigFile {
         ConfigurationSection contestSection = configs.getConfigurationSection("Contests");
         this.weeklyResetDay = parseStartDay(contestSection, configLoader);
         this.timezoneOffset = parseTimeZone(contestSection, configLoader);
+        this.contestLeaderboardMaxSize = configLoader.getInt(contestSection, "LeaderboardMaxSize", 10);
         this.dailyContest = parseContestConfig(configLoader, contestSection, "Daily", 0);
-        this.weeklyContest = parseContestConfig(configLoader, contestSection, "Weekly",  1);
-        this.monthlyContest = parseContestConfig(configLoader, contestSection, "Monthly",  2);
+        this.weeklyContest = parseContestConfig(configLoader, contestSection, "Weekly", 1);
+        this.monthlyContest = parseContestConfig(configLoader, contestSection, "Monthly", 2);
         this.customContests = parseCustomContestConfig(configLoader, contestSection);
 
         this.SRTS_useWhitelist = parseSRTSListType(configs, configLoader);
         this.SRTS_WorldList = configLoader.getStringList(configs, "SRTS_WorldList");
-        if(this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
+        if (this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
             Bukkit.getLogger().info(WARNING_SRTS_EMPTY_WHITELIST);
         }
     }
@@ -174,11 +176,11 @@ public class ConfigFile {
         return dailyContest;
     }
 
-    public ContestInfo getWeeklyContestConfig()  {
+    public ContestInfo getWeeklyContestConfig() {
         return weeklyContest;
     }
 
-    public ContestInfo getMonthlyContestConfig()  {
+    public ContestInfo getMonthlyContestConfig() {
         return monthlyContest;
     }
 
@@ -192,6 +194,10 @@ public class ConfigFile {
 
     public ZoneId getTimezoneOffset() {
         return timezoneOffset;
+    }
+
+    public int getContestLeaderboardMaxSize() {
+        return contestLeaderboardMaxSize;
     }
 
     public int getIntervalCheck() {
@@ -232,7 +238,7 @@ public class ConfigFile {
 
     private String parseGameMode(FileConfiguration configs, ConfigLoader configLoader) {
         String gameMode = configLoader.getString(configs, "GameMode", "Trivia");
-        if(!gameMode.equals("Trivia") && !gameMode.equals("Math")) {
+        if (!gameMode.equals("Trivia") && !gameMode.equals("Math")) {
             String logMessage = String.format(WARNING_INVALID_CONFIG, gameMode, "GameMode");
             Bukkit.getLogger().info(logMessage);
             return "Trivia";
@@ -307,10 +313,10 @@ public class ConfigFile {
     private ArrayList<ContestInfo> parseCustomContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection) {
         ConfigurationSection customContestSection = configLoader.getSection(contestSection, "Custom");
         ArrayList<ContestInfo> customContests = new ArrayList<>();
-        if(customContestSection == null) {
+        if (customContestSection == null) {
             return customContests;
         }
-        for(String subKey : customContestSection.getKeys(false)) {
+        for (String subKey : customContestSection.getKeys(false)) {
             customContests.add(parseCustomContest(configLoader, customContestSection, subKey));
         }
         return customContests;
@@ -318,7 +324,7 @@ public class ConfigFile {
 
     private ContestInfo parseContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
         ConfigurationSection section = configLoader.getSection(contestSection, key);
-        if(section == null) {
+        if (section == null) {
             return new ContestInfo(code, false, false, false, false, 0, 0);
         }
 
@@ -327,13 +333,13 @@ public class ConfigFile {
         boolean bestAvgEnabled = configLoader.getBoolean(section, "BestAvg", false);
         boolean bestXEnabled = configLoader.getBoolean(section, "BestX", false);
         int bestAvgMinReq = configLoader.getInt(section, "BestAvgMinReq", 1);
-        int bestXMinReq = configLoader.getInt(section,"BestXMinReq", 1);
-        if(bestAvgMinReq < 1 && bestAvgEnabled) {
+        int bestXMinReq = configLoader.getInt(section, "BestXMinReq", 1);
+        if (bestAvgMinReq < 1 && bestAvgEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestAvgMinReq");
             Bukkit.getLogger().info(logMessage);
             bestAvgEnabled = false;
         }
-        if(bestXMinReq < 1 && bestXEnabled) {
+        if (bestXMinReq < 1 && bestXEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestXMinReq");
             Bukkit.getLogger().info(logMessage);
             bestXEnabled = false;
@@ -343,7 +349,7 @@ public class ConfigFile {
 
     private ContestInfo parseCustomContest(ConfigLoader configLoader, ConfigurationSection contestSection, String key) {
         ConfigurationSection section = configLoader.getSection(contestSection, key);
-        if(section == null) {
+        if (section == null) {
             return new ContestInfo(false, false, false, false, 0, 0, 0, 0, key, "");
         }
 
@@ -352,13 +358,13 @@ public class ConfigFile {
         boolean bestAvgEnabled = configLoader.getBoolean(section, "BestAvg", false);
         boolean bestXEnabled = configLoader.getBoolean(section, "BestX", false);
         int bestAvgMinReq = configLoader.getInt(section, "BestAvgMinReq", 1);
-        int bestXMinReq = configLoader.getInt(section,"BestXMinReq", 1);
-        if(bestAvgMinReq < 1 && bestAvgEnabled) {
+        int bestXMinReq = configLoader.getInt(section, "BestXMinReq", 1);
+        if (bestAvgMinReq < 1 && bestAvgEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestAvgMinReq");
             Bukkit.getLogger().info(logMessage);
             bestAvgEnabled = false;
         }
-        if(bestXMinReq < 1 && bestXEnabled) {
+        if (bestXMinReq < 1 && bestXEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestXMinReq");
             Bukkit.getLogger().info(logMessage);
             bestXEnabled = false;
@@ -366,12 +372,11 @@ public class ConfigFile {
         long startTimestamp = configLoader.getLong(section, "StartTimestamp", 0);
         long endTimestamp = configLoader.getLong(section, "EndTimestamp", 0);
         String rewardCategory = configLoader.getString(section, "RewardCategory", "");
-        if(startTimestamp == 0 || endTimestamp == 0 || endTimestamp <= startTimestamp || rewardCategory.isEmpty()) {
-            Bukkit.getLogger().info(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD,key));
+        if (startTimestamp == 0 || endTimestamp == 0 || endTimestamp <= startTimestamp || rewardCategory.isEmpty()) {
+            Bukkit.getLogger().info(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD, key));
             return new ContestInfo(false, false, false, false, 0, 0, 0, 0, key, "");
         }
         return new ContestInfo(mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,
                 startTimestamp, endTimestamp, key, rewardCategory);
     }
-
 }

@@ -9,8 +9,9 @@ public class PlayerContestStats{
     private final int bestTime;
     private final int questionsAnswered;
     private final int bestXTimes;
+    private final int timeToImprove;
 
-    public PlayerContestStats(String name, int holoQuizID, int answers, int bestTime, int averageTime, int bestXTimes) {
+    public PlayerContestStats(String name, int holoQuizID, int answers, int bestTime, int averageTime, int bestXTimes, int timeToImprove) {
         this.holoQuizID = holoQuizID;
         this.playerName = name;
 
@@ -18,7 +19,7 @@ public class PlayerContestStats{
         this.bestTime = bestTime;
         this.averageTime = averageTime;
         this.bestXTimes = bestXTimes;
-
+        this.timeToImprove = timeToImprove;
     }
 
     public String getPlayerName() {
@@ -55,5 +56,10 @@ public class PlayerContestStats{
 
     public int getHoloQuizID() {
         return holoQuizID;
+    }
+
+    public String getTimeToImproveInSeconds3dp() {
+        Double time = timeToImprove / 1000.0;
+        return String.format("%.3f",time);
     }
 }

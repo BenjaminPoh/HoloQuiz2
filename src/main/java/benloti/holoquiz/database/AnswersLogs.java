@@ -27,8 +27,8 @@ public class AnswersLogs {
             "WITH ranked_answers AS (SELECT user_id, took, COUNT(*) OVER (PARTITION BY user_id) AS total, " +
                     "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY took ASC) AS rank " +
                     "FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d) " +
-            "SELECT user_id, SUM(took) as fastest_X FROM ranked_answers WHERE rank <= %d and total >= %d " +
-            "GROUP BY user_id ORDER BY fastest_X ASC LIMIT %d";
+            "SELECT user_id, (SUM(took)/COUNT (*)) as score, MAX(took) as tti FROM ranked_answers " +
+                    "WHERE rank <= %d and total >= %d GROUP BY user_id ORDER BY score ASC LIMIT %d";
 
     private static final String SQL_STATEMENT_FETCH_PLAYER_STATS_WITHIN_TIMESTAMP =
             "SELECT (SUM(took)/COUNT (*)) as average, COUNT (*) as ans_count, MIN(took) as best_time " +
@@ -36,7 +36,7 @@ public class AnswersLogs {
     private static final String SQL_STATEMENT_FETCH_PLAYER_BEST_X_WITHIN_TIMESTAMP =
             "WITH top_answers AS (SELECT took FROM answers_logs " +
                     "WHERE timestamp >= %d AND timestamp <= %d AND user_id = %d ORDER BY took ASC LIMIT %d) " +
-             "SELECT sum(took) AS total_time FROM top_answers";
+             "SELECT (SUM(took)/COUNT (*)) as score, MAX(took) as tti FROM top_answers";
 
     private static final String SQL_STATEMENT_FETCH_PREVIOUS_TIMINGS =
             "SELECT took FROM answers_logs WHERE user_id = %d ORDER BY timestamp DESC LIMIT %d";
@@ -80,7 +80,7 @@ public class AnswersLogs {
                 int holoQuizID = resultSet.getInt("user_id");
                 int answers = resultSet.getInt("ans_count");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID, answers, -1, -1, -1);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID, answers, -1, -1, -1, -1);
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
@@ -102,7 +102,7 @@ public class AnswersLogs {
                 int holoQuizID = resultSet.getInt("user_id");
                 int took = resultSet.getInt("best_time");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID,-1, took, -1, -1);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID,-1, took, -1, -1, -1);
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
@@ -125,7 +125,7 @@ public class AnswersLogs {
                 int answers = resultSet.getInt("ans_count");
                 int average = resultSet.getInt("average");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID,answers, -1, average, -1);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID,answers, -1, average, -1, -1);
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
@@ -145,9 +145,10 @@ public class AnswersLogs {
             ResultSet resultSet = statement.executeQuery();
             while(resultSet.next()) {
                 int holoQuizID = resultSet.getInt("user_id");
-                int score = resultSet.getInt("fastest_X");
+                int avgOfBestX = resultSet.getInt("score");
+                int tti =  resultSet.getInt("tti");
                 String playerName = databaseManager.getPlayerNameByHoloQuizID(connection, holoQuizID);
-                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID, -1, -1, -1, score);
+                PlayerContestStats contestWinner = new PlayerContestStats(playerName, holoQuizID, -1, -1, -1, avgOfBestX, tti);
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
@@ -168,13 +169,14 @@ public class AnswersLogs {
                 int average = resultSet.getInt("average");
                 PreparedStatement statement2 = connection.prepareStatement(sqlQuery2);
                 ResultSet resultSet2 = statement2.executeQuery();
-                int bestX = resultSet2.getInt("total_time");
-                return new PlayerContestStats(name, id, answers, best, average, bestX);
+                int avgOfBestX = resultSet2.getInt("score");
+                int tti =  resultSet2.getInt("tti");
+                return new PlayerContestStats(name, id, answers, best, average, avgOfBestX, tti);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new PlayerContestStats(name, id, -1, -1, -1 ,-1 );
+        return new PlayerContestStats(name, id, -1, -1, -1 ,-1 , -1);
     }
 
     public List<Double> getPreviousTimings(Connection connection, int id, int count) {

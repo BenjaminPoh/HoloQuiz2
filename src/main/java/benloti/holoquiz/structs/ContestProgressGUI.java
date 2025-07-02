@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ContestProgressGUI {
-
     private Inventory inventory;
     private int nextIndex = 0;
+    private int leaderboardMaxSize;
     private String playerName;
     private UserInterface userInterface;
 
@@ -23,6 +23,8 @@ public class ContestProgressGUI {
     private static final String DESCRIPTION_FOR_PLAYER = "&a%s. %s | %s";
     private static final String DESCRIPTION_FOR_OTHERS = "&3%s. %s | %s";
     private static final String DESCRIPTION_REASON_FOR_PLAYER_DQ = "&4You need &c%d &4more questions to qualify!";
+    private static final String DESCRIPTION_TIME_TO_IMPROVE = "&2You need to be faster than &a%s &2to improve your score!";
+    private static final String DESCRIPTION_LEADERBOARD_OVERFLOW = "&3+%d more players...";
 
     public ContestProgressGUI(ContestManager contestManager, String playerName, UserInterface userInterface) {
         int size = contestManager.getTotalEnabledSubcontests();
@@ -30,14 +32,15 @@ public class ContestProgressGUI {
         this.inventory = Bukkit.createInventory(null, size, "HoloQuiz Contests");
         this.playerName = playerName;
         this.userInterface = userInterface;
+        this.leaderboardMaxSize = contestManager.getContestLeaderboardMaxSize();
     }
 
     public Inventory getGUI() {
         return this.inventory;
     }
 
-    //All java coding standards are violated in this 1 function.
-    public void addInfo(ContestInfo contest, ArrayList<ArrayList<PlayerContestStats>> allContestWinners, PlayerContestStats playerInfo) {
+    //Adds the info for all contest categories of a contest
+    public void addContestInfo(ContestInfo contest, ArrayList<ArrayList<PlayerContestStats>> allContestWinners, PlayerContestStats playerInfo) {
         String dateRangeDescription = formatDateTime(contest.getStartDate(), contest.getEndDate());
         for(int i = 0; i < allContestWinners.size(); i++) {
             if(contest.getRewardByCategory(i).isEmpty()) {
@@ -51,39 +54,96 @@ public class ContestProgressGUI {
             itemMeta.setDisplayName(userInterface.formatColours("&6" + contestTitle));
             List<String> description = new ArrayList<>();
             description.add(userInterface.formatColours(dateRangeDescription));
-            boolean playerFound = false;
-            for(int k = 0; k < currContestWinners.size(); k++) {
-                PlayerContestStats winner = currContestWinners.get(k);
-                String score = getScoreByIndex(winner, i);
-                String descriptionFormat = DESCRIPTION_FOR_OTHERS;
-                if(winner.getPlayerName().equals(playerName)) {
-                    descriptionFormat = DESCRIPTION_FOR_PLAYER;
-                    playerFound = true;
-                }
-                String formattedDescription = String.format(descriptionFormat, k + 1, winner.getPlayerName(), score);
-                description.add(userInterface.formatColours(formattedDescription));
-            }
-            if(!playerFound) {
-                String score = getScoreByIndex(playerInfo, i);
-                String formattedDescription = String.format(DESCRIPTION_FOR_PLAYER_DQ, "N/A", playerInfo.getPlayerName(), score);
-                description.add(userInterface.formatColours(formattedDescription));
-                if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getBestAvgMinReq()) {
-                    int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
-                    formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
-                    description.add(userInterface.formatColours(formattedDescription));
-                }
-                if(i == 3 && playerInfo.getQuestionsAnswered() < contest.getBestXMinReq()) {
-                    int remainder =  contest.getBestXMinReq() - playerInfo.getQuestionsAnswered();
-                    formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
-                    description.add(userInterface.formatColours(formattedDescription));
-                }
-            }
+
+            addLeaderboardInformation(contest, playerInfo, description, currContestWinners, i);
+
             itemMeta.setLore(description);
             placeholderItem.setItemMeta(itemMeta);
             this.inventory.setItem(nextIndex, placeholderItem);
             nextIndex++;
         }
 
+    }
+
+    //Adds information related to the leaderboard
+    //All java coding standards are violated in this 1 function.
+    private void addLeaderboardInformation(ContestInfo contest, PlayerContestStats playerInfo, List<String> description,
+                                           ArrayList<PlayerContestStats> currContestWinners, int code) {
+        int playerPlacement = getPlayerPlacementForContest(currContestWinners, playerName);
+        for(int k = 0; k < currContestWinners.size(); k++) {
+            PlayerContestStats winner = currContestWinners.get(k);
+            int position = k + 1;
+            if(position == leaderboardMaxSize) {
+                //This spot is for the last person in the leaderboard, which is the player in last place.
+                int remainder = currContestWinners.size() - leaderboardMaxSize;
+                if(playerPlacement > k && playerPlacement < (currContestWinners.size() - 1)){
+                    //Regardless, add the player if they are in leaderboard between them and Last Place
+                    PlayerContestStats playerStats = currContestWinners.get(playerPlacement);
+                    addContestLeaderboardEntry(playerStats, playerPlacement + 1 , code, description);
+                    remainder--;
+                }
+                if(remainder > 0) {
+                    if(remainder == 1) {
+                        int secondLastPlace = currContestWinners.size() - 2;
+                        addContestLeaderboardEntry(currContestWinners.get(secondLastPlace), secondLastPlace + 1, code, description);
+                    } else {
+                        String formattedDescription = String.format(DESCRIPTION_LEADERBOARD_OVERFLOW, remainder);
+                        description.add(userInterface.formatColours(formattedDescription));
+                    }
+                }
+                int lastPlace = currContestWinners.size() - 1;
+                addContestLeaderboardEntry(currContestWinners.get(lastPlace), lastPlace + 1, code, description);
+                break;
+            }
+            addContestLeaderboardEntry(winner, k + 1, code, description);
+        }
+        if(playerPlacement == -1) {
+            addDisqualifiedPlayerInfo(contest, playerInfo, code, description);
+        }
+        if(code == 3 && playerPlacement != -1) {
+            addImprovementTimeInfo(playerInfo, description);
+        }
+    }
+
+    private void addContestLeaderboardEntry(PlayerContestStats winner, int pos, int i, List<String> description) {
+        String score = getScoreByIndex(winner, i);
+        String descriptionFormat = DESCRIPTION_FOR_OTHERS;
+        if(winner.getPlayerName().equals(playerName)) {
+            descriptionFormat = DESCRIPTION_FOR_PLAYER;
+        }
+        String formattedDescription = String.format(descriptionFormat, pos, winner.getPlayerName(), score);
+        description.add(userInterface.formatColours(formattedDescription));
+    }
+
+    private int getPlayerPlacementForContest(ArrayList<PlayerContestStats> winners, String playerName) {
+        for(int i = 0; i < winners.size(); i++) {
+            if(winners.get(i).getPlayerName().equals(playerName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void addDisqualifiedPlayerInfo(ContestInfo contest, PlayerContestStats playerInfo, int i, List<String> description) {
+        String score = getScoreByIndex(playerInfo, i);
+        String formattedDescription = String.format(DESCRIPTION_FOR_PLAYER_DQ, "N/A", playerInfo.getPlayerName(), score);
+        description.add(userInterface.formatColours(formattedDescription));
+        if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getBestAvgMinReq()) {
+            int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
+            formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
+            description.add(userInterface.formatColours(formattedDescription));
+        }
+        if(i == 3 && playerInfo.getQuestionsAnswered() < contest.getBestXMinReq()) {
+            int remainder =  contest.getBestXMinReq() - playerInfo.getQuestionsAnswered();
+            formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
+            description.add(userInterface.formatColours(formattedDescription));
+        }
+    }
+
+    private void addImprovementTimeInfo(PlayerContestStats playerInfo, List<String> description) {
+        String timeToImprove = playerInfo.getTimeToImproveInSeconds3dp();
+        String formattedDescription = String.format(DESCRIPTION_TIME_TO_IMPROVE, timeToImprove);
+        description.add(userInterface.formatColours(formattedDescription));
     }
 
     private String formatDateTime(LocalDate start, LocalDate end) {
