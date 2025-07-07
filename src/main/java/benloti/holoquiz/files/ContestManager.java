@@ -25,6 +25,7 @@ public class ContestManager {
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
     private final ZoneId zoneId;
+    private final ExternalFiles externalFiles;
 
     private final ArrayList<ContestInfo> allContests;
     private final int totalEnabledSubcontests;
@@ -35,6 +36,7 @@ public class ContestManager {
                           ExternalFiles externalFiles, GameManager gameManager) {
         this.databaseManager = databaseManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
+        this.externalFiles = externalFiles;
         this.zoneId = configFile.getTimezoneOffset();
 
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
@@ -49,8 +51,7 @@ public class ContestManager {
 
     public void updateContestsStatus() {
         long currTime = ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
-
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < allContests.size(); i++) {
             ContestInfo currContest = allContests.get(i);
             if (currContest == null) {
                 continue;
@@ -60,9 +61,12 @@ public class ContestManager {
                 continue;
             }
 
+            //Contest ended!
             handleEndedContestTasks(currContest);
-            currContest.updateTournamentDateToNextCycle(zoneId);
-            databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
+            if(currContest.getTypeCode() < 3) {
+                currContest.updateTournamentDateToNextCycle(zoneId);
+                databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
+            }
         }
     }
 
@@ -231,6 +235,10 @@ public class ContestManager {
         databaseManager.logContestWinners(allContestWinners, oldContest);
         ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, oldContest);
         rewardsHandler.giveContestRewards(contestWinners, oldContest);
+        if(oldContest.getTypeCode() == 3){
+            externalFiles.setEndedCustomContest(oldContest.getContestName());
+            allContests.remove(oldContest);
+        }
     }
 
     private void logEndedContest(ContestInfo savedContest) {

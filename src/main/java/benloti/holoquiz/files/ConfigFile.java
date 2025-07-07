@@ -116,6 +116,8 @@ public class ConfigFile {
         }
     }
 
+
+
     public int getInterval() {
         return interval;
     }
@@ -310,6 +312,20 @@ public class ConfigFile {
         return false;
     }
 
+    private boolean parseCustomContestStatus(ConfigurationSection section, ConfigLoader configLoader) {
+        String status = configLoader.getString(section, "Status", "Disabled");
+        switch (status) {
+            case "Enabled":
+                return true;
+            case "Disabled":
+            case "Ended":
+                return false;
+        }
+        String logMessage = String.format(WARNING_INVALID_CONFIG, status, "SRTS_listType");
+        Bukkit.getLogger().info(logMessage);
+        return false;
+    }
+
     private ArrayList<ContestInfo> parseCustomContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection) {
         ConfigurationSection customContestSection = configLoader.getSection(contestSection, "Custom");
         ArrayList<ContestInfo> customContests = new ArrayList<>();
@@ -317,7 +333,10 @@ public class ConfigFile {
             return customContests;
         }
         for (String subKey : customContestSection.getKeys(false)) {
-            customContests.add(parseCustomContest(configLoader, customContestSection, subKey));
+            ContestInfo customContest = parseCustomContest(configLoader, customContestSection, subKey);
+            if (customContest != null) {
+                customContests.add(customContest);
+            }
         }
         return customContests;
     }
@@ -350,9 +369,12 @@ public class ConfigFile {
     private ContestInfo parseCustomContest(ConfigLoader configLoader, ConfigurationSection contestSection, String key) {
         ConfigurationSection section = configLoader.getSection(contestSection, key);
         if (section == null) {
-            return new ContestInfo(false, false, false, false, 0, 0, 0, 0, key, "");
+            return null;
         }
-
+        boolean contestStatus = parseCustomContestStatus(section, configLoader);
+        if(!contestStatus) {
+            return null;
+        }
         boolean mostEnabled = configLoader.getBoolean(section, "Top", false);
         boolean fastestEnabled = configLoader.getBoolean(section, "Fastest", false);
         boolean bestAvgEnabled = configLoader.getBoolean(section, "BestAvg", false);
@@ -374,8 +396,9 @@ public class ConfigFile {
         String rewardCategory = configLoader.getString(section, "RewardCategory", "");
         if (startTimestamp == 0 || endTimestamp == 0 || endTimestamp <= startTimestamp || rewardCategory.isEmpty()) {
             Bukkit.getLogger().info(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD, key));
-            return new ContestInfo(false, false, false, false, 0, 0, 0, 0, key, "");
+            return null;
         }
+        //Bukkit.getLogger().info("[HoloQuiz] Successfully loaded Custom Contest " + key);
         return new ContestInfo(mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,
                 startTimestamp, endTimestamp, key, rewardCategory);
     }

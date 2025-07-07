@@ -32,6 +32,7 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_STORAGE_EMPTY = "&4You have no rewards stored!";
     public static final String NOTIFY_BLOCKED_WORLD = "&4You are not allowed to claim rewards in this World!";
     public static final String NOTIFY_UNKNOWN_ERROR = "&4You should not see this message. How did you get here?";
+    public static final String NOTIFY_NO_CONTEST = "&4There does not seem to be any contests running!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_CONFIG_FILE_BROKEN = "&cA file is broken! Aborting reload!";
@@ -260,6 +261,10 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         if(args[0].equalsIgnoreCase("contest") || args[0].equalsIgnoreCase("contests")) {
+            if(contestManager.getTotalEnabledSubcontests() == 0) {
+                userInterface.attachSuffixAndSend(player, userInterface.formatColours(NOTIFY_NO_CONTEST));
+                return true;
+            }
             String playerName = player.getName();
             String playerUUID = player.getUniqueId().toString();
             Inventory createdGUI = contestManager.fetchPlayerContestStatus(playerName, playerUUID, userInterface).getGUI();

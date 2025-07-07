@@ -86,6 +86,7 @@ Contests: #Edit Rewards in Rewards.yml!
       StartTimestamp: 1710604800000 #17th March 2024, the day INNK Reunited on HoloFes
       EndTimestamp: 1782921599999 #1st July 2026
       RewardCategory: Pioneers
+      Status: Enabled  #Enabled / Disabled are the only ones you should set. "Ended" is automatically set when it ends.
 
 
 # Easter Eggs!

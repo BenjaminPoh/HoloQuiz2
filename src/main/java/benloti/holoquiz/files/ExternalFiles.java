@@ -31,7 +31,7 @@ public class ExternalFiles {
 
     private static final String[] CONTEST_CATEGORIES = {"Most", "Fastest", "BestAvg", "BestX"};
 
-    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest %s %s loaded in %d rewards";
+    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest Reward %s %s has %d rewards";
     public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "[HoloQuiz] Trivia Category loaded %d Questions!";
     public static final String LOG_MESSAGE_REPLACED_FILE = "[HoloQuiz] Replaced %s with %s successfully!";
     public static final String LOG_MESSAGE_MOVED_BROKEN_FILE_TO_ARCHIVE = "[HoloQuiz] Moved %s to %s successfully!";
@@ -228,6 +228,12 @@ public class ExternalFiles {
         return true;
     }
 
+    public void setEndedCustomContest(String contestName) {
+        String key = String.format("Contests.Custom.%s.Status", contestName) ;
+        plugin.getConfig().set(key, "Ended");
+        plugin.saveConfig();
+    }
+
     public ConfigFile getConfigFile() {
         return this.configFile;
     }
@@ -317,8 +323,10 @@ public class ExternalFiles {
             ConfigurationSection section = rewardsSection.getConfigurationSection(category);
             ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
             contestRewards.put(key + category, rewardsList);
-            String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, key,  category, rewardsList.size());
-            Bukkit.getLogger().info(logMessage);
+            if(!rewardsList.isEmpty()) {
+                String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, key, category, rewardsList.size());
+                Bukkit.getLogger().info(logMessage);
+            }
         }
     }
 
