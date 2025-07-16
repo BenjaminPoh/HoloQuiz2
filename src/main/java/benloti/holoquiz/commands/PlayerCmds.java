@@ -74,6 +74,7 @@ public class PlayerCmds implements CommandExecutor {
             "&a/HoloQuiz stats [player]: &bShows your own / someone else's statistics\n" +
             "&a/HoloQuiz toggle: &bToggles messages from HoloQuiz\n" +
             "&a/HoloQuiz collect: &bCollect rewards stored in Storage\n" +
+            "&a/HoloQuiz contest: &bView the current placements for the HoloQuiz Contests\n" +
             "&a/HoloQuiz normal: &bSwitches off &6/HoloQuiz Pekofy\n" +
             "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=";
 
