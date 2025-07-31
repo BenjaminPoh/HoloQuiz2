@@ -294,7 +294,7 @@ public class ExternalFiles {
             ConfigurationSection rewardTierSection = rewardsSection.getConfigurationSection(key);
             double maxTime = configLoader.getDouble(rewardTierSection,"MaxAnswerTime", 0);
             int maxTimeInMilliseconds = (int) maxTime * 1000;
-            double moneyReward = configLoader.getDouble(rewardTierSection,"Money", 0);
+            double moneyReward = configLoader.getDoubleOptional(rewardTierSection,"Money", 0);
             List<String> commandsExecuted = configLoader.getStringList(rewardTierSection,"Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
