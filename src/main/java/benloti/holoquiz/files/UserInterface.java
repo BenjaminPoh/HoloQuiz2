@@ -140,6 +140,9 @@ public class UserInterface {
         if(i == 2) {
             return i + "nd";
         }
+        if(i == 3) {
+            return i + "rd";
+        }
         return i + "th";
     }
 }
