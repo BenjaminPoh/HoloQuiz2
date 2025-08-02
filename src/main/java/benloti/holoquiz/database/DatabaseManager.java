@@ -191,10 +191,6 @@ public class DatabaseManager {
         return userInfo.getPlayerNameByHoloQuizID(connection, holoQuizID);
     }
 
-    public ArrayList<Pair<Long, Long>> fetchSavedContests() {
-        return contests.getOngoingTournaments(connection);
-    }
-
     public ArrayList<ArrayList<PlayerContestStats>> fetchContestWinners(ContestInfo endedContest) {
         if(endedContest == null) {
             return new ArrayList<>();
@@ -226,10 +222,6 @@ public class DatabaseManager {
         fullWinnersList.add(bestAverageWinners);
         fullWinnersList.add(bestXWinners);
         return fullWinnersList;
-    }
-
-    public void updateRunningContestInfo(int type, long start, long end) {
-        contests.updateContestInfo(connection, type, start, end);
     }
 
     public void storeRewardToStorage(String playerName, String type, String contents, String metaDetails, int count) {
@@ -264,14 +256,6 @@ public class DatabaseManager {
             return -2;
         }
         return rewardsHandler.giveRewardsByTier(player, storedRewards);
-    }
-
-    public void createOngoingContest(ContestInfo newContestInfo) {
-        contests.createOngoingContest(connection, newContestInfo);
-    }
-
-    public void deleteOngoingContest(int code) {
-        contests.deleteOngoingContest(connection, code);
     }
 
     public void logContestWinners(ArrayList<ArrayList<PlayerContestStats>> allContestWinners, ContestInfo endedContest) {

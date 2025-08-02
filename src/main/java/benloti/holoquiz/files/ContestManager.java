@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +20,8 @@ public class ContestManager {
     private static final String LOG_CREATED_NEW_CONTEST = "[HoloQuiz] Scheduled new %s Contest from %s (%d) to %s (%d)";
     private static final String LOG_DELETED_CONTEST = "[HoloQuiz] Removed old %s Contest that ends on %s (%d)";
     private static final String LOG_MESSAGE_CONTEST_ENDED = "[HoloQuiz] Contest from %s (%d) to %s (%d) ended!";
+    private static final String ERROR_MESSAGE_IMPOSSIBLE_CODE = "[HoloQuiz] Dev Error, Contest %s has Type Code %d";
+
 
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
@@ -51,21 +52,20 @@ public class ContestManager {
 
     public void updateContestsStatus() {
         long currTime = ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
-        for (int i = 0; i < allContests.size(); i++) {
-            ContestInfo currContest = allContests.get(i);
-            if (currContest == null) {
+        for (ContestInfo contest : allContests) {
+            if (contest == null) {
                 continue;
             }
-            long endTime = currContest.getEndTime();
+            long endTime = contest.getEndTime();
             if (currTime < endTime) {
                 continue;
             }
 
             //Contest ended!
-            handleEndedContestTasks(currContest);
-            if(currContest.getTypeCode() < 3) {
-                currContest.updateTournamentDateToNextCycle(zoneId);
-                databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
+            handleEndedContestTasks(contest);
+            if (contest.getTypeCode() < 3) {
+                contest.updateTournamentDateToNextCycle(zoneId);
+                externalFiles.updateRegularContestTimestamp(contest.getTypeString(), contest.getStartTime(), contest.getEndTime());
             }
         }
     }
@@ -105,16 +105,12 @@ public class ContestManager {
     }
 
     private ArrayList<ContestInfo> initialiseContestInfo(ExternalFiles externalFiles, ConfigFile configFile) {
-        //Fetch the timestamps of the regular contests that were saved
-        ArrayList<Pair<Long, Long>> savedContestTimes = databaseManager.fetchSavedContests();
-        //Creates contests as though they don't exist.
-        ArrayList<ContestInfo> enabledContestList = initialiseContests(externalFiles, configFile, savedContestTimes);
-        //Check for ended contests
-        initialiseEndedContests(enabledContestList, savedContestTimes);
+        ArrayList<ContestInfo> enabledContestList = initialiseContests(externalFiles, configFile);
+        initialiseEndedContests(enabledContestList, externalFiles);
         return enabledContestList;
     }
 
-    private ArrayList<ContestInfo> initialiseContests(ExternalFiles externalFiles, ConfigFile configFile, ArrayList<Pair<Long, Long>> savedContestTimes) {
+    private ArrayList<ContestInfo> initialiseContests(ExternalFiles externalFiles, ConfigFile configFile) {
         //Fetch Contest info from Config
         ContestInfo dailyContest = configFile.getDailyContestConfig();
         ContestInfo weeklyContest = configFile.getWeeklyContestConfig();
@@ -125,25 +121,11 @@ public class ContestManager {
         loadRewardsForContest(externalFiles, weeklyContest.getTypeString(), weeklyContest);
         loadRewardsForContest(externalFiles, monthlyContest.getTypeString(), monthlyContest);
 
-        //All contest start time is assumed to be 00:00 of the day it is set to be enabled.
-        //Load their dates based on the current startDate
-        LocalDate startDate = LocalDate.now(zoneId);
-        int intendedStartDay = configFile.getWeeklyResetDay();
-        dailyContest.generateDailyIntervalForContest(zoneId, startDate);
-        weeklyContest.generateWeeklyIntervalForContest(zoneId, startDate, intendedStartDay);
-        monthlyContest.generateMonthlyIntervalForContest(zoneId, startDate);
-
-        //Set contest
-        ArrayList<ContestInfo> enabledContestList = new ArrayList<>(Arrays.asList(null, null, null));
-        enabledContestList.set(0, dailyContest);
-        enabledContestList.set(1, weeklyContest);
-        enabledContestList.set(2, monthlyContest);
-
-        for (int i = 0; i < 3; i++) {
-            ContestInfo currentEnabledContest = enabledContestList.get(i);
-            Pair<Long, Long> currentSavedContestTimes = savedContestTimes.get(i);
-            updateContestInfo(currentEnabledContest, currentSavedContestTimes, i);
-        }
+        //Add to List
+        ArrayList<ContestInfo> enabledContestList = new ArrayList<>();
+        updateContestInfo(dailyContest, enabledContestList, externalFiles);
+        updateContestInfo(weeklyContest, enabledContestList, externalFiles);
+        updateContestInfo(monthlyContest, enabledContestList, externalFiles);
 
         ArrayList<ContestInfo> customContests = configFile.getCustomContests();
         for(ContestInfo contest : customContests) {
@@ -165,58 +147,76 @@ public class ContestManager {
     }
 
 
-    private void updateContestInfo(ContestInfo currentEnabledContest, Pair<Long, Long> currentSavedContestTimes, int i) {
-        if (currentEnabledContest != null && currentSavedContestTimes == null) {
-            //Add new contest to db and the return list
-            databaseManager.createOngoingContest(currentEnabledContest);
-            String logMessage = String.format(LOG_CREATED_NEW_CONTEST, currentEnabledContest.getContestName(),
-                    currentEnabledContest.getStartDate(), currentEnabledContest.getStartTime(),
-                    currentEnabledContest.getEndDate(), currentEnabledContest.getEndTime()); //How long is this going
-            Bukkit.getLogger().info(logMessage);
-        } else if (currentEnabledContest == null && currentSavedContestTimes != null) {
-            //Delete disabled contest.
-            databaseManager.deleteOngoingContest(i);
-            long endingTimestamp = currentSavedContestTimes.getRight();
+    private void updateContestInfo(ContestInfo contest, ArrayList<ContestInfo> contestList, ExternalFiles externalFiles) {
+        //Add contest to List if it is enabled
+        if(contest.isContestEnabled()) {
+            contestList.add(contest);
+        }
+
+        //Set disabled contest timestamp to 0 if it's timestamp isn't 0
+        if(!contest.isContestEnabled() && (contest.getStartTime() != 0 || contest.getEndTime() != 0 )){
+            externalFiles.updateRegularContestTimestamp(contest.getContestName(), 0 ,0);
+
+            //Logging Purposes
+            long endingTimestamp = contest.getEndTime();
             ZonedDateTime dateTime = fetchDateTimeByTimestamp(endingTimestamp);
-            String contestType = getContestTypeByID(i);
+            String contestType = contest.getTypeString();
             String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, endingTimestamp);
             Bukkit.getLogger().info(logMessage);
         }
+
+        //If contest is enabled and timestamp is 0, update with new timestamp
+        if(contest.isContestEnabled() && (contest.getStartTime() == 0 || contest.getEndTime() == 0 )){
+            generateIntervalForContest(contest, externalFiles);
+            externalFiles.updateRegularContestTimestamp(contest.getContestName(), contest.getStartTime(), contest.getEndTime());
+
+            //Logging Purposes
+            String logMessage = String.format(LOG_CREATED_NEW_CONTEST, contest.getContestName(),
+                    contest.getStartDate(), contest.getStartTime(),
+                    contest.getEndDate(), contest.getEndTime());
+            Bukkit.getLogger().info(logMessage);
+        }
+    }
+
+    private void generateIntervalForContest(ContestInfo contest, ExternalFiles externalFiles) {
+        //All contest start time is assumed to be 00:00 of the day it is set to be enabled.
+        //Load their dates based on the current startDate
+        LocalDate startDate = LocalDate.now(zoneId);
+        if(contest.getTypeCode() == 0) {
+            contest.generateDailyIntervalForContest(zoneId, startDate);
+            return;
+        }
+        if(contest.getTypeCode() == 1) {
+            int intendedStartDay = externalFiles.getConfigFile().getWeeklyResetDay(); //Sacrilegious
+            contest.generateWeeklyIntervalForContest(zoneId, startDate, intendedStartDay);
+            return;
+        }
+        if(contest.getTypeCode() == 2) {
+            contest.generateMonthlyIntervalForContest(zoneId, startDate);
+            return;
+        }
+        Bukkit.getLogger().info(String.format(ERROR_MESSAGE_IMPOSSIBLE_CODE, contest.getContestName(),  contest.getTypeCode()));
     }
 
     private ZonedDateTime fetchDateTimeByTimestamp(long time) {
         return Instant.ofEpochMilli(time).atZone(zoneId);
     }
 
-    private String getContestTypeByID(int i) {
-        if (i == 0) {
-            return "daily";
-        }
-        if (i == 1) {
-            return "weekly";
-        }
-        if (i == 2) {
-            return "monthly";
-        }
-        return "some non-existent value because you edited the db you lil punk";
-    }
-
-    private void initialiseEndedContests(ArrayList<ContestInfo> enabledContests, ArrayList<Pair<Long, Long>> savedContests) {
+    private void initialiseEndedContests(ArrayList<ContestInfo> enabledContests, ExternalFiles externalFiles) {
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
         long currTime = currentDateTime.toInstant().toEpochMilli();
 
         //Handle Regular Contests
         for (int i = 0; i < 3; i++) {
-            Pair<Long, Long> savedContestTimes = savedContests.get(i);
-            if (savedContestTimes == null || currTime < savedContestTimes.getRight()) {
+            ContestInfo contest = enabledContests.get(i);
+            if (currTime < contest.getEndTime()) {
                 continue;
             }
 
             //A Saved Contest expired. Load Config and Rewards from
-            ContestInfo currContest = enabledContests.get(i);
-            ContestInfo savedContest = new ContestInfo(currContest, savedContestTimes.getLeft(), savedContestTimes.getRight(), zoneId);
-            handleEndedContestTasks(savedContest);
-            databaseManager.updateRunningContestInfo(i, currContest.getStartTime(), currContest.getEndTime());
+            handleEndedContestTasks(contest);
+            generateIntervalForContest(contest, externalFiles);
+            externalFiles.updateRegularContestTimestamp(contest.getContestName(), contest.getStartTime(), contest.getEndTime());
         }
 
         //Handle Custom Contests
@@ -229,6 +229,7 @@ public class ContestManager {
         }
     }
 
+    //TODO Fix this absolute garbage spaghetti
     private void handleEndedContestTasks(ContestInfo oldContest) {
         logEndedContest(oldContest);
         ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(oldContest);

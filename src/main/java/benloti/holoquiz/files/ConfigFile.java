@@ -20,7 +20,8 @@ public class ConfigFile {
     private static final String WARNING_CONTEST_INVALID_MIN = "[HoloQuiz] Warning: Minimum Requirement for %s cannot be lower than 1!";
     private static final String WARNING_INVALID_CONFIG = "[HoloQuiz] Warning: The Value %s for %s is invalid!";
     private static final String EASTER_EGG_EXTRA_SASS = " What sort of day is %s anyway?";
-    public static final String ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD = "[HoloQuiz] Error: Failed to load contest of name %s";
+    private static final String ERROR_CONTEST_FAILED_TO_LOAD = "[HoloQuiz] Error: Failed to load contest of name %s due to invalid timestamp";
+    private static final String ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD = "[HoloQuiz] Error: Failed to load Custom contest of name %s due to missing Rewards";
 
     private final String pluginPrefix;
     private final boolean collectRewardOnJoin;
@@ -104,9 +105,9 @@ public class ConfigFile {
         this.weeklyResetDay = parseStartDay(contestSection, configLoader);
         this.timezoneOffset = parseTimeZone(contestSection, configLoader);
         this.contestLeaderboardMaxSize = configLoader.getInt(contestSection, "LeaderboardMaxSize", 10);
-        this.dailyContest = parseContestConfig(configLoader, contestSection, "Daily", 0);
-        this.weeklyContest = parseContestConfig(configLoader, contestSection, "Weekly", 1);
-        this.monthlyContest = parseContestConfig(configLoader, contestSection, "Monthly", 2);
+        this.dailyContest = parseRegularContestConfig(configLoader, contestSection, "Daily", 0);
+        this.weeklyContest = parseRegularContestConfig(configLoader, contestSection, "Weekly", 1);
+        this.monthlyContest = parseRegularContestConfig(configLoader, contestSection, "Monthly", 2);
         this.customContests = parseCustomContestConfig(configLoader, contestSection);
 
         this.SRTS_useWhitelist = parseSRTSListType(configs, configLoader);
@@ -341,40 +342,32 @@ public class ConfigFile {
         return customContests;
     }
 
-    private ContestInfo parseContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
-        ConfigurationSection section = configLoader.getSection(contestSection, key);
-        if (section == null) {
-            return new ContestInfo(code, false, false, false, false, 0, 0);
+    private ContestInfo parseRegularContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
+        ContestInfo regularContestInfo = parseContestInfo(configLoader, contestSection, key, code);
+        if(regularContestInfo == null) {
+            return new ContestInfo(code, false, false, false, false, false, 0, 0, 0, 0);
         }
-
-        boolean mostEnabled = configLoader.getBoolean(section, "Top", false);
-        boolean fastestEnabled = configLoader.getBoolean(section, "Fastest", false);
-        boolean bestAvgEnabled = configLoader.getBoolean(section, "BestAvg", false);
-        boolean bestXEnabled = configLoader.getBoolean(section, "BestX", false);
-        int bestAvgMinReq = configLoader.getInt(section, "BestAvgMinReq", 1);
-        int bestXMinReq = configLoader.getInt(section, "BestXMinReq", 1);
-        if (bestAvgMinReq < 1 && bestAvgEnabled) {
-            String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestAvgMinReq");
-            Bukkit.getLogger().info(logMessage);
-            bestAvgEnabled = false;
-        }
-        if (bestXMinReq < 1 && bestXEnabled) {
-            String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestXMinReq");
-            Bukkit.getLogger().info(logMessage);
-            bestXEnabled = false;
-        }
-        return new ContestInfo(code, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq);
+        return regularContestInfo;
     }
 
     private ContestInfo parseCustomContest(ConfigLoader configLoader, ConfigurationSection contestSection, String key) {
+        ContestInfo customContestInfo = parseContestInfo(configLoader, contestSection, key, 3);
+        if(customContestInfo == null) {
+            return null;
+        }
+        if(customContestInfo.getRewardCategoryName().isEmpty()) {
+            Bukkit.getLogger().info(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD, key));
+            return null;
+        }
+        return customContestInfo;
+    }
+
+    private ContestInfo parseContestInfo(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
         ConfigurationSection section = configLoader.getSection(contestSection, key);
         if (section == null) {
             return null;
         }
         boolean contestStatus = parseCustomContestStatus(section, configLoader);
-        if(!contestStatus) {
-            return null;
-        }
         boolean mostEnabled = configLoader.getBoolean(section, "Top", false);
         boolean fastestEnabled = configLoader.getBoolean(section, "Fastest", false);
         boolean bestAvgEnabled = configLoader.getBoolean(section, "BestAvg", false);
@@ -393,13 +386,19 @@ public class ConfigFile {
         }
         long startTimestamp = configLoader.getLong(section, "StartTimestamp", 0);
         long endTimestamp = configLoader.getLong(section, "EndTimestamp", 0);
-        String rewardCategory = configLoader.getString(section, "RewardCategory", "");
-        if (startTimestamp == 0 || endTimestamp == 0 || endTimestamp <= startTimestamp || rewardCategory.isEmpty()) {
-            Bukkit.getLogger().info(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD, key));
+        if (startTimestamp == 0 || endTimestamp == 0 || endTimestamp <= startTimestamp) {
+            Bukkit.getLogger().info(String.format(ERROR_CONTEST_FAILED_TO_LOAD, key));
             return null;
         }
-        //Bukkit.getLogger().info("[HoloQuiz] Successfully loaded Custom Contest " + key);
-        return new ContestInfo(mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,
-                startTimestamp, endTimestamp, key, rewardCategory);
+        //To convert from Seconds to Milliseconds
+        startTimestamp *= 1000;
+        endTimestamp *= 1000 + 999;
+
+        if(code > 2) {
+            String rewardCategory = configLoader.getString(section, "RewardCategory", "");
+            return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,
+                    startTimestamp, endTimestamp, key, rewardCategory);
+        }
+        return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp);
     }
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 public class ContestInfo {
     private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
+    private final boolean isEnabled;
     private final String contestName;
     private final String rewardCategoryName;
 
@@ -30,9 +31,10 @@ public class ContestInfo {
     private int bestAvgMinReq;
     private int bestXMinReq;
 
-    public ContestInfo(int type, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq) {
+    public ContestInfo(int type, boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
+                       int twoMinReq, int threeMinReq, long startTime, long endTime) {
         this.typeCode = type;
+        this.isEnabled = isEnabled;
         this.contestName = getTypeString();
         this.rewardCategoryName = getTypeString();
         this.bestAvgMinReq = twoMinReq;
@@ -41,11 +43,14 @@ public class ContestInfo {
         this.fastestAnswerContestEnabled = oneEnabled;
         this.bestAvgContestEnabled = twoEnabled;
         this.bestXContestEnabled = threeEnabled;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
-    public ContestInfo(boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
+    public ContestInfo(boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
                        int twoMinReq, int threeMinReq, long startTime, long endTime, String name, String rewardCategory) {
         this.typeCode = 3;
+        this.isEnabled = isEnabled;
         this.contestName = name;
         this.rewardCategoryName = rewardCategory;
         this.bestAvgMinReq = twoMinReq;
@@ -60,6 +65,7 @@ public class ContestInfo {
 
     public ContestInfo(ContestInfo otherContest, long startTime, long endTime, ZoneId zoneId) {
         this.typeCode = otherContest.getTypeCode();
+        this.isEnabled = otherContest.isContestEnabled();
         this.contestName = otherContest.getContestName();
         this.rewardCategoryName = otherContest.getRewardCategoryName();
         this.startTime = startTime;
@@ -130,6 +136,9 @@ public class ContestInfo {
         return contestName;
     }
 
+    public boolean isContestEnabled() {
+        return this.isEnabled;
+    }
     //Used for Initialisation
     public void updateTimes(Pair<Long, Long> newTimes, ZoneId zoneId) {
         this.startTime = newTimes.getLeft();

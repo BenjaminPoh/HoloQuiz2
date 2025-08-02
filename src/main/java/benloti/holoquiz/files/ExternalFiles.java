@@ -229,8 +229,16 @@ public class ExternalFiles {
     }
 
     public void setEndedCustomContest(String contestName) {
-        String key = String.format("Contests.Custom.%s.Status", contestName) ;
+        String key = String.format("Contests.Custom.%s.Status", contestName);
         plugin.getConfig().set(key, "Ended");
+        plugin.saveConfig();
+    }
+
+    public void updateRegularContestTimestamp(String type, long start, long end) {
+        String key = String.format("Contests.%s.StartTimestamp", type);
+        plugin.getConfig().set(key, start / 1000);
+        String key2 = String.format("Contests.%s.EndTimestamp", type);
+        plugin.getConfig().set(key2, end / 1000);
         plugin.saveConfig();
     }
 
