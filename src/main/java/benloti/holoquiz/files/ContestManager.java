@@ -106,6 +106,9 @@ public class ContestManager {
 
         ArrayList<ContestInfo> customContests = configFile.getCustomContests();
         for(ContestInfo contest : customContests) {
+            if(!contest.isContestEnabled()) {
+                continue;
+            }
             loadRewardsForContest(externalFiles, contest.getRewardCategoryName(), contest);
             enabledContestList.add(contest);
         }
@@ -180,6 +183,7 @@ public class ContestManager {
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
         long currTime = currentDateTime.toInstant().toEpochMilli();
 
+        ArrayList<ContestInfo> toRemove = new ArrayList<>();
         for (ContestInfo contest : allContests) {
             if (currTime < contest.getEndTime()) {
                 continue;
@@ -187,7 +191,9 @@ public class ContestManager {
 
             //Contest ended!
             handleEndedContestTasks(contest, overrideIntervalWithCurrent);
+            toRemove.add(contest);
         }
+        allContests.removeAll(toRemove);
     }
 
     private void handleEndedContestTasks(ContestInfo contest, boolean overrideIntervalWithCurrent) {
@@ -199,7 +205,6 @@ public class ContestManager {
         if(contest.getTypeCode() == 3){
             //Custom contest ended. Set to disable
             externalFiles.setEndedCustomContest(contest.getContestName());
-            allContests.remove(contest);
         } else {
             //Regular contest ended
             if(overrideIntervalWithCurrent) {

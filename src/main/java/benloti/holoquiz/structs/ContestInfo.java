@@ -7,8 +7,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 
 public class ContestInfo {
-    private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
     private final boolean isEnabled;
+    private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
     private final String contestName;
     private final String rewardCategoryName;
 
