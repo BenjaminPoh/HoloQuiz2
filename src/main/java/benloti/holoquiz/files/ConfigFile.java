@@ -10,6 +10,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -345,7 +347,7 @@ public class ConfigFile {
     private ContestInfo parseRegularContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
         ContestInfo regularContestInfo = parseContestInfo(configLoader, contestSection, key, code);
         if(regularContestInfo == null) {
-            return new ContestInfo(code, false, false, false, false, false, 0, 0, 0, 0);
+            return new ContestInfo(code, false, false, false, false, false, 0, 0, 0, 0, null, null);
         }
         return regularContestInfo;
     }
@@ -393,12 +395,14 @@ public class ConfigFile {
         //To convert from Seconds to Milliseconds
         startTimestamp *= 1000;
         endTimestamp *= 1000 + 999;
+        LocalDate startDate = Instant.ofEpochMilli(startTimestamp).atZone(this.timezoneOffset).toLocalDate();
+        LocalDate endDate = Instant.ofEpochMilli(endTimestamp).atZone(this.timezoneOffset).toLocalDate();
 
         if(code > 2) {
             String rewardCategory = configLoader.getString(section, "RewardCategory", "");
             return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,
-                    startTimestamp, endTimestamp, key, rewardCategory);
+                    startTimestamp, endTimestamp, startDate, endDate, key, rewardCategory);
         }
-        return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp);
+        return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp, startDate, endDate);
     }
 }

@@ -2,7 +2,6 @@ package benloti.holoquiz.structs;
 
 import org.bukkit.Bukkit;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -18,21 +17,21 @@ public class ContestInfo {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    private boolean mostAnswerContestEnabled; // Code 0
-    private boolean fastestAnswerContestEnabled; // Code 1
-    private boolean bestAvgContestEnabled; // Code 2
-    private boolean bestXContestEnabled; //Code 3
+    private final boolean mostAnswerContestEnabled; // Code 0
+    private final boolean fastestAnswerContestEnabled; // Code 1
+    private final boolean bestAvgContestEnabled; // Code 2
+    private final boolean bestXContestEnabled; //Code 3
 
     private ArrayList<ContestRewardTier> mostAnswerRewards; // Code 0
     private ArrayList<ContestRewardTier> fastestRewards; // Code 1
     private ArrayList<ContestRewardTier> bestAverageRewards; // Code 2
     private ArrayList<ContestRewardTier> bestXRewards; //Code 3
 
-    private int bestAvgMinReq;
-    private int bestXMinReq;
+    private final int bestAvgMinReq;
+    private final int bestXMinReq;
 
     public ContestInfo(int type, boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq, long startTime, long endTime) {
+                       int twoMinReq, int threeMinReq, long startTime, long endTime, LocalDate startDate, LocalDate endDate) {
         this.typeCode = type;
         this.isEnabled = isEnabled;
         this.contestName = getTypeString();
@@ -45,10 +44,12 @@ public class ContestInfo {
         this.bestXContestEnabled = threeEnabled;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     public ContestInfo(boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq, long startTime, long endTime, String name, String rewardCategory) {
+                       int twoMinReq, int threeMinReq, long startTime, long endTime, LocalDate startDate, LocalDate endDate, String name, String rewardCategory) {
         this.typeCode = 3;
         this.isEnabled = isEnabled;
         this.contestName = name;
@@ -61,27 +62,8 @@ public class ContestInfo {
         this.bestXContestEnabled = threeEnabled;
         this.startTime = startTime;
         this.endTime = endTime;
-    }
-
-    public ContestInfo(ContestInfo otherContest, long startTime, long endTime, ZoneId zoneId) {
-        this.typeCode = otherContest.getTypeCode();
-        this.isEnabled = otherContest.isContestEnabled();
-        this.contestName = otherContest.getContestName();
-        this.rewardCategoryName = otherContest.getRewardCategoryName();
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.mostAnswerContestEnabled = otherContest.isMostAnswerContestEnabled();
-        this.fastestAnswerContestEnabled = otherContest.isFastestAnswerContestEnabled();
-        this.bestAvgContestEnabled = otherContest.isBestAvgContestEnabled();
-        this.bestXContestEnabled = otherContest.isBestXContestEnabled();
-        this.mostAnswerRewards = otherContest.getRewardByCategory(0);
-        this.fastestRewards = otherContest.getRewardByCategory(1);
-        this.bestAverageRewards = otherContest.getRewardByCategory(2);
-        this.bestXRewards = otherContest.getRewardByCategory(3);
-        this.bestAvgMinReq = otherContest.getBestAvgMinReq();
-        this.bestXMinReq = otherContest.getBestXMinReq();
-        updateTimes(zoneId);
-
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     public long getStartTime() {
@@ -139,18 +121,6 @@ public class ContestInfo {
     public boolean isContestEnabled() {
         return this.isEnabled;
     }
-    //Used for Initialisation
-    public void updateTimes(Pair<Long, Long> newTimes, ZoneId zoneId) {
-        this.startTime = newTimes.getLeft();
-        this.endTime = newTimes.getRight();
-        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
-        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
-    }
-
-    public void updateTimes(ZoneId zoneId) {
-        this.startDate = Instant.ofEpochMilli(this.startTime).atZone(zoneId).toLocalDate();
-        this.endDate = Instant.ofEpochMilli(this.endTime).atZone(zoneId).toLocalDate();
-    }
 
     public void updateRewards(ArrayList<ContestRewardTier> topAnswerRewards, ArrayList<ContestRewardTier> fastestRewards,
                               ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> bestXRewards) {
@@ -161,7 +131,7 @@ public class ContestInfo {
     }
 
     //Methods related to Intervals
-    public void updateTournamentDateToNextCycle(ZoneId zoneId) {
+    public void updateContestDateToNextCycle(ZoneId zoneId) {
         boolean theSafeguardThatShouldNeverTrigger = true;
         if(this.typeCode == 0) {
             //typeCode == 0 -> Daily

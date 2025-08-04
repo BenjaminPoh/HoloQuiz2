@@ -140,7 +140,7 @@ public class QuizAnswerHandler implements Listener {
         Bukkit.getLogger().info(logInfo);
 
         //Update for ended contests if necessary
-        contestManager.updateContestsStatus();
+        contestManager.updateContestsStatus(false);
     }
 
     private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question) {

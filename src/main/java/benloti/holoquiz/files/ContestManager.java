@@ -22,12 +22,12 @@ public class ContestManager {
     private static final String LOG_MESSAGE_CONTEST_ENDED = "[HoloQuiz] Contest from %s (%d) to %s (%d) ended!";
     private static final String ERROR_MESSAGE_IMPOSSIBLE_CODE = "[HoloQuiz] Dev Error, Contest %s has Type Code %d";
 
-
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
-    private final ZoneId zoneId;
     private final ExternalFiles externalFiles;
 
+    private final ZoneId zoneId;
+    private final int intendedStartDay;
     private final ArrayList<ContestInfo> allContests;
     private final int totalEnabledSubcontests;
     private final Set<String> playersWithOpenGUI = new HashSet<>();
@@ -38,36 +38,19 @@ public class ContestManager {
         this.databaseManager = databaseManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.externalFiles = externalFiles;
+
         this.zoneId = configFile.getTimezoneOffset();
+        this.intendedStartDay = externalFiles.getConfigFile().getWeeklyResetDay();
 
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
         long currentTimestamp = currentDateTime.toInstant().toEpochMilli();
         String logMessage = String.format(LOG_CURRENT_TIME, zoneId, currentDateTime, currentTimestamp);
         Bukkit.getLogger().info(logMessage);
 
-        this.allContests = initialiseContestInfo(externalFiles, configFile);
+        this.allContests = initialiseContests(externalFiles, configFile);
+        updateContestsStatus(true); //Check for expired Contests
         this.totalEnabledSubcontests = countEnabledContests();
         this.contestLeaderboardMaxSize = configFile.getContestLeaderboardMaxSize();
-    }
-
-    public void updateContestsStatus() {
-        long currTime = ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
-        for (ContestInfo contest : allContests) {
-            if (contest == null) {
-                continue;
-            }
-            long endTime = contest.getEndTime();
-            if (currTime < endTime) {
-                continue;
-            }
-
-            //Contest ended!
-            handleEndedContestTasks(contest);
-            if (contest.getTypeCode() < 3) {
-                contest.updateTournamentDateToNextCycle(zoneId);
-                externalFiles.updateRegularContestTimestamp(contest.getTypeString(), contest.getStartTime(), contest.getEndTime());
-            }
-        }
     }
 
     public ContestProgressGUI fetchPlayerContestStatus(String playerName, String playerUUID, UserInterface userInterface) {
@@ -104,12 +87,6 @@ public class ContestManager {
         return contestLeaderboardMaxSize;
     }
 
-    private ArrayList<ContestInfo> initialiseContestInfo(ExternalFiles externalFiles, ConfigFile configFile) {
-        ArrayList<ContestInfo> enabledContestList = initialiseContests(externalFiles, configFile);
-        initialiseEndedContests(enabledContestList, externalFiles);
-        return enabledContestList;
-    }
-
     private ArrayList<ContestInfo> initialiseContests(ExternalFiles externalFiles, ConfigFile configFile) {
         //Fetch Contest info from Config
         ContestInfo dailyContest = configFile.getDailyContestConfig();
@@ -130,7 +107,6 @@ public class ContestManager {
         ArrayList<ContestInfo> customContests = configFile.getCustomContests();
         for(ContestInfo contest : customContests) {
             loadRewardsForContest(externalFiles, contest.getRewardCategoryName(), contest);
-            contest.updateTimes(zoneId);
             enabledContestList.add(contest);
         }
 
@@ -145,7 +121,6 @@ public class ContestManager {
         ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory(type + "BestX", contest.isBestXContestEnabled());
         contest.updateRewards(mostAnswerRewards, fastestRewards, bestAverageRewards, bestXRewards);
     }
-
 
     private void updateContestInfo(ContestInfo contest, ArrayList<ContestInfo> contestList, ExternalFiles externalFiles) {
         //Add contest to List if it is enabled
@@ -167,7 +142,7 @@ public class ContestManager {
 
         //If contest is enabled and timestamp is 0, update with new timestamp
         if(contest.isContestEnabled() && (contest.getStartTime() == 0 || contest.getEndTime() == 0 )){
-            generateIntervalForContest(contest, externalFiles);
+            generateIntervalForContest(contest);
             externalFiles.updateRegularContestTimestamp(contest.getContestName(), contest.getStartTime(), contest.getEndTime());
 
             //Logging Purposes
@@ -178,7 +153,7 @@ public class ContestManager {
         }
     }
 
-    private void generateIntervalForContest(ContestInfo contest, ExternalFiles externalFiles) {
+    private void generateIntervalForContest(ContestInfo contest) {
         //All contest start time is assumed to be 00:00 of the day it is set to be enabled.
         //Load their dates based on the current startDate
         LocalDate startDate = LocalDate.now(zoneId);
@@ -187,8 +162,7 @@ public class ContestManager {
             return;
         }
         if(contest.getTypeCode() == 1) {
-            int intendedStartDay = externalFiles.getConfigFile().getWeeklyResetDay(); //Sacrilegious
-            contest.generateWeeklyIntervalForContest(zoneId, startDate, intendedStartDay);
+            contest.generateWeeklyIntervalForContest(zoneId, startDate, this.intendedStartDay);
             return;
         }
         if(contest.getTypeCode() == 2) {
@@ -202,43 +176,40 @@ public class ContestManager {
         return Instant.ofEpochMilli(time).atZone(zoneId);
     }
 
-    private void initialiseEndedContests(ArrayList<ContestInfo> enabledContests, ExternalFiles externalFiles) {
+    public void updateContestsStatus(boolean overrideIntervalWithCurrent) {
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
         long currTime = currentDateTime.toInstant().toEpochMilli();
 
-        //Handle Regular Contests
-        for (int i = 0; i < 3; i++) {
-            ContestInfo contest = enabledContests.get(i);
+        for (ContestInfo contest : allContests) {
             if (currTime < contest.getEndTime()) {
                 continue;
             }
 
-            //A Saved Contest expired. Load Config and Rewards from
-            handleEndedContestTasks(contest);
-            generateIntervalForContest(contest, externalFiles);
-            externalFiles.updateRegularContestTimestamp(contest.getContestName(), contest.getStartTime(), contest.getEndTime());
-        }
-
-        //Handle Custom Contests
-        for (int i = 3; i < enabledContests.size(); i++) {
-            ContestInfo customContest = enabledContests.get(i);
-            if (currTime < customContest.getEndTime()) {
-                continue;
-            }
-            handleEndedContestTasks(customContest);
+            //Contest ended!
+            handleEndedContestTasks(contest, overrideIntervalWithCurrent);
         }
     }
 
-    //TODO Fix this absolute garbage spaghetti
-    private void handleEndedContestTasks(ContestInfo oldContest) {
-        logEndedContest(oldContest);
-        ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(oldContest);
-        databaseManager.logContestWinners(allContestWinners, oldContest);
-        ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, oldContest);
-        rewardsHandler.giveContestRewards(contestWinners, oldContest);
-        if(oldContest.getTypeCode() == 3){
-            externalFiles.setEndedCustomContest(oldContest.getContestName());
-            allContests.remove(oldContest);
+    private void handleEndedContestTasks(ContestInfo contest, boolean overrideIntervalWithCurrent) {
+        logEndedContest(contest);
+        ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(contest);
+        databaseManager.logContestWinners(allContestWinners, contest);
+        ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, contest);
+        rewardsHandler.giveContestRewards(contestWinners, contest);
+        if(contest.getTypeCode() == 3){
+            //Custom contest ended. Set to disable
+            externalFiles.setEndedCustomContest(contest.getContestName());
+            allContests.remove(contest);
+        } else {
+            //Regular contest ended
+            if(overrideIntervalWithCurrent) {
+                //Override with the interval for this cycle
+                generateIntervalForContest(contest);
+            } else {
+                //Update the Contest to Next Cycle
+                contest.updateContestDateToNextCycle(zoneId);
+            }
+            externalFiles.updateRegularContestTimestamp(contest.getTypeString(), contest.getStartTime(), contest.getEndTime());
         }
     }
 
