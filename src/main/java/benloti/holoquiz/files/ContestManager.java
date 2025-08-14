@@ -190,13 +190,12 @@ public class ContestManager {
             }
 
             //Contest ended!
-            handleEndedContestTasks(contest, overrideIntervalWithCurrent);
-            toRemove.add(contest);
+            handleEndedContestTasks(contest, overrideIntervalWithCurrent, toRemove);
         }
         allContests.removeAll(toRemove);
     }
 
-    private void handleEndedContestTasks(ContestInfo contest, boolean overrideIntervalWithCurrent) {
+    private void handleEndedContestTasks(ContestInfo contest, boolean overrideIntervalWithCurrent, ArrayList<ContestInfo> toRemove) {
         logEndedContest(contest);
         ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(contest);
         databaseManager.logContestWinners(allContestWinners, contest);
@@ -205,6 +204,7 @@ public class ContestManager {
         if(contest.getTypeCode() == 3){
             //Custom contest ended. Set to disable
             externalFiles.setEndedCustomContest(contest.getContestName());
+            toRemove.add(contest);
         } else {
             //Regular contest ended
             if(overrideIntervalWithCurrent) {
