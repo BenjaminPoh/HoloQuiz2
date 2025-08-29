@@ -15,14 +15,12 @@ import java.util.regex.Pattern;
 
 public class UserInterface {
 
-    private final boolean isHexEnabled;
     private final CMIDep cmiDep;
     private final UserPersonalisation userPersonalisation;
     private final String label;
 
     public UserInterface(CMIDep cmiDep, UserPersonalisation userPersonalisation, String prefix) {
         this.cmiDep = cmiDep;
-        this.isHexEnabled = (cmiDep != null);
         this.userPersonalisation = userPersonalisation;
         this.label = prefix;
     }
@@ -37,7 +35,7 @@ public class UserInterface {
     
     public String formatColours(String unformattedString) {
         unformattedString = ChatColor.translateAlternateColorCodes('&', unformattedString);
-        if(isHexEnabled) {
+        if(cmiDep.isEnabled()) {
             unformattedString = cmiDep.translateHexColors(unformattedString);
         }
         return unformattedString;

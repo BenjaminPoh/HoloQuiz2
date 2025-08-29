@@ -1,12 +1,10 @@
 package benloti.holoquiz.database;
 
 import benloti.holoquiz.structs.ContestInfo;
-import benloti.holoquiz.structs.Pair;
 import benloti.holoquiz.structs.PlayerContestStats;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Contests {
     private static final String SQL_STATEMENT_CREATE_CONTEST_LOG_TABLE =

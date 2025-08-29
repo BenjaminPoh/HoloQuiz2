@@ -11,16 +11,22 @@ public class VaultDep {
     private final JavaPlugin plugin;
 
     private Economy economy = null;
+    private boolean isEnabled = false;
 
     public VaultDep(JavaPlugin plugin) {
         this.plugin = plugin;
-        if (!setupEconomy()) {
-            Bukkit.getLogger().info("[HoloQuiz] Disabled due to no Vault dependency found!");
+    }
+
+    public void initialiseDep() {
+        if (setupEconomy()) {
+            isEnabled = true;
+            return;
         }
+        Bukkit.getLogger().info("[HoloQuiz] Error setting up Vault dependency, Vault disabled!");
     }
 
     public void addBalance(Player player, double amount) {
-        if(economy == null) {
+        if(economy == null || !isEnabled) {
             return;
         }
         economy.depositPlayer(player, amount);

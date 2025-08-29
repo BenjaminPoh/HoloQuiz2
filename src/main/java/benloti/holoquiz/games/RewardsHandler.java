@@ -189,9 +189,7 @@ public class RewardsHandler {
     }
 
     private void giveMoneyRewards(Player player, double moneyGained) {
-        if(vaultDep != null) {
-            vaultDep.addBalance(player, moneyGained);
-        }
+        vaultDep.addBalance(player, moneyGained);
     }
 
     private void executeCommandRewards(Player player, List<String> commandsToExecute) {
