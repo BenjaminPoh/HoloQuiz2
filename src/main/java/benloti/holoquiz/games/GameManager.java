@@ -169,7 +169,6 @@ public class GameManager {
     }
 
     //Actual Helper Functions
-
     public String getGameModeIdentifier() {
         if(gameMode.equals("Math")) {
             return "M";

@@ -218,7 +218,7 @@ public class QuizAnswerHandler implements Listener {
         }
         if (timeTaken < timeChecker.getMinTimeRequired()) {
             for (String peko : timeChecker.getCheatingCommands()) {
-                String command = userInterface.antiCheatCommandFormatter(peko, player.getName(), timeTaken / 1000.0);
+                String command = antiCheatCommandFormatter(peko, player.getName(), timeTaken / 1000.0);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
                 });
@@ -240,7 +240,7 @@ public class QuizAnswerHandler implements Listener {
         double stdDev = calculateStdDev(listOfTimes);
         if(stdDev < sdChecker.getMinSDReq()) {
             for (String peko : sdChecker.getCheatingCommands()) {
-                String command = userInterface.antiCheatCommandFormatter(peko, player.getName(), stdDev);
+                String command = antiCheatCommandFormatter(peko, player.getName(), stdDev);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
                 });
@@ -280,5 +280,13 @@ public class QuizAnswerHandler implements Listener {
 
         // Standard deviation = sqrt(variance)
         return Math.sqrt(sumSquaredDiffs / size);
+    }
+
+    private String antiCheatCommandFormatter(String cmd, String playerName, double stat) {
+        cmd = cmd.replace("[stat]" , Double.toString(stat));
+        if(cmd.contains("[player]")) {
+            return cmd.replace("[player]", playerName);
+        }
+        return cmd;
     }
 }

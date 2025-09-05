@@ -69,18 +69,6 @@ public class UserInterface {
         return (label + message);
     }
 
-    public String antiCheatCommandFormatter(String cmd, String playerName, double stat) {
-        cmd = cmd.replace("[stat]" , Double.toString(stat));
-        return attachPlayerName(cmd, playerName);
-    }
-
-    public String attachPlayerName(String message, String playerName) {
-        if(message.contains("[player]")) {
-            return message.replace("[player]", playerName);
-        }
-        return message;
-    }
-
     public void sendMessages(Player player, ArrayList<String> msgList) {
         for(String msg : msgList) {
             String formattedMsg = formatColours(msg);

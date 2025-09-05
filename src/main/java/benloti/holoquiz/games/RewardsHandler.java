@@ -154,7 +154,7 @@ public class RewardsHandler {
             }
             List<String> itemLoreFormatted = new ArrayList<>();
             for (String peko : itemLore) {
-                peko = userInterface.attachPlayerName(peko, player.getName());
+                peko = attachPlayerName(peko, player.getName());
                 peko = userInterface.formatColours(peko);
                 itemLoreFormatted.add(peko);
             }
@@ -198,7 +198,7 @@ public class RewardsHandler {
 
     private void executeCommandRewards(Player player, List<String> commandsToExecute) {
         for(String peko : commandsToExecute) {
-            String command = userInterface.attachPlayerName(peko, player.getName());
+            String command = attachPlayerName(peko, player.getName());
             Bukkit.getScheduler().runTask(plugin, () ->
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
         }
@@ -212,5 +212,12 @@ public class RewardsHandler {
             }
         }
         return null;
+    }
+
+    private String attachPlayerName(String message, String playerName) {
+        if(message.contains("[player]")) {
+            return message.replace("[player]", playerName);
+        }
+        return message;
     }
 }
