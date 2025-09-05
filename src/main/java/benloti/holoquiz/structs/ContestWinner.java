@@ -4,23 +4,18 @@ import benloti.holoquiz.files.UserInterface;
 
 public class ContestWinner {
 
-    private final ContestRewardTier contestPrize;
+    private final RewardTier contestPrize;
     private final PlayerContestStats contestWinnerData;
     private final int position;
 
-    public ContestWinner(ContestRewardTier prizes, PlayerContestStats winner, int position) {
-        this.contestPrize = prizes;
+    //Used to create the template
+    public ContestWinner(RewardTier prizesTemplate, PlayerContestStats winner, int position, ContestInfo contestInfo, UserInterface userInterface) {
         this.contestWinnerData = winner;
         this.position = position;
+        this.contestPrize = new RewardTier(prizesTemplate, this, contestInfo, userInterface);
     }
 
-    public ContestWinner(ContestWinner template, ContestInfo contestInfo, UserInterface userInterface) {
-        this.contestPrize = new ContestRewardTier(template, contestInfo, userInterface);
-        this.contestWinnerData = template.getContestWinnerData();
-        this.position = template.getPosition();
-    }
-
-    public ContestRewardTier getContestWinnerPrize() {
+    public RewardTier getContestWinnerPrize() {
         return contestPrize;
     }
 

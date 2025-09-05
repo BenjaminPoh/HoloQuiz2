@@ -1,6 +1,5 @@
 package benloti.holoquiz.files;
 
-import benloti.holoquiz.structs.ContestRewardTier;
 import benloti.holoquiz.structs.Question;
 import benloti.holoquiz.structs.RewardTier;
 import org.bukkit.Bukkit;
@@ -49,7 +48,7 @@ public class ExternalFiles {
     private ConfigLoader configLoader;
     private ArrayList<RewardTier> allNormalRewards;
     private ArrayList<RewardTier> secretRewards;
-    private Map<String, ArrayList<ContestRewardTier>> contestRewards;
+    private Map<String, ArrayList<RewardTier>> contestRewards;
     private ArrayList<Question> allQuestions;
 
     public ExternalFiles(JavaPlugin plugin) {
@@ -174,7 +173,7 @@ public class ExternalFiles {
         ConfigFile newConfigFile;
         ArrayList<RewardTier> newAllNormalRewards = new ArrayList<>();
         ArrayList<RewardTier> newSecretRewards = new ArrayList<>();
-        Map<String, ArrayList<ContestRewardTier>> newContestRewards = new HashMap<>();
+        Map<String, ArrayList<RewardTier>> newContestRewards = new HashMap<>();
         ArrayList<Question> newQuestions;
 
         configLoader.setCurrentFile("config.yml");
@@ -258,7 +257,7 @@ public class ExternalFiles {
         return this.secretRewards;
     }
 
-    public ArrayList<ContestRewardTier> getContestRewardByCategory(String category, boolean isEnabled) {
+    public ArrayList<RewardTier> getContestRewardByCategory(String category, boolean isEnabled) {
         if(!isEnabled) {
             return new ArrayList<>();
         }
@@ -272,7 +271,7 @@ public class ExternalFiles {
      * @param rewardsYml the Rewards.yml File
      */
     private void loadAllRewards(File rewardsYml, ArrayList<RewardTier> allNormalRewards, ArrayList<RewardTier> secretRewards,
-                                Map<String, ArrayList<ContestRewardTier>> contestRewards) {
+                                Map<String, ArrayList<RewardTier>> contestRewards) {
         FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
 
         ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
@@ -315,7 +314,7 @@ public class ExternalFiles {
      * Used to load the contest rewards.
      * @param rewardsSection The section that has all the Contest rewards.
      */
-    private void loadAllContestRewards(ConfigurationSection rewardsSection, Map<String, ArrayList<ContestRewardTier>> contestRewards) {
+    private void loadAllContestRewards(ConfigurationSection rewardsSection, Map<String, ArrayList<RewardTier>> contestRewards) {
         if(rewardsSection == null) {
             return;
         }
@@ -326,10 +325,10 @@ public class ExternalFiles {
 
     }
 
-    private void loadIndividualContestRewards(String key, ConfigurationSection rewardsSection, Map<String, ArrayList<ContestRewardTier>> contestRewards) {
+    private void loadIndividualContestRewards(String key, ConfigurationSection rewardsSection, Map<String, ArrayList<RewardTier>> contestRewards) {
         for(String category: CONTEST_CATEGORIES) {
             ConfigurationSection section = rewardsSection.getConfigurationSection(category);
-            ArrayList<ContestRewardTier> rewardsList = loadContestRewardsTier(section);
+            ArrayList<RewardTier> rewardsList = loadContestRewardsTier(section);
             contestRewards.put(key + category, rewardsList);
             if(!rewardsList.isEmpty()) {
                 String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, key, category, rewardsList.size());
@@ -338,8 +337,8 @@ public class ExternalFiles {
         }
     }
 
-    private ArrayList<ContestRewardTier> loadContestRewardsTier(ConfigurationSection section) {
-        ArrayList<ContestRewardTier> rewardsList = new ArrayList<>();
+    private ArrayList<RewardTier> loadContestRewardsTier(ConfigurationSection section) {
+        ArrayList<RewardTier> rewardsList = new ArrayList<>();
         if(section == null) {
             return rewardsList;
         }
@@ -349,11 +348,13 @@ public class ExternalFiles {
             int reps = configLoader.getInt(rewardTierSection,"Reps", 1);
             double moneyReward = configLoader.getDoubleOptional(rewardTierSection,"Money", 0);
             String message = configLoader.getStringOptional(rewardTierSection,"Message", "");
+            ArrayList<String> stringList = new ArrayList<>();
+            stringList.add(message);
             List<String> commandsExecuted = configLoader.getStringListOptional(rewardTierSection,"Commands");
             ConfigurationSection rewardTierItemSection = rewardTierSection.getConfigurationSection("Items");
             ArrayList<ItemStack> itemReward = new ArrayList<>();
             loadItemReward(rewardTierItemSection, itemReward);
-            ContestRewardTier rewardTier = new ContestRewardTier(moneyReward, commandsExecuted, itemReward, message);
+            RewardTier rewardTier = new RewardTier(-1, moneyReward, commandsExecuted, itemReward, stringList);
             for(int i = 0; i < reps; i++) {
                 rewardsList.add(rewardTier);
             }

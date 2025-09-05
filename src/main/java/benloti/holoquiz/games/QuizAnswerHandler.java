@@ -127,7 +127,7 @@ public class QuizAnswerHandler implements Listener {
         int statusCodeTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
 
         //Send some Messages
-        sendCorrectAnswerAnnouncement(player, correctAnswerMsgLoc);
+        sendCorrectAnswerNotification(player, correctAnswerMsgLoc);
         new BukkitRunnable() {
             public void run() {
                 makeFireworks(player);
@@ -188,7 +188,7 @@ public class QuizAnswerHandler implements Listener {
         firework.setFireworkMeta(fireworkMeta);
     }
 
-    private void sendCorrectAnswerAnnouncement(Player player, int status) {
+    private void sendCorrectAnswerNotification(Player player, int status) {
         if(status == 0) {
             displayTitle(player);
         }

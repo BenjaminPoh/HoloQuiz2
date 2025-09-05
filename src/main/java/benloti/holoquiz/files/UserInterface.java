@@ -2,8 +2,6 @@ package benloti.holoquiz.files;
 
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.CMIDep;
-import benloti.holoquiz.structs.ContestInfo;
-import benloti.holoquiz.structs.ContestWinner;
 import benloti.holoquiz.structs.PlayerSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -32,7 +30,7 @@ public class UserInterface {
         }
         return stringArray;
     }
-    
+
     public String formatColours(String unformattedString) {
         unformattedString = ChatColor.translateAlternateColorCodes('&', unformattedString);
         if(cmiDep.isEnabled()) {
@@ -88,59 +86,5 @@ public class UserInterface {
             String formattedMsg = formatColours(msg);
             attachSuffixAndSend(player, formattedMsg);
         }
-    }
-
-    public String attachContestStats(String message, ContestWinner contestWinner, ContestInfo contestInfo) {
-        if(message.contains("[count]")) {
-            String totalAnswers = String.valueOf(contestWinner.getContestWinnerData().getQuestionsAnswered());
-            message = message.replace("[count]", totalAnswers);
-        }
-        if(message.contains("[best]")) {
-            String bestTime = contestWinner.getContestWinnerData().getBestTimeInSeconds3DP();
-            message = message.replace("[best]", bestTime);
-        }
-        if(message.contains("[avg]")) {
-            String avgTime = contestWinner.getContestWinnerData().getAverageTimeInSeconds3DP();
-            message = message.replace("[avg]", avgTime);
-        }
-        if(message.contains("[month]")) {
-            String monthOfContest = contestInfo.getStartDate().getMonth().toString();
-            String formattedMonth = monthOfContest.charAt(0) + monthOfContest.substring(1).toLowerCase();
-            message = message.replace("[month]", formattedMonth);
-        }
-        if(message.contains("[year]")) {
-            String yearOfContest = Integer.toString(contestInfo.getStartDate().getYear());
-            message = message.replace("[year]", yearOfContest);
-        }
-        if(message.contains("[start]")) {
-            String startDateOfContest = contestInfo.getStartDate().toString();
-            message = message.replace("[start]", startDateOfContest);
-        }
-        if(message.contains("[end]")) {
-            String endDateOfContest = contestInfo.getEndDate().toString();
-            message = message.replace("[end]", endDateOfContest);
-        }
-        if(message.contains("[pos]")) {
-            String position = String.valueOf(contestWinner.getPosition());
-            message = message.replace("[pos]", position);
-        }
-        if(message.contains("[pos++]")) {
-            String position = positionFormatter(contestWinner.getPosition());
-            message = message.replace("[pos++]", position);
-        }
-        return message;
-    }
-
-    private String positionFormatter(int i) {
-        if(i == 1) {
-            return i + "st";
-        }
-        if(i == 2) {
-            return i + "nd";
-        }
-        if(i == 3) {
-            return i + "rd";
-        }
-        return i + "th";
     }
 }

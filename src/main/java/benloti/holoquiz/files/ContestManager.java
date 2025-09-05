@@ -25,6 +25,7 @@ public class ContestManager {
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
     private final ExternalFiles externalFiles;
+    private final UserInterface userInterface;
 
     private final ZoneId zoneId;
     private final int intendedStartDay;
@@ -34,10 +35,11 @@ public class ContestManager {
     private final int contestLeaderboardMaxSize;
 
     public ContestManager(DatabaseManager databaseManager, ConfigFile configFile,
-                          ExternalFiles externalFiles, GameManager gameManager) {
+                          ExternalFiles externalFiles, GameManager gameManager, UserInterface userInterface) {
         this.databaseManager = databaseManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.externalFiles = externalFiles;
+        this.userInterface = userInterface;
 
         this.zoneId = configFile.getTimezoneOffset();
         this.intendedStartDay = externalFiles.getConfigFile().getWeeklyResetDay();
@@ -118,10 +120,10 @@ public class ContestManager {
     }
 
     private void loadRewardsForContest(ExternalFiles externalFiles, String type, ContestInfo contest) {
-        ArrayList<ContestRewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory(type + "Most", contest.isMostAnswerContestEnabled());
-        ArrayList<ContestRewardTier> fastestRewards = externalFiles.getContestRewardByCategory(type + "Fastest", contest.isFastestAnswerContestEnabled());
-        ArrayList<ContestRewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory(type + "BestAvg", contest.isBestAvgContestEnabled());
-        ArrayList<ContestRewardTier> bestXRewards = externalFiles.getContestRewardByCategory(type + "BestX", contest.isBestXContestEnabled());
+        ArrayList<RewardTier> mostAnswerRewards = externalFiles.getContestRewardByCategory(type + "Most", contest.isMostAnswerContestEnabled());
+        ArrayList<RewardTier> fastestRewards = externalFiles.getContestRewardByCategory(type + "Fastest", contest.isFastestAnswerContestEnabled());
+        ArrayList<RewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory(type + "BestAvg", contest.isBestAvgContestEnabled());
+        ArrayList<RewardTier> bestXRewards = externalFiles.getContestRewardByCategory(type + "BestX", contest.isBestXContestEnabled());
         contest.updateRewards(mostAnswerRewards, fastestRewards, bestAverageRewards, bestXRewards);
     }
 
@@ -200,7 +202,7 @@ public class ContestManager {
         ArrayList<ArrayList<PlayerContestStats>> allContestWinners = databaseManager.fetchContestWinners(contest);
         databaseManager.logContestWinners(allContestWinners, contest);
         ArrayList<ContestWinner> contestWinners = parseContestWinners(allContestWinners, contest);
-        rewardsHandler.giveContestRewards(contestWinners, contest);
+        rewardsHandler.giveContestRewards(contestWinners);
         if(contest.getTypeCode() == 3){
             //Custom contest ended. Set to disable
             externalFiles.setEndedCustomContest(contest.getContestName());
@@ -227,15 +229,14 @@ public class ContestManager {
         Bukkit.getLogger().info(logMessage);
     }
 
-    private ArrayList<ContestWinner> parseContestWinners
-            (ArrayList<ArrayList<PlayerContestStats>> contestWinnersData, ContestInfo contestInfo) {
+    private ArrayList<ContestWinner> parseContestWinners(ArrayList<ArrayList<PlayerContestStats>> contestWinnersData, ContestInfo contestInfo) {
         ArrayList<ContestWinner> contestWinners = new ArrayList<>();
         for (int i = 0; i < contestWinnersData.size(); i++) {
             ArrayList<PlayerContestStats> contestCategoryWinnersData = contestWinnersData.get(i);
-            ArrayList<ContestRewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
+            ArrayList<RewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
             int limit = Math.min(contestCategoryWinnersData.size(), contestRewardTiers.size());
             for (int j = 0; j < limit; j++) {
-                ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j + 1);
+                ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j + 1, contestInfo, userInterface);
                 contestWinners.add(winner);
             }
         }

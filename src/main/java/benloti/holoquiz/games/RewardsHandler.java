@@ -52,16 +52,15 @@ public class RewardsHandler {
         return giveRewardsByTier(player, rewardTier);
     }
 
-    public void giveContestRewards(ArrayList<ContestWinner> allContestWinners, ContestInfo contestInfo) {
+    public void giveContestRewards(ArrayList<ContestWinner> allContestWinners) {
         for(ContestWinner contestWinner : allContestWinners) {
             PlayerContestStats contestWinnerData = contestWinner.getContestWinnerData();
             String playerName = contestWinnerData.getPlayerName();
             Player winningPlayer = plugin.getServer().getPlayer(playerName);
-            ContestWinner formattedContestWinner = new ContestWinner(contestWinner, contestInfo, userInterface);
             if (winningPlayer == null || checkSRTS(winningPlayer.getWorld().getName())) {
-                storeContestRewardToStorage(playerName, formattedContestWinner);
+                storeContestRewardToStorage(playerName, contestWinner);
             } else {
-                issueContestReward(winningPlayer, formattedContestWinner);
+                issueContestReward(winningPlayer, contestWinner);
             }
         }
     }
@@ -93,9 +92,11 @@ public class RewardsHandler {
         if(money != 0) {
             databaseManager.storeRewardToStorage(playerName, "V", String.valueOf(money), "", 1);
         }
-        String message = contestWinner.getContestWinnerPrize().getMessage();
-        if(!message.isEmpty()) {
-            databaseManager.storeRewardToStorage(playerName, "M", message, "", 1);
+        ArrayList<String> messageList = contestWinner.getContestWinnerPrize().getMessages();
+        if(!messageList.isEmpty()) {
+            for(String message : messageList) {
+                databaseManager.storeRewardToStorage(playerName, "M", message, "", 1);
+            }
         }
         List<String> commands = contestWinner.getContestWinnerPrize().getCommandsExecuted();
         for(String command : commands) {
@@ -108,15 +109,18 @@ public class RewardsHandler {
     }
 
     private void issueContestReward(Player player, ContestWinner winner) {
-        ContestRewardTier reward = winner.getContestWinnerPrize();
+        RewardTier reward = winner.getContestWinnerPrize();
         if(reward == null) {
             return;
         }
         giveContestItemRewards(player, reward.getItemRewards());
         giveMoneyRewards(player, reward.getMoneyReward());
         executeCommandRewards(player, reward.getCommandsExecuted());
-        String message = userInterface.formatColours(reward.getMessage());
-        userInterface.attachSuffixAndSend(player, message);
+        for(String message : reward.getMessages()) {
+            String formattedMessage = userInterface.formatColours(message);
+            userInterface.attachSuffixAndSend(player, formattedMessage);
+        }
+
     }
 
     private void storeItemToStorage(String name, ItemStack item) {

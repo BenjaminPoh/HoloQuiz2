@@ -22,10 +22,10 @@ public class ContestInfo {
     private final boolean bestAvgContestEnabled; // Code 2
     private final boolean bestXContestEnabled; //Code 3
 
-    private ArrayList<ContestRewardTier> mostAnswerRewards; // Code 0
-    private ArrayList<ContestRewardTier> fastestRewards; // Code 1
-    private ArrayList<ContestRewardTier> bestAverageRewards; // Code 2
-    private ArrayList<ContestRewardTier> bestXRewards; //Code 3
+    private ArrayList<RewardTier> mostAnswerRewards; // Code 0
+    private ArrayList<RewardTier> fastestRewards; // Code 1
+    private ArrayList<RewardTier> bestAverageRewards; // Code 2
+    private ArrayList<RewardTier> bestXRewards; //Code 3
 
     private final int bestAvgMinReq;
     private final int bestXMinReq;
@@ -122,8 +122,8 @@ public class ContestInfo {
         return this.isEnabled;
     }
 
-    public void updateRewards(ArrayList<ContestRewardTier> topAnswerRewards, ArrayList<ContestRewardTier> fastestRewards,
-                              ArrayList<ContestRewardTier> bestAverageRewards, ArrayList<ContestRewardTier> bestXRewards) {
+    public void updateRewards(ArrayList<RewardTier> topAnswerRewards, ArrayList<RewardTier> fastestRewards,
+                              ArrayList<RewardTier> bestAverageRewards, ArrayList<RewardTier> bestXRewards) {
         this.mostAnswerRewards = topAnswerRewards;
         this.bestAverageRewards = bestAverageRewards;
         this.fastestRewards = fastestRewards;
@@ -172,7 +172,7 @@ public class ContestInfo {
     }
 
     //Methods related to Rewards
-    public ArrayList<ContestRewardTier> getRewardByCategory(int code) {
+    public ArrayList<RewardTier> getRewardByCategory(int code) {
         if(code == 0) {
             return mostAnswerRewards;
         }
