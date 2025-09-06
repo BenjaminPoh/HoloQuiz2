@@ -181,15 +181,17 @@ public class RewardsHandler {
         return 0;
     }
 
+    /**
+     * This simplification came to me in a dream
+     *
+     * @param name The WorldName the player is in
+     * @return true if either
+     * 1) The list is a whiteList and the name is not found in the worldList
+     * 2) The list is a blacklist and the name is found in the worldList
+     */
     private boolean checkSRTS(String name) {
         boolean isInList = this.SRTS_worldList.contains(name);
-        if(isInList && !this.SRTS_isWhitelist) {
-            return true;
-        }
-        if(!isInList && this.SRTS_isWhitelist) {
-            return true;
-        }
-        return false;
+        return (isInList != this.SRTS_isWhitelist);
     }
 
     private void giveMoneyRewards(Player player, double moneyGained) {
