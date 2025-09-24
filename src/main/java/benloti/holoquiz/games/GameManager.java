@@ -42,11 +42,14 @@ public class GameManager {
     private boolean timedOut;
     private long nextTaskTime;
 
+    private boolean inaGoesWAH;
+
     private ArrayList<Question> triviaQuestionList;
 
     public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
                        DependencyHandler dependencyHandler, ExternalFiles externalFiles, DatabaseManager databaseManager) {
         this.plugin = plugin;
+        this.inaGoesWAH = configFile.isInaWahEnabled();
         this.interval = configFile.getInterval();
         this.intervalCheck = configFile.getIntervalCheck();
         this.revealAnswerDelay = configFile.getRevealAnswerDelay();
@@ -116,15 +119,24 @@ public class GameManager {
 
     private void sendQuestion() {
         Question question = getRandomQuestion();
+        boolean playInaWAH = false;
         Bukkit.getLogger().info(String.format(LOG_MESSAGE_QUESTION_SENT, question.getQuestion()));
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
+        if(this.inaGoesWAH) {
+            formattedQuestion = formattedQuestion.replace("Wha", "WAH");
+            formattedQuestion = formattedQuestion.replace("wha", "WAH");
+            playInaWAH = true;
+        }
         setQuestionAnswered(false);
         setQuestionTimedOut(false);
         long currentTime = System.currentTimeMillis();
         setTimeQuestionSent(currentTime);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             userInterface.attachSuffixAndSend(player, formattedQuestion);
+            if(playInaWAH) {
+                player.playSound(player.getLocation(), "minecraft:custom.ina.wah", 1.0f, 1.0f);
+            }
         }
     }
 

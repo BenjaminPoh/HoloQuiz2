@@ -28,6 +28,7 @@ public class ConfigFile {
     private final String pluginPrefix;
     private final boolean collectRewardOnJoin;
     private final boolean easterEggsEnabled;
+    private final boolean inaWahEnabled;
     private final boolean enableOnStart;
 
     private final int leaderboardSize;
@@ -69,6 +70,7 @@ public class ConfigFile {
         this.collectRewardOnJoin = configLoader.getBoolean(configs, "CollectRewardsOnJoin", true);
         this.easterEggsEnabled = configLoader.getBoolean(configs, "EasterEggs", false);
         this.enableOnStart = configLoader.getBoolean(configs, "EnableOnStart", false);
+        this.inaWahEnabled = configLoader.getBoolean(configs, "InaGoesWAH", false);
 
         this.gameMode = parseGameMode(configs, configLoader);
         this.interval = configLoader.getInt(configs, "Interval", 300);
@@ -119,8 +121,6 @@ public class ConfigFile {
         }
     }
 
-
-
     public int getInterval() {
         return interval;
     }
@@ -135,6 +135,10 @@ public class ConfigFile {
 
     public boolean isEasterEggsEnabled() {
         return easterEggsEnabled;
+    }
+
+    public boolean isInaWahEnabled() {
+        return inaWahEnabled;
     }
 
     public String getGameMode() {
