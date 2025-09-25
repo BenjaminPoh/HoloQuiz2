@@ -124,9 +124,9 @@ public class GameManager {
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
         if(this.inaGoesWAH) {
+            playInaWAH = formattedQuestion.contains("Wha") || formattedQuestion.contains("wha");
             formattedQuestion = formattedQuestion.replace("Wha", "WAH");
             formattedQuestion = formattedQuestion.replace("wha", "WAH");
-            playInaWAH = true;
         }
         setQuestionAnswered(false);
         setQuestionTimedOut(false);

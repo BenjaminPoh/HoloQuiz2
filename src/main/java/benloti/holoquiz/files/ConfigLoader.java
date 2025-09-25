@@ -120,7 +120,7 @@ public class ConfigLoader {
     }
 
     public List<String> getStringListOptional(ConfigurationSection configs, String key) {
-        return configs.getStringList(key);
+        return configs.getStringList(key); //Returns an empty list if key is not found
     }
 
     public String getStringOptional(ConfigurationSection configs, String key, String defaultValue) {
