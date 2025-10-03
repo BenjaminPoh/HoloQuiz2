@@ -24,6 +24,9 @@ public class GameManager {
     private final int questionCooldown;
     private final long revealAnswerDelay;
     private final boolean revealAnswerFlag;
+    private final boolean inaGoesWAH;
+    private final int mathWeightageForMixed;
+    private final int triviaWeightageForMixed;
 
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
@@ -31,18 +34,17 @@ public class GameManager {
     private final MathQuestionGenerator mathQuestionGenerator;
 
     private final String gameMode;
+    private final Random rngesus;
     private NextTaskScheduler nextTaskScheduler;
     private PeriodicChecker periodicChecker;
-
     private boolean gameRunning;
     private Question currentQuestion;
+    private String currentQuestionType;
 
     private long timeQuestionSent;
     private boolean questionAnswered;
     private boolean timedOut;
     private long nextTaskTime;
-
-    private boolean inaGoesWAH;
 
     private ArrayList<Question> triviaQuestionList;
 
@@ -54,6 +56,8 @@ public class GameManager {
         this.intervalCheck = configFile.getIntervalCheck();
         this.revealAnswerDelay = configFile.getRevealAnswerDelay();
         this.gameMode = configFile.getGameMode();
+        this.mathWeightageForMixed = configFile.getMathWeightage();
+        this.triviaWeightageForMixed = configFile.getTriviaWeightage();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
         this.userInterface = userInterface;
@@ -61,6 +65,7 @@ public class GameManager {
                 externalFiles, configFile);
 
         this.revealAnswerFlag = (this.revealAnswerDelay == -1);
+        this.rngesus = new Random();
 
         if(configFile.getQuestionCooldownLength() >= triviaQuestionList.size()) {
             this.questionCooldown = 0;
@@ -150,13 +155,16 @@ public class GameManager {
     }
 
     public Question getRandomQuestion() {
-        if(gameMode.equals("Math")) {
-            this.currentQuestion = getRandomMathQuestion();
-            return this.currentQuestion;
-        }
-        if(gameMode.equals("Trivia")) {
-            this.currentQuestion = getRandomTriviaQuestion();
-            return this.currentQuestion;
+        switch (gameMode) {
+            case "Math":
+                this.currentQuestion = getRandomMathQuestion();
+                return this.currentQuestion;
+            case "Trivia":
+                this.currentQuestion = getRandomTriviaQuestion();
+                return this.currentQuestion;
+            case "Mixed":
+                this.currentQuestion = getRandomMixedQuestion();
+                return this.currentQuestion;
         }
         Bukkit.getLogger().info(String.format(IMPOSSIBLE_ERROR_INVALID_MODE, gameMode));
         return null;
@@ -181,23 +189,23 @@ public class GameManager {
     }
 
     //Actual Helper Functions
-    public String getGameModeIdentifier() {
-        if(gameMode.equals("Math")) {
-            return "M";
+    public Question getRandomMixedQuestion() {
+        int totalWeight = this.mathWeightageForMixed + this.triviaWeightageForMixed;
+        int randomValue = this.rngesus.nextInt(totalWeight) + 1;
+
+        if (randomValue <= mathWeightageForMixed) {
+            return getRandomMathQuestion();
         }
-        if(gameMode.equals("Trivia")) {
-            return "T";
-        }
-        Bukkit.getLogger().info(String.format(IMPOSSIBLE_ERROR_INVALID_MODE, gameMode));
-        return gameMode.substring(0, 1);
+        return getRandomTriviaQuestion();
+
     }
 
     private Question getRandomTriviaQuestion() {
         int size = triviaQuestionList.size();
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(size);
+        int randomIndex = this.rngesus.nextInt(size);
         //Bukkit.getLogger().info("Qn Rolled: " + randomIndex + " | Queue: " + questionCooldownList.toString());
         randomIndex = obtainQuestionNotOnCooldown(randomIndex, size);
+        this.currentQuestionType = "T";
         return triviaQuestionList.get(randomIndex);
     }
 
@@ -223,10 +231,15 @@ public class GameManager {
     private Question getRandomMathQuestion() {
         String question = mathQuestionGenerator.getMathQuestion();
         double answer = mathQuestionGenerator.solver(question);
+        this.currentQuestionType = "M";
         return mathQuestionGenerator.parser(mathQuestionGenerator.getMathQuestionColour(), question, answer);
     }
 
     //Getters and Setters
+    public String getCurrentQuestionType() {
+        return this.currentQuestionType;
+    }
+
     public Question getCurrentQuestion() {
         return this.currentQuestion;
     }

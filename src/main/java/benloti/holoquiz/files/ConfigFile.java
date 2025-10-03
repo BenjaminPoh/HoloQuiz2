@@ -46,6 +46,9 @@ public class ConfigFile {
     private final MinSDCheatDetector minSDCheatDetector;
     private final int correctAnswerMessageLoc; // -1: Disabled. 0:TitleMsg. 1:ActionBar
 
+    private final int triviaWeightage;
+    private final int mathWeightage;
+
     private final int mathRange;
     private final String mathDistribution;
     private final boolean mathDivisorLimit;
@@ -73,6 +76,9 @@ public class ConfigFile {
         this.inaWahEnabled = configLoader.getBoolean(configs, "InaGoesWAH", false);
 
         this.gameMode = parseGameMode(configs, configLoader);
+        ConfigurationSection gameModeDistributionSection = configs.getConfigurationSection("MixedGameModeDistribution");
+        this.triviaWeightage = configLoader.getInt(gameModeDistributionSection, "Trivia", 1);
+        this.mathWeightage = configLoader.getInt(gameModeDistributionSection, "Math", 1);
         this.interval = configLoader.getInt(configs, "Interval", 300);
         this.intervalCheck = configLoader.getInt(configs, "IntervalCheck", 10);
         this.revealAnswerDelay = configLoader.getInt(configs, "RevealAnswerDelay", 0);
@@ -245,9 +251,17 @@ public class ConfigFile {
         return correctAnswerMessageLoc;
     }
 
+    public int getTriviaWeightage() {
+        return triviaWeightage;
+    }
+
+    public int getMathWeightage() {
+        return mathWeightage;
+    }
+
     private String parseGameMode(FileConfiguration configs, ConfigLoader configLoader) {
         String gameMode = configLoader.getString(configs, "GameMode", "Trivia");
-        if (!gameMode.equals("Trivia") && !gameMode.equals("Math")) {
+        if (!gameMode.equals("Trivia") && !gameMode.equals("Math") && !gameMode.equals("Mixed")) {
             String logMessage = String.format(WARNING_INVALID_CONFIG, gameMode, "GameMode");
             Bukkit.getLogger().info(logMessage);
             return "Trivia";

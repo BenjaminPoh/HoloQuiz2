@@ -111,7 +111,7 @@ public class QuizAnswerHandler implements Listener {
         //Bukkit.getLogger().info("[HoloQuiz Debug Log] Processing done in " + processingTime + "ms");
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
-        String gameMode = gameManager.getGameModeIdentifier();
+        String gameMode = gameManager.getCurrentQuestionType();
         //The actual tasks
         //Update database
         database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);

@@ -10,7 +10,10 @@ SRTS_WorldList:
 
 # Game Config
 Interval: 300 #In Seconds
-GameMode: Trivia #Available: Trivia / Math
+GameMode: Trivia #Available: Trivia / Math / Mixed
+MixedGameModeDistribution: #Sums all the numbers, and the chance is the specified number.
+  Trivia: 1
+  Math: 1
 CorrectAnswerMessageLoc: TitleMsg #Available: TitleMsg/ActionBar/Disabled
 IntervalCheck: 10 #Checks if the Interval has lapsed after (20 * this amount) of ticks. Enable if Server TPS Sucks. Set to 0 to disable.
 QuestionCooldown: 3 #The same question will not appear for this number of questions sent. List is reset once server restarts.
