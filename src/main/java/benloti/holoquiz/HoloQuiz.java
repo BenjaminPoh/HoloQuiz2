@@ -29,6 +29,7 @@ public final class HoloQuiz extends JavaPlugin {
     public void onEnable() {
         this.externalFiles = new ExternalFiles(this);
         this.configFile = externalFiles.getConfigFile();
+        Logger.createLogger(configFile.getLoggingLevel());
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
@@ -65,6 +66,7 @@ public final class HoloQuiz extends JavaPlugin {
         }
 
         this.configFile = externalFiles.getConfigFile();
+        Logger.getLogger().setLogLevel(configFile.getLoggingLevel());
         this.dependencyHandler = new DependencyHandler(this);
         this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
         this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);

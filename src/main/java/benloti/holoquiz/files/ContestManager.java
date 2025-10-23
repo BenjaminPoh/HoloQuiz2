@@ -3,9 +3,11 @@ package benloti.holoquiz.files;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.games.RewardsHandler;
-import benloti.holoquiz.structs.*;
-
-import org.bukkit.Bukkit;
+import benloti.holoquiz.structs.ContestInfo;
+import benloti.holoquiz.structs.ContestProgressGUI;
+import benloti.holoquiz.structs.PlayerContestStats;
+import benloti.holoquiz.structs.RewardTier;
+import benloti.holoquiz.structs.ContestWinner;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -16,11 +18,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ContestManager {
-    private static final String LOG_CURRENT_TIME =  "[HoloQuiz] The set TimeZone is %s, giving a current date of %s (%d)";
-    private static final String LOG_CREATED_NEW_CONTEST = "[HoloQuiz] Scheduled new %s Contest from %s (%d) to %s (%d)";
-    private static final String LOG_DELETED_CONTEST = "[HoloQuiz] Removed old %s Contest that ends on %s (%d)";
-    private static final String LOG_MESSAGE_CONTEST_ENDED = "[HoloQuiz] Contest from %s (%d) to %s (%d) ended!";
-    private static final String ERROR_MESSAGE_IMPOSSIBLE_CODE = "[HoloQuiz] Dev Error, Contest %s has Type Code %d";
+    private static final String LOG_CURRENT_TIME =  "The set TimeZone is %s, giving a current date of %s (%d)";
+    private static final String LOG_CREATED_NEW_CONTEST = "Scheduled new %s Contest from %s (%d) to %s (%d)";
+    private static final String LOG_DELETED_CONTEST = "Removed old %s Contest that ends on %s (%d)";
+    private static final String LOG_MESSAGE_CONTEST_ENDED = "Contest from %s (%d) to %s (%d) ended!";
+    private static final String DEV_ERROR_IMPOSSIBLE_CODE = "Contest %s has Type Code %d";
+    private static final String DEV_ERROR_CONTEST_GUI_DOUBLE_OPENED = "A player managed to open the Contests GUI while having it open.";
+    private static final String DEV_ERROR_CONTEST_GUI_DOUBLE_CLOSED = "A player managed to close the Contests GUI while not having it open.";
 
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
@@ -47,7 +51,7 @@ public class ContestManager {
         ZonedDateTime currentDateTime = ZonedDateTime.now(zoneId);
         long currentTimestamp = currentDateTime.toInstant().toEpochMilli();
         String logMessage = String.format(LOG_CURRENT_TIME, zoneId, currentDateTime, currentTimestamp);
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().info_low(logMessage);
 
         this.allContests = initialiseContests(externalFiles, configFile);
         updateContestsStatus(true); //Check for expired Contests
@@ -57,7 +61,7 @@ public class ContestManager {
 
     public ContestProgressGUI fetchPlayerContestStatus(String playerName, String playerUUID, UserInterface userInterface) {
         if (this.playersWithOpenGUI.contains(playerName)) {
-            Bukkit.getLogger().info("[HoloQuiz] BUG: A player managed to open the Contests GUI while having it open.");
+            Logger.getLogger().devError(DEV_ERROR_CONTEST_GUI_DOUBLE_OPENED);
         } else {
             this.playersWithOpenGUI.add(playerName);
         }
@@ -75,7 +79,7 @@ public class ContestManager {
 
     public void updateClosedContestGUI(String playerName) {
         if (!this.playersWithOpenGUI.contains(playerName)) {
-            Bukkit.getLogger().info("[HoloQuiz] BUG: A player managed to close the Contests GUI while not having it open.");
+            Logger.getLogger().devError(DEV_ERROR_CONTEST_GUI_DOUBLE_CLOSED);
             return;
         }
         this.playersWithOpenGUI.remove(playerName);
@@ -142,7 +146,7 @@ public class ContestManager {
             ZonedDateTime dateTime = fetchDateTimeByTimestamp(endingTimestamp);
             String contestType = contest.getTypeString();
             String logMessage = String.format(LOG_DELETED_CONTEST, contestType, dateTime, endingTimestamp);
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().info_low(logMessage);
         }
 
         //If contest is enabled and timestamp is 0, update with new timestamp
@@ -154,7 +158,7 @@ public class ContestManager {
             String logMessage = String.format(LOG_CREATED_NEW_CONTEST, contest.getContestName(),
                     contest.getStartDate(), contest.getStartTime(),
                     contest.getEndDate(), contest.getEndTime());
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().info_low(logMessage);
         }
     }
 
@@ -174,7 +178,7 @@ public class ContestManager {
             contest.generateMonthlyIntervalForContest(zoneId, startDate);
             return;
         }
-        Bukkit.getLogger().info(String.format(ERROR_MESSAGE_IMPOSSIBLE_CODE, contest.getContestName(),  contest.getTypeCode()));
+        Logger.getLogger().devError(String.format(DEV_ERROR_IMPOSSIBLE_CODE, contest.getContestName(),  contest.getTypeCode()));
     }
 
     private ZonedDateTime fetchDateTimeByTimestamp(long time) {
@@ -226,7 +230,7 @@ public class ContestManager {
         long startTime = savedContest.getStartTime();
         long endTime = savedContest.getEndTime();
         String logMessage = String.format(LOG_MESSAGE_CONTEST_ENDED, startDate, startTime, endDate, endTime);
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().info_low(logMessage);
     }
 
     private ArrayList<ContestWinner> parseContestWinners(ArrayList<ArrayList<PlayerContestStats>> contestWinnersData, ContestInfo contestInfo) {

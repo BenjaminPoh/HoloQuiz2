@@ -2,7 +2,6 @@ package benloti.holoquiz.files;
 
 import benloti.holoquiz.structs.Question;
 import benloti.holoquiz.structs.RewardTier;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -30,18 +29,21 @@ public class ExternalFiles {
 
     private static final String[] CONTEST_CATEGORIES = {"Most", "Fastest", "BestAvg", "BestX"};
 
-    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "[HoloQuiz] Contest Reward %s %s has %d rewards";
-    public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "[HoloQuiz] Trivia Category loaded %d Questions!";
-    public static final String LOG_MESSAGE_REPLACED_FILE = "[HoloQuiz] Replaced %s with %s successfully!";
-    public static final String LOG_MESSAGE_MOVED_BROKEN_FILE_TO_ARCHIVE = "[HoloQuiz] Moved %s to %s successfully!";
-    public static final String WARNING_MISSING_PLUGIN_FOLDER = "[HoloQuiz] Warning: Plugin Folder Missing! Loading from Resource...";
-    public static final String WARNING_MISSING_BACKUP_FOLDER = "[HoloQuiz] Warning: Backup Folder Missing! Loading from Resource...";
-    public static final String WARNING_MISSING_ARCHIVE_FOLDER = "[HoloQuiz] Warning: Archive Folder Missing! Making a new one...";
-    public static final String WARNING_REWARDS_SECTION_NOT_FOUND = "[HoloQuiz] Warning: Rewards Section not found!";
-    public static final String WARNING_INVALID_QUESTION = "[HoloQuiz] Error with loading question: %s";
-    public static final String ERROR_MSG_BROKEN_FILE = "[HoloQuiz] ERROR: Your %s file is broken! Loading from backups...";
-    public static final String ERROR_MSG_BROKEN_FILE_ON_RELOAD = "[HoloQuiz] ERROR: Your %s file is broken! Reload has been Terminated!";
-    public static final String ERROR_MSG_BROKEN_BACKUP_FILE = "[HoloQuiz] ERROR: Your %s backup file is also broken! Loading from Resource...";
+    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "Contest Reward %s %s has %d rewards";
+    public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "Trivia Category loaded %d Questions!";
+    public static final String LOG_MESSAGE_REPLACED_FILE = "Replaced %s with %s successfully!";
+    public static final String WARNING_MOVED_BROKEN_FILE_TO_ARCHIVE = "Archived Broken File: %s to %s!";
+    public static final String WARNING_MISSING_PLUGIN_FOLDER = "Plugin Folder Missing! Loading from Resource...";
+    public static final String WARNING_MISSING_BACKUP_FOLDER = "Backup Folder Missing! Loading from Resource...";
+    public static final String WARNING_MISSING_ARCHIVE_FOLDER = "Archive Folder Missing! Making a new one...";
+    public static final String WARNING_REWARDS_SECTION_NOT_FOUND = "Rewards Section not found!";
+    public static final String WARNING_INVALID_QUESTION = "Invalid question: %s";
+    public static final String ERROR_BROKEN_FILE = "Your %s file is broken! Loading from backups...";
+    public static final String ERROR_BROKEN_BACKUP_FILE = "Your %s backup file is also broken! Loading from Resource...";
+    public static final String ERROR_ON_RELOAD_BROKEN_FILE = "Your %s file is broken! Reload has been Terminated!";
+    public static final String ERROR_ON_RELOAD_PLUGIN_FOLDER_MISSING = "Plugin Folder Missing!";
+    public static final String ERROR_ON_RELOAD_BACKUP_FOLDER_MISSING = "Backup Folder Missing!";
+    public static final String ERROR_ON_RELOAD_ARCHIVE_FOLDER_MISSING = "Archive Folder Missing!";
 
     private final JavaPlugin plugin;
     private ConfigFile configFile;
@@ -56,7 +58,7 @@ public class ExternalFiles {
         this.configLoader = new ConfigLoader();
         //If plugin's data folder exists, all the necessary files are fetched from the resource section.
         if (!plugin.getDataFolder().exists()) {
-            Bukkit.getLogger().info(WARNING_MISSING_PLUGIN_FOLDER);
+            Logger.getLogger().warn(WARNING_MISSING_PLUGIN_FOLDER);
             plugin.getDataFolder().mkdirs();
             loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
             loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
@@ -64,7 +66,7 @@ public class ExternalFiles {
         }
         File backupDir = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH);
         if(!backupDir.exists()) {
-            Bukkit.getLogger().info(WARNING_MISSING_BACKUP_FOLDER);
+            Logger.getLogger().warn(WARNING_MISSING_BACKUP_FOLDER);
             backupDir.mkdirs();
             loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
             loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
@@ -72,7 +74,7 @@ public class ExternalFiles {
         }
         File archiveDir = new File(plugin.getDataFolder(), ARCHIVE_DIRECTORY_PATH);
         if(!archiveDir.exists()) {
-            Bukkit.getLogger().info(WARNING_MISSING_ARCHIVE_FOLDER);
+            Logger.getLogger().warn(WARNING_MISSING_ARCHIVE_FOLDER);
             archiveDir.mkdirs();
         }
         verifyFileExistence(CONFIG_FILE_NAME);
@@ -87,17 +89,17 @@ public class ExternalFiles {
             this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
             updateFile(BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME, CONFIG_FILE_NAME);
         } catch (Exception e) {
-            String logMessage = String.format(ERROR_MSG_BROKEN_FILE, CONFIG_FILE_NAME);
-            Bukkit.getLogger().info(logMessage);
-            Bukkit.getLogger().info(e.toString());
+            String logMessage = String.format(ERROR_BROKEN_FILE, CONFIG_FILE_NAME);
+            Logger.getLogger().error(logMessage);
+            Logger.getLogger().debug(e.toString());
             storeToArchive(CONFIG_FILE_NAME, ARCHIVE_CONFIG_FILE_NAME);
             try {
                 this.configFile = new ConfigFile(plugin, configLoader,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 updateFile(CONFIG_FILE_NAME, BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
             } catch (Exception e2) {
-                logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, CONFIG_FILE_NAME);
-                Bukkit.getLogger().info(logMessage);
-                Bukkit.getLogger().info(e2.toString());
+                logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, CONFIG_FILE_NAME);
+                Logger.getLogger().error(logMessage);
+                Logger.getLogger().debug(e2.toString());
                 loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
                 this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
@@ -114,18 +116,18 @@ public class ExternalFiles {
             loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards, this.contestRewards);
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
-            String logMessage = String.format(ERROR_MSG_BROKEN_FILE, REWARDS_FILE_NAME);
-            Bukkit.getLogger().info(logMessage);
-            Bukkit.getLogger().info(e.toString());
+            String logMessage = String.format(ERROR_BROKEN_FILE, REWARDS_FILE_NAME);
+            Logger.getLogger().error(logMessage);
+            Logger.getLogger().debug(e.toString());
             storeToArchive(REWARDS_FILE_NAME, ARCHIVE_REWARDS_FILE_NAME);
             try {
                 File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
                 updateFile(REWARDS_FILE_NAME, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
             } catch (Exception e2) {
-                logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, REWARDS_FILE_NAME);
-                Bukkit.getLogger().info(logMessage);
-                Bukkit.getLogger().info(e2.toString());
+                logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, REWARDS_FILE_NAME);
+                Logger.getLogger().error(logMessage);
+                Logger.getLogger().debug(e2.toString());
                 loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
                 File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
@@ -139,18 +141,18 @@ public class ExternalFiles {
             this.allQuestions = loadQuestions(questionsYml);
             updateFile(BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
         } catch (Exception e) {
-            String logMessage = String.format(ERROR_MSG_BROKEN_FILE, QUESTION_BANK_FILE_NAME);
-            Bukkit.getLogger().info(logMessage);
-            Bukkit.getLogger().info(e.toString());
+            String logMessage = String.format(ERROR_BROKEN_FILE, QUESTION_BANK_FILE_NAME);
+            Logger.getLogger().error(logMessage);
+            Logger.getLogger().debug(e.toString());
             storeToArchive(QUESTION_BANK_FILE_NAME, ARCHIVE_QUESTION_BANK_FILE_NAME);
             try {
                 File questionsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 this.allQuestions = loadQuestions(questionsYml);
                 updateFile(QUESTION_BANK_FILE_NAME, BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
             } catch (Exception e2) {
-                logMessage = String.format(ERROR_MSG_BROKEN_BACKUP_FILE, QUESTION_BANK_FILE_NAME);
-                Bukkit.getLogger().info(logMessage);
-                Bukkit.getLogger().info(e2.toString());
+                logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, QUESTION_BANK_FILE_NAME);
+                Logger.getLogger().error(logMessage);
+                Logger.getLogger().debug(e2.toString());
                 loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
                 loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
                 File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
@@ -161,12 +163,17 @@ public class ExternalFiles {
 
     public boolean reloadAll() {
         if (!plugin.getDataFolder().exists()) {
-            Bukkit.getLogger().info("[HoloQuiz] Plugin Folder Missing!");
+            Logger.getLogger().error(ERROR_ON_RELOAD_PLUGIN_FOLDER_MISSING);
             return false;
         }
         File backupDir = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH);
         if(!backupDir.exists()) {
-            Bukkit.getLogger().info("[HoloQuiz] Backup Folder Missing!");
+            Logger.getLogger().error(ERROR_ON_RELOAD_BACKUP_FOLDER_MISSING);
+            return false;
+        }
+        File archiveDir = new File(plugin.getDataFolder(), ARCHIVE_DIRECTORY_PATH);
+        if(!archiveDir.exists()) {
+            Logger.getLogger().error(ERROR_ON_RELOAD_ARCHIVE_FOLDER_MISSING);
             return false;
         }
 
@@ -180,8 +187,8 @@ public class ExternalFiles {
         try {
             newConfigFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
         } catch (Exception e) {
-            String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, CONFIG_FILE_NAME);
-            Bukkit.getLogger().info(logMessage);
+            String logMessage = String.format(ERROR_ON_RELOAD_BROKEN_FILE, CONFIG_FILE_NAME);
+            Logger.getLogger().error(logMessage);
             return false;
         }
         configLoader.setCurrentFile("Rewards.yml");
@@ -189,8 +196,8 @@ public class ExternalFiles {
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
             loadAllRewards(rewardsYml, newAllNormalRewards, newSecretRewards, newContestRewards);
         } catch (Exception e) {
-            String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, REWARDS_FILE_NAME);
-            Bukkit.getLogger().info(logMessage);
+            String logMessage = String.format(ERROR_ON_RELOAD_BROKEN_FILE, REWARDS_FILE_NAME);
+            Logger.getLogger().error(logMessage);
             return false;
         }
         configLoader.setCurrentFile("QuestionBank.yml");
@@ -198,8 +205,8 @@ public class ExternalFiles {
             File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
             newQuestions = loadQuestions(questionsYml);
         } catch (Exception e) {
-            String logMessage = String.format(ERROR_MSG_BROKEN_FILE_ON_RELOAD, QUESTION_BANK_FILE_NAME);
-            Bukkit.getLogger().info(logMessage);
+            String logMessage = String.format(ERROR_ON_RELOAD_BROKEN_FILE, QUESTION_BANK_FILE_NAME);
+            Logger.getLogger().error(logMessage);
             return false;
         }
 
@@ -277,7 +284,7 @@ public class ExternalFiles {
         ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
         loadRewardsTier(normalRewardsSection, allNormalRewards);
         if (allNormalRewards.isEmpty()) {
-            Bukkit.getLogger().info(WARNING_REWARDS_SECTION_NOT_FOUND);
+            Logger.getLogger().warn(WARNING_REWARDS_SECTION_NOT_FOUND);
         }
         ConfigurationSection secretRewardsSection = rewardsFile.getConfigurationSection("SecretRewards");
         loadRewardsTier(secretRewardsSection, secretRewards);
@@ -332,7 +339,7 @@ public class ExternalFiles {
             contestRewards.put(key + category, rewardsList);
             if(!rewardsList.isEmpty()) {
                 String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, key, category, rewardsList.size());
-                Bukkit.getLogger().info(logMessage);
+                Logger.getLogger().info_low(logMessage);
             }
         }
     }
@@ -399,7 +406,7 @@ public class ExternalFiles {
             questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
         }
         String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS, questionList.size());
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().info_low(logMessage);
         return questionList;
     }
 
@@ -414,7 +421,7 @@ public class ExternalFiles {
             String question = configLoader.getString(questionConfig, "Question", "");
             List<String> answers = configLoader.getStringList(questionConfig, "Answers");
             if(question.isEmpty() || answers.isEmpty()) {
-                Bukkit.getLogger().info(String.format(WARNING_INVALID_QUESTION, question));
+                Logger.getLogger().warn(String.format(WARNING_INVALID_QUESTION, question));
                 continue;
             }
             question = prefix + question;
@@ -446,7 +453,7 @@ public class ExternalFiles {
             outputStream.close();
 
         } catch (IOException e) {
-            Bukkit.getLogger().info(e.toString());
+            Logger.getLogger().debug(e.toString());
         }
     }
 
@@ -471,13 +478,13 @@ public class ExternalFiles {
             }
             outputStream.close();
             if(oldFileExists) {
-                Bukkit.getLogger().info(String.format(LOG_MESSAGE_REPLACED_FILE, oldFileName, newFileName));
+                Logger.getLogger().info_low(String.format(LOG_MESSAGE_REPLACED_FILE, oldFileName, newFileName));
             } else {
-                Bukkit.getLogger().info(String.format(LOG_MESSAGE_MOVED_BROKEN_FILE_TO_ARCHIVE, newFileName, oldFileName));
+                Logger.getLogger().warn(String.format(WARNING_MOVED_BROKEN_FILE_TO_ARCHIVE, newFileName, oldFileName));
             }
 
         } catch (IOException e) {
-            Bukkit.getLogger().info(e.toString());
+            Logger.getLogger().debug(e.toString());
         }
     }
 

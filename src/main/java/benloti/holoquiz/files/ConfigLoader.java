@@ -1,23 +1,19 @@
 package benloti.holoquiz.files;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigLoader {
-    private static final String ERROR_MISSING_CONFIG = "[HoloQuiz] ERROR: Missing Key %s for Path %s in File %s!" ;
-    private static final String WARNING_INVALID_MATERIAL = "[HoloQuiz] Warning: Failed to load item with the name - %s";
+    private static final String ERROR_MISSING_CONFIG = "Missing Key %s for Path %s in File %s!" ;
+    private static final String ERROR_INVALID_MATERIAL = "Failed to load item with the name - %s";
 
-    private ArrayList<String> errorMessages;
     private String currentFile;
 
     public ConfigLoader() {
-        this.errorMessages = new ArrayList<>();
         this.currentFile = "";
     }
 
@@ -110,7 +106,7 @@ public class ConfigLoader {
         Material itemMaterial = Material.matchMaterial(itemType);
         if (itemMaterial == null) {
             itemMaterial = Material.CARROT;
-            Bukkit.getLogger().info(String.format(WARNING_INVALID_MATERIAL,itemType));
+            Logger.getLogger().error(String.format(ERROR_INVALID_MATERIAL,itemType));
         }
         return itemMaterial;
     }
@@ -130,7 +126,6 @@ public class ConfigLoader {
 
     private void handleMissingKey(String path, String key) {
         String logMessage = String.format(ERROR_MISSING_CONFIG, key, path, currentFile);
-        Bukkit.getLogger().info(logMessage);
-        this.errorMessages.add(logMessage);
+        Logger.getLogger().error(logMessage);
     }
 }

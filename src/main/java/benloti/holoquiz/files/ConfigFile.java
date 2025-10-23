@@ -3,7 +3,6 @@ package benloti.holoquiz.files;
 import benloti.holoquiz.games.MinSDCheatDetector;
 import benloti.holoquiz.games.MinTimeCheatDetector;
 import benloti.holoquiz.structs.ContestInfo;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,18 +17,19 @@ import java.util.List;
 
 public class ConfigFile {
 
-    private static final String WARNING_SRTS_EMPTY_WHITELIST = "[HoloQuiz] Warning: SRTS uses an empty Whitelist - No one can claim reward items!";
-    private static final String WARNING_CONTEST_INVALID_MIN = "[HoloQuiz] Warning: Minimum Requirement for %s cannot be lower than 1!";
-    private static final String WARNING_INVALID_CONFIG = "[HoloQuiz] Warning: The Value %s for %s is invalid!";
+    private static final String WARNING_SRTS_EMPTY_WHITELIST = "SRTS uses an empty Whitelist - No one can claim reward items!";
+    private static final String WARNING_CONTEST_INVALID_MIN = "Minimum Requirement for %s cannot be lower than 1!";
+    private static final String WARNING_INVALID_CONFIG = "The Value %s for %s is invalid!";
     private static final String EASTER_EGG_EXTRA_SASS = " What sort of day is %s anyway?";
-    private static final String ERROR_CONTEST_FAILED_TO_LOAD = "[HoloQuiz] Error: Failed to load contest of name %s due to invalid timestamp";
-    private static final String ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD = "[HoloQuiz] Error: Failed to load Custom contest of name %s due to missing Rewards";
+    private static final String ERROR_CONTEST_FAILED_TO_LOAD = "Failed to load contest of name %s due to invalid timestamp";
+    private static final String ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD = "Failed to load Custom contest of name %s due to missing Rewards";
 
     private final String pluginPrefix;
     private final boolean collectRewardOnJoin;
+    private final boolean enableOnStart;
+    private final int loggingLevel;
     private final boolean easterEggsEnabled;
     private final boolean inaWahEnabled;
-    private final boolean enableOnStart;
 
     private final int leaderboardSize;
     private final int leaderboardMinReq;
@@ -71,8 +71,9 @@ public class ConfigFile {
 
         this.pluginPrefix = configLoader.getString(configs, "PluginPrefix", "&7[&bHoloQuiz&7] ");
         this.collectRewardOnJoin = configLoader.getBoolean(configs, "CollectRewardsOnJoin", true);
-        this.easterEggsEnabled = configLoader.getBoolean(configs, "EasterEggs", false);
         this.enableOnStart = configLoader.getBoolean(configs, "EnableOnStart", false);
+        this.loggingLevel = configLoader.getInt(configs, "LoggingLevel", 1);
+        this.easterEggsEnabled = configLoader.getBoolean(configs, "EasterEggs", false);
         this.inaWahEnabled = configLoader.getBoolean(configs, "InaGoesWAH", false);
 
         this.gameMode = parseGameMode(configs, configLoader);
@@ -123,7 +124,7 @@ public class ConfigFile {
         this.SRTS_useWhitelist = parseSRTSListType(configs, configLoader);
         this.SRTS_WorldList = configLoader.getStringList(configs, "SRTS_WorldList");
         if (this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
-            Bukkit.getLogger().info(WARNING_SRTS_EMPTY_WHITELIST);
+            Logger.getLogger().warn(WARNING_SRTS_EMPTY_WHITELIST);
         }
     }
 
@@ -153,6 +154,10 @@ public class ConfigFile {
 
     public boolean isEnableOnStart() {
         return enableOnStart;
+    }
+
+    public int getLoggingLevel() {
+        return loggingLevel;
     }
 
     public String getPluginPrefix() {
@@ -263,7 +268,7 @@ public class ConfigFile {
         String gameMode = configLoader.getString(configs, "GameMode", "Trivia");
         if (!gameMode.equals("Trivia") && !gameMode.equals("Math") && !gameMode.equals("Mixed")) {
             String logMessage = String.format(WARNING_INVALID_CONFIG, gameMode, "GameMode");
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().warn(logMessage);
             return "Trivia";
         }
         return gameMode;
@@ -280,7 +285,7 @@ public class ConfigFile {
                 return -1;
         }
         String logMessage = String.format(WARNING_INVALID_CONFIG, location, "CorrectAnswerMsgLoc");
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().warn(logMessage);
         return 0;
     }
 
@@ -291,7 +296,7 @@ public class ConfigFile {
             zoneId = ZoneId.of(timeZone);
         } catch (Exception e) {
             String logMessage = String.format(WARNING_INVALID_CONFIG, timeZone, "TimeZone");
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().warn(logMessage);
             zoneId = ZoneId.of("GMT+0");
         }
         return zoneId;
@@ -316,7 +321,7 @@ public class ConfigFile {
                 return 7;
         }
         String logMessage = String.format(WARNING_INVALID_CONFIG, day, "WeeklyResetDay") + String.format(EASTER_EGG_EXTRA_SASS, day);
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().warn(logMessage);
         return 1;
     }
 
@@ -329,7 +334,7 @@ public class ConfigFile {
                 return false;
         }
         String logMessage = String.format(WARNING_INVALID_CONFIG, listType, "SRTS_listType");
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().warn(logMessage);
         return false;
     }
 
@@ -343,7 +348,7 @@ public class ConfigFile {
                 return false;
         }
         String logMessage = String.format(WARNING_INVALID_CONFIG, status, "SRTS_listType");
-        Bukkit.getLogger().info(logMessage);
+        Logger.getLogger().warn(logMessage);
         return false;
     }
 
@@ -376,7 +381,7 @@ public class ConfigFile {
             return null;
         }
         if(customContestInfo.getRewardCategoryName().isEmpty()) {
-            Bukkit.getLogger().info(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD, key));
+            Logger.getLogger().error(String.format(ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD, key));
             return null;
         }
         return customContestInfo;
@@ -396,18 +401,18 @@ public class ConfigFile {
         int bestXMinReq = configLoader.getInt(section, "BestXMinReq", 1);
         if (bestAvgMinReq < 1 && bestAvgEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestAvgMinReq");
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().warn(logMessage);
             bestAvgEnabled = false;
         }
         if (bestXMinReq < 1 && bestXEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestXMinReq");
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().warn(logMessage);
             bestXEnabled = false;
         }
         long startTimestamp = configLoader.getLong(section, "StartTimestamp", 0);
         long endTimestamp = configLoader.getLong(section, "EndTimestamp", 0);
         if (startTimestamp == 0 || endTimestamp == 0 || endTimestamp <= startTimestamp) {
-            Bukkit.getLogger().info(String.format(ERROR_CONTEST_FAILED_TO_LOAD, key));
+            Logger.getLogger().error(String.format(ERROR_CONTEST_FAILED_TO_LOAD, key));
             return null;
         }
         //To convert from Seconds to Milliseconds

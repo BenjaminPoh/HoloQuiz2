@@ -1,5 +1,6 @@
 package benloti.holoquiz.dependencies;
 
+import benloti.holoquiz.files.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -12,11 +13,11 @@ public class DependencyHandler {
         this.cmiDep = new CMIDep();
         this.vaultDep = new VaultDep(plugin);
         if (Bukkit.getPluginManager().isPluginEnabled("CMI") && Bukkit.getPluginManager().isPluginEnabled("CMILib")) {
-            Bukkit.getLogger().info("[HoloQuiz] CMI & CMILib Plugin detected as Soft Dep!");
+            Logger.getLogger().info_low("[HoloQuiz] CMI & CMILib Plugin detected as Soft Dep!");
             this.cmiDep.setEnabled();
         }
         if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-            Bukkit.getLogger().info("[HoloQuiz] Vault Plugin detected as Soft Dep!");
+            Logger.getLogger().info_low("[HoloQuiz] Vault Plugin detected as Soft Dep!");
             this.vaultDep.initialiseDep();
         }
     }
