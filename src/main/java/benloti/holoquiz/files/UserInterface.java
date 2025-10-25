@@ -3,7 +3,6 @@ package benloti.holoquiz.files;
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.dependencies.CMIDep;
 import benloti.holoquiz.structs.PlayerSettings;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -59,7 +58,7 @@ public class UserInterface {
                 guard += 1;
             }
             if(guard == 100) {
-                Bukkit.getLogger().info("[HoloQuiz] Suffix Regex broke. Yabe peko!");
+                Logger.getLogger().devError("Yabe peko! Suffix Regex broke. Message: " + message);
             }
             player.sendMessage(message);
         }

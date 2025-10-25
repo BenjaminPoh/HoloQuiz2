@@ -3,6 +3,7 @@ package benloti.holoquiz.games;
 import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ContestManager;
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.structs.Question;
@@ -103,12 +104,12 @@ public class QuizAnswerHandler implements Listener {
         if(gameManager.isQuestionAnswered()) {
             long processingTime = System.currentTimeMillis() - timeAnswered;
             String log = String.format(DEBUG_LOG_RACE_CONDITION, player.getName(), timeTaken, processingTime);
-            Bukkit.getLogger().info(log);
+            Logger.getLogger().warn(log); //Temporary
             return;
         }
         gameManager.setQuestionAnswered(true);
-        //long processingTime = System.currentTimeMillis() - timeAnswered;
-        //Bukkit.getLogger().info("[HoloQuiz Debug Log] Processing done in " + processingTime + "ms");
+        long processingTime = System.currentTimeMillis() - timeAnswered;
+        Logger.getLogger().debug("Processing done in " + processingTime + "ms");
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getCurrentQuestionType();
@@ -137,7 +138,7 @@ public class QuizAnswerHandler implements Listener {
 
         //Log to Console
         String logInfo = String.format(CORRECT_ANSWER_LOG, player.getName(), timeTaken);
-        Bukkit.getLogger().info(logInfo);
+        Logger.getLogger().info_med(logInfo);
 
         //Update for ended contests if necessary
         contestManager.updateContestsStatus(false);

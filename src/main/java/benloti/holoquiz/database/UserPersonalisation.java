@@ -1,5 +1,6 @@
 package benloti.holoquiz.database;
 
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.structs.PlayerSettings;
 
 import java.sql.*;
@@ -87,7 +88,7 @@ public class UserPersonalisation {
                 statsSQLQuery.setString(3, key);
                 statsSQLQuery.executeUpdate();
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger().dumpStackTrace(e);
             }
         }
 
@@ -100,7 +101,7 @@ public class UserPersonalisation {
                 statsSQLQuery.setString(3, currentPlayer.getSuffix());
                 statsSQLQuery.executeUpdate();
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger().dumpStackTrace(e);
             }
         }
     }
@@ -110,7 +111,7 @@ public class UserPersonalisation {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_USER_PERSONALISATION_TABLE);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -126,7 +127,7 @@ public class UserPersonalisation {
                 userSettings.put(player_uuid, playerSetting);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 

@@ -1,6 +1,6 @@
 package benloti.holoquiz.database;
 
-import org.bukkit.Bukkit;
+import benloti.holoquiz.files.Logger;
 
 import java.sql.*;
 
@@ -25,11 +25,12 @@ public class UserInfo {
     private static final String SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID =
             "SELECT * FROM user_info WHERE username = ?";
 
+    private static final String LOG_ASSIGNING_NEW_ID = "Assigning new player with ID: %d";
     private static final String LOG_MSG_UPDATED_USERNAME_FOR_UUID_SUCCESS =
-            "[HoloQuiz] Detected that Player %s changed name to %s. New name will now be used.";
-    private static final String LOG_MSG_UPDATED_USERNAME_FOR_UUID_FAILED =
-            "[HoloQuiz] Error: Detected that Player %s changed name to %s, but NOT updated due to unknown error";
-    public static final String IMPOSSIBLE_ERROR_HOLOQUIZ_CREATED_ID_0 = "[HoloQuiz] Impossible Error: If you see this, I retire from coding";
+            "Detected that Player %s changed name to %s. New name will now be used.";
+    private static final String ERROR_UPDATED_USERNAME_FOR_UUID_FAILED =
+            "Detected that Player %s changed name to %s, but NOT updated due to unknown error";
+    private static final String DEV_ERROR_HOLOQUIZ_CREATED_ID_0 = "ID 0 Created? If you see this, I retire from coding";
 
     public UserInfo(Connection connection) {
         createTable(connection);
@@ -47,9 +48,9 @@ public class UserInfo {
             } else {
                 PreparedStatement infoStatement = connection.prepareStatement(SQL_STATEMENT_ADD_NEW_USER_INFO);
                 int newId = getSize(connection) + 1;
-                Bukkit.getLogger().info("[HoloQuiz] Assigning new player with ID:" + newId);
+                Logger.getLogger().info_low(String.format(LOG_ASSIGNING_NEW_ID, newId));
                 if(newId == 0) {
-                    Bukkit.getLogger().info(IMPOSSIBLE_ERROR_HOLOQUIZ_CREATED_ID_0);
+                    Logger.getLogger().devError(DEV_ERROR_HOLOQUIZ_CREATED_ID_0);
                 }
                 infoStatement.setInt(1, newId);
                 infoStatement.setString(2, PlayerUUID);
@@ -58,7 +59,7 @@ public class UserInfo {
                 return newId;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return 0;
     }
@@ -74,11 +75,11 @@ public class UserInfo {
             updateStatement.setString(2, playerUUID);
             updateStatement.executeUpdate();
             String logMessage = String.format(LOG_MSG_UPDATED_USERNAME_FOR_UUID_SUCCESS, newName, oldName);
-            Bukkit.getLogger().info(logMessage);
+            Logger.getLogger().info_low(logMessage);
         } catch (SQLException e) {
-            e.printStackTrace();
-            String logMessage = String.format(LOG_MSG_UPDATED_USERNAME_FOR_UUID_FAILED, newName, oldName);
-            Bukkit.getLogger().info(logMessage);
+            String logMessage = String.format(ERROR_UPDATED_USERNAME_FOR_UUID_FAILED, newName, oldName);
+            Logger.getLogger().error(logMessage);
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -89,7 +90,7 @@ public class UserInfo {
             resultSet.next();
             return resultSet.getInt(1);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return -1;
     }
@@ -105,7 +106,7 @@ public class UserInfo {
             }
             return resultSet.getInt("user_id");
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return 0;
     }
@@ -122,7 +123,7 @@ public class UserInfo {
             }
             return allPlayerNamesByHoloQuizID;
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return null;
     }
@@ -134,7 +135,7 @@ public class UserInfo {
             ResultSet resultSet = statement.executeQuery();
             return resultSet.getString("username");
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return null;
     }
@@ -144,7 +145,7 @@ public class UserInfo {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_USERINFO_TABLE);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 

@@ -1,11 +1,11 @@
 package benloti.holoquiz.games;
 
-import org.bukkit.Bukkit;
+import benloti.holoquiz.files.Logger;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class PeriodicChecker extends BukkitRunnable {
 
-    private static final String LOG_MESSAGE = "[HoloQuiz] LOG: Question was delayed by %f secs. Is server TPS not doing well?";
+    private static final String LOG_MESSAGE = "Question was delayed by %f secs. Is server TPS not doing well?";
 
     private final GameManager gameManager;
 
@@ -21,7 +21,7 @@ public class PeriodicChecker extends BukkitRunnable {
             double delay = (timeNow - timeLimit) / 1000.0;
             gameManager.triggerNextTask(true);
             if(delay > 0.1) {
-                Bukkit.getLogger().info(String.format(LOG_MESSAGE, delay));
+                Logger.getLogger().info_high(String.format(LOG_MESSAGE, delay));
             }
         }
     }

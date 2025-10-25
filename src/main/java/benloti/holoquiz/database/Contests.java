@@ -1,5 +1,6 @@
 package benloti.holoquiz.database;
 
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.structs.ContestInfo;
 import benloti.holoquiz.structs.PlayerContestStats;
 
@@ -32,7 +33,7 @@ public class Contests {
                 position += 1;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -41,7 +42,7 @@ public class Contests {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_CONTEST_LOG_TABLE);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 

@@ -2,6 +2,7 @@
 EnableOnStart: false
 PluginPrefix: "&7[{#13A7DE>}HoloQuiz{#21C7FF<}&7] "
 CollectRewardsOnJoin: true
+LoggingLevel: 1 #1: Low | 2: Medium | 3: High
 
 # A special override which directly Sends item Rewards To Storage (SRTS) instead of to their inventory.
 SRTS_listType: Blacklist #Available: Whitelist/Blacklist

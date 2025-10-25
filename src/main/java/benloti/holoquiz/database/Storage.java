@@ -1,7 +1,7 @@
 package benloti.holoquiz.database;
 
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.structs.RewardTier;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -22,7 +22,7 @@ public class Storage {
     private static final String SQL_STATEMENT_REMOVE_CLAIMED_ITEM =
             "DELETE FROM storage WHERE user_id = ?";
 
-    public static final String ERROR_INVALID_STORAGE_FORMAT = "[HoloQuiz] You messed with the database... didnt you?";
+    public static final String ERROR_INVALID_STORAGE_FORMAT = "Invalid Storage format. You messed with the database... didnt you?";
 
     public Storage(Connection connection) {
         createTable(connection);
@@ -33,7 +33,7 @@ public class Storage {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_STORAGE_TABLE);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -47,7 +47,7 @@ public class Storage {
             statement.setInt(5, reps);
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -86,17 +86,17 @@ public class Storage {
                     msgList.add(content);
                     continue;
                 }
-                Bukkit.getLogger().info(ERROR_INVALID_STORAGE_FORMAT);
+                Logger.getLogger().error(ERROR_INVALID_STORAGE_FORMAT);
             }
             PreparedStatement updateStatement = connection.prepareStatement(SQL_STATEMENT_REMOVE_CLAIMED_ITEM);
             updateStatement.setInt(1, user_id);
             updateStatement.executeUpdate();
         } catch (NumberFormatException | NullPointerException e) {
-            Bukkit.getLogger().info(ERROR_INVALID_STORAGE_FORMAT);
-            e.printStackTrace();
+            Logger.getLogger().error(ERROR_INVALID_STORAGE_FORMAT);
+            Logger.getLogger().dumpStackTrace(e);
             return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
             return new RewardTier(0, 0, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         }
         return new RewardTier(0, money, cmdList, itemList, msgList);

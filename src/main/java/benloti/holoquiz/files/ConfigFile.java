@@ -420,7 +420,7 @@ public class ConfigFile {
         endTimestamp = endTimestamp * 1000 + 999;
         LocalDate startDate = Instant.ofEpochMilli(startTimestamp).atZone(this.timezoneOffset).toLocalDate();
         LocalDate endDate = Instant.ofEpochMilli(endTimestamp).atZone(this.timezoneOffset).toLocalDate();
-        //Bukkit.getLogger().info(String.format("%s: Start %d (%s) End %d (%s)", code, startTimestamp, startDate, endTimestamp, endDate));
+        Logger.getLogger().debug(String.format("%s: Start %d (%s) End %d (%s)", code, startTimestamp, startDate, endTimestamp, endDate));
         if(code > 2) {
             String rewardCategory = configLoader.getString(section, "RewardCategory", "");
             return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,

@@ -1,8 +1,8 @@
 package benloti.holoquiz.dependencies;
 
+import benloti.holoquiz.files.Logger;
 import net.milkbowl.vault.economy.Economy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,7 +22,7 @@ public class VaultDep {
             isEnabled = true;
             return;
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error setting up Vault dependency, Vault disabled!");
+        Logger.getLogger().warn("Issues with setting up Vault dependency, is an economy set up?");
     }
 
     public void addBalance(Player player, double amount) {

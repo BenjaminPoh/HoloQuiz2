@@ -1,12 +1,15 @@
 package benloti.holoquiz.structs;
 
-import org.bukkit.Bukkit;
+import benloti.holoquiz.files.Logger;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 
 public class ContestInfo {
+    public static final String DEV_ERROR_INVALID_CONTEST_CODE = "Contest Code not between 0 to 3. How did you get here?";
+    public static final String DEV_ERROR_INVALID_REGULAR_CONTEST_CODE = "Regular Contest Code not between 1 to 3. How did you get here?";
+
     private final boolean isEnabled;
     private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
     private final String contestName;
@@ -154,7 +157,7 @@ public class ContestInfo {
         this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
         this.endTime = endDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
         if(theSafeguardThatShouldNeverTrigger) {
-            Bukkit.getLogger().info("[HoloQuiz] Contest StatusCode not between 1 to 3. How did you even get here?");
+            Logger.getLogger().devError(DEV_ERROR_INVALID_REGULAR_CONTEST_CODE);
         }
     }
 
@@ -185,7 +188,7 @@ public class ContestInfo {
         if(code == 3) {
             return bestXRewards;
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
+        Logger.getLogger().devError(DEV_ERROR_INVALID_CONTEST_CODE);
         return null;
     }
 
@@ -202,7 +205,7 @@ public class ContestInfo {
         if(code == 3) {
             return bestXRewards.size();
         }
-        Bukkit.getLogger().info("[HoloQuiz] Error! If you see this, I need to retire from coding :p");
+        Logger.getLogger().devError(DEV_ERROR_INVALID_CONTEST_CODE);
         return 0;
     }
 

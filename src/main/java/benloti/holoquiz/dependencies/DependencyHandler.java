@@ -13,11 +13,11 @@ public class DependencyHandler {
         this.cmiDep = new CMIDep();
         this.vaultDep = new VaultDep(plugin);
         if (Bukkit.getPluginManager().isPluginEnabled("CMI") && Bukkit.getPluginManager().isPluginEnabled("CMILib")) {
-            Logger.getLogger().info_low("[HoloQuiz] CMI & CMILib Plugin detected as Soft Dep!");
+            Logger.getLogger().info_low("CMI & CMILib Plugin detected as Soft Dep!");
             this.cmiDep.setEnabled();
         }
         if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-            Logger.getLogger().info_low("[HoloQuiz] Vault Plugin detected as Soft Dep!");
+            Logger.getLogger().info_low("Vault Plugin detected as Soft Dep!");
             this.vaultDep.initialiseDep();
         }
     }

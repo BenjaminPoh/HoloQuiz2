@@ -1,8 +1,8 @@
 package benloti.holoquiz.database;
 
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.games.RewardsHandler;
 import benloti.holoquiz.structs.*;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,17 +13,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class DatabaseManager {
     private static final String DB_NAME = "HoloQuiz.db";
-    private static final String ERROR_MSG_DB_FILE = "[HoloQuiz] Database File is bugged!";
+
+    private static final String ERROR_MSG_DB_FILE = "Database File is bugged!";
+    private static final String DEV_ERROR_HOLOQUIZ_ID_NOT_FOUND = "Player doesn't exist. You should NOT see this.";
 
     private static final String SQL_STATEMENT_FETCH_ALL_LOGS =
             "SELECT * FROM answers_logs";
     private static final String SQL_STATEMENT_UPDATE_STATS =
             "UPDATE holoquiz_stats SET best = ?, answers = ?, total = ?, average = ? WHERE user_id = ?";
-    public static final String ERROR_HOLOQUIZ_ID_NOT_FOUND = "[HoloQuiz] Error: Player doesn't exist. You should NOT see this.";
 
     private Connection connection;
     private RewardsHandler rewardsHandler;
@@ -55,7 +55,7 @@ public class DatabaseManager {
             try {
                 dataFile.createNewFile();
             } catch (IOException e) {
-                Bukkit.getLogger().info(ERROR_MSG_DB_FILE);
+                Logger.getLogger().error(ERROR_MSG_DB_FILE);
                 e.printStackTrace();
             }
         }
@@ -65,14 +65,14 @@ public class DatabaseManager {
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                Bukkit.getLogger().info("[HoloQuiz] Making new SQL connection!");
+                Logger.getLogger().info_low("Making new SQL connection!");
                 // Establish a database connection
                 connection = DriverManager.getConnection("jdbc:sqlite:" + dataFile);
                 if (connection == null || connection.isClosed()) {
-                    Bukkit.getLogger().log(Level.SEVERE, ERROR_MSG_DB_FILE);
+                    Logger.getLogger().error(ERROR_MSG_DB_FILE);
                     return null;
                 }
-                Bukkit.getLogger().info("[HoloQuiz] New SQL connection established!");
+                Logger.getLogger().info_low("New SQL connection established!");
             }
             return connection;
         } catch (SQLException e) {
@@ -97,7 +97,7 @@ public class DatabaseManager {
         connection = getConnection();
         int playerHoloQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName);
         if (playerHoloQuizID == 0) {
-            Bukkit.getLogger().info(ERROR_HOLOQUIZ_ID_NOT_FOUND);
+            Logger.getLogger().devError(DEV_ERROR_HOLOQUIZ_ID_NOT_FOUND);
             return null;
         }
         answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken, gameMode);
@@ -228,7 +228,7 @@ public class DatabaseManager {
         connection = getConnection();
         int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
         if (playerHoloQuizID == 0) {
-            Bukkit.getLogger().info(ERROR_HOLOQUIZ_ID_NOT_FOUND);
+            Logger.getLogger().devError(DEV_ERROR_HOLOQUIZ_ID_NOT_FOUND);
             return;
         }
         storage.addToStorage(connection, playerHoloQuizID, type, contents, metaDetails, count);
@@ -285,7 +285,7 @@ public class DatabaseManager {
         connection = getConnection();
         int holoQuizID = userInfo.getHoloQuizIDByUUID(connection, playerUUID, playerName);
         if(holoQuizID == 0) {
-            Bukkit.getLogger().info(ERROR_HOLOQUIZ_ID_NOT_FOUND);
+            Logger.getLogger().devError(DEV_ERROR_HOLOQUIZ_ID_NOT_FOUND);
         }
         return holoQuizID;
     }

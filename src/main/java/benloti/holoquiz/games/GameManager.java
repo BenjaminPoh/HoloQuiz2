@@ -4,9 +4,9 @@ import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ExternalFiles;
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.files.UserInterface;
 import benloti.holoquiz.structs.Question;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,8 +14,8 @@ import java.util.*;
 
 public class GameManager {
     private static final String MESSAGE_REVEAL_ANSWER = "&bNo one got the answer! The answer was &a%s&b.";
-    private static final String LOG_MESSAGE_QUESTION_SENT = "[HoloQuiz] Question Sent: %s";
-    private static final String IMPOSSIBLE_ERROR_INVALID_MODE = "[HoloQuiz] Impossible Error: Invalid mode %s. There is no way you ever see this.";
+    private static final String LOG_MESSAGE_QUESTION_SENT = "Question Sent: %s";
+    private static final String DEV_ERROR_INVALID_MODE = "Invalid mode %s. There is no way you ever see this.";
 
     private final JavaPlugin plugin;
     private final UserInterface userInterface;
@@ -125,7 +125,7 @@ public class GameManager {
     private void sendQuestion() {
         Question question = getRandomQuestion();
         boolean playInaWAH = false;
-        Bukkit.getLogger().info(String.format(LOG_MESSAGE_QUESTION_SENT, question.getQuestion()));
+        Logger.getLogger().info_high(String.format(LOG_MESSAGE_QUESTION_SENT, question.getQuestion()));
         String formattedQuestion = userInterface.attachLabel(question.getQuestion());
         formattedQuestion = userInterface.formatColours(formattedQuestion);
         if(this.inaGoesWAH) {
@@ -166,7 +166,7 @@ public class GameManager {
                 this.currentQuestion = getRandomMixedQuestion();
                 return this.currentQuestion;
         }
-        Bukkit.getLogger().info(String.format(IMPOSSIBLE_ERROR_INVALID_MODE, gameMode));
+        Logger.getLogger().devError(String.format(DEV_ERROR_INVALID_MODE, gameMode));
         return null;
     }
 
@@ -203,7 +203,7 @@ public class GameManager {
     private Question getRandomTriviaQuestion() {
         int size = triviaQuestionList.size();
         int randomIndex = this.rngesus.nextInt(size);
-        //Bukkit.getLogger().info("Qn Rolled: " + randomIndex + " | Queue: " + questionCooldownList.toString());
+        //Logger.getLogger().debug("Qn Rolled: " + randomIndex + " | Queue: " + questionCooldownList.toString());
         randomIndex = obtainQuestionNotOnCooldown(randomIndex, size);
         this.currentQuestionType = "T";
         return triviaQuestionList.get(randomIndex);

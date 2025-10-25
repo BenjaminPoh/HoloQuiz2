@@ -8,8 +8,10 @@ public class Logger {
     private static final String INFO_FORMAT = ChatColor.WHITE + "[HoloQuiz] %s";
     private static final String WARNING_FORMAT = ChatColor.YELLOW + "[HoloQuiz] Warning: %s";
     private static final String ERROR_FORMAT = ChatColor.RED + "[HoloQuiz] ERROR: %s";
+    private static final String STACK_TRACE_FORMAT =  ChatColor.RED + "[HoloQuiz] Stack Trace: %s";
     private static final String DEV_ERROR_FORMAT = ChatColor.DARK_RED + "[HoloQuiz] DEV ERROR: %s";
-    private static final String DEBUG_FORMAT =  ChatColor.BLUE + "[HoloQuiz] DEBUG: %s"; //Used for me to Debug
+    private static final String DEBUG_FORMAT =  ChatColor.BLUE + "[HoloQuiz] Debug Log: %s"; //Used for me to Debug
+
     /*
     Logging Level: 1 (Low)
     - Warnings and Errors
@@ -82,7 +84,15 @@ public class Logger {
         Bukkit.getLogger().info(message);
     }
 
+    public void dumpStackTrace(Exception e) {
+        String message = String.format(STACK_TRACE_FORMAT, e.toString());
+        Bukkit.getLogger().info(message);
+    }
+
     public void debug(String msg) {
+        if (currentLevel <= 4) {
+            return;
+        }
         String message = String.format(DEBUG_FORMAT, msg);
         Bukkit.getLogger().info(message);
     }

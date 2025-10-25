@@ -1,4 +1,5 @@
 package benloti.holoquiz.database;
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.structs.PlayerContestStats;
 
 import java.sql.*;
@@ -51,7 +52,7 @@ public class AnswersLogs {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_LOGS_TABLE);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -63,7 +64,7 @@ public class AnswersLogs {
             logsStatement.setString(4, gameMode);
             logsStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -84,7 +85,7 @@ public class AnswersLogs {
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return winnersOfContest;
     }
@@ -106,7 +107,7 @@ public class AnswersLogs {
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return winnersOfContest;
     }
@@ -129,7 +130,7 @@ public class AnswersLogs {
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return winnersOfContest;
     }
@@ -152,7 +153,7 @@ public class AnswersLogs {
                 winnersOfContest.add(contestWinner);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return winnersOfContest;
     }
@@ -174,7 +175,7 @@ public class AnswersLogs {
                 return new PlayerContestStats(name, id, answers, best, average, avgOfBestX, tti);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return new PlayerContestStats(name, id, -1, -1, -1 ,-1 , -1);
     }
@@ -190,7 +191,7 @@ public class AnswersLogs {
                 list.add(time);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return list;
     }
@@ -219,7 +220,7 @@ public class AnswersLogs {
                 fastestAnswerers.add(contestWinner);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return fastestAnswerers;
     }

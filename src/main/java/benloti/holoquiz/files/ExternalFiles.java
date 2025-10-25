@@ -91,7 +91,7 @@ public class ExternalFiles {
         } catch (Exception e) {
             String logMessage = String.format(ERROR_BROKEN_FILE, CONFIG_FILE_NAME);
             Logger.getLogger().error(logMessage);
-            Logger.getLogger().debug(e.toString());
+            Logger.getLogger().dumpStackTrace(e);
             storeToArchive(CONFIG_FILE_NAME, ARCHIVE_CONFIG_FILE_NAME);
             try {
                 this.configFile = new ConfigFile(plugin, configLoader,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
@@ -99,7 +99,7 @@ public class ExternalFiles {
             } catch (Exception e2) {
                 logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, CONFIG_FILE_NAME);
                 Logger.getLogger().error(logMessage);
-                Logger.getLogger().debug(e2.toString());
+                Logger.getLogger().dumpStackTrace(e2);
                 loadFromResource(CONFIG_FILE_NAME,BACKUP_DIRECTORY_PATH + CONFIG_FILE_NAME);
                 loadFromResource(CONFIG_FILE_NAME, CONFIG_FILE_NAME);
                 this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
@@ -118,7 +118,7 @@ public class ExternalFiles {
         } catch (Exception e) {
             String logMessage = String.format(ERROR_BROKEN_FILE, REWARDS_FILE_NAME);
             Logger.getLogger().error(logMessage);
-            Logger.getLogger().debug(e.toString());
+            Logger.getLogger().dumpStackTrace(e);
             storeToArchive(REWARDS_FILE_NAME, ARCHIVE_REWARDS_FILE_NAME);
             try {
                 File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
@@ -127,7 +127,7 @@ public class ExternalFiles {
             } catch (Exception e2) {
                 logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, REWARDS_FILE_NAME);
                 Logger.getLogger().error(logMessage);
-                Logger.getLogger().debug(e2.toString());
+                Logger.getLogger().dumpStackTrace(e2);
                 loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
                 File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
@@ -143,7 +143,7 @@ public class ExternalFiles {
         } catch (Exception e) {
             String logMessage = String.format(ERROR_BROKEN_FILE, QUESTION_BANK_FILE_NAME);
             Logger.getLogger().error(logMessage);
-            Logger.getLogger().debug(e.toString());
+            Logger.getLogger().dumpStackTrace(e);
             storeToArchive(QUESTION_BANK_FILE_NAME, ARCHIVE_QUESTION_BANK_FILE_NAME);
             try {
                 File questionsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
@@ -152,7 +152,7 @@ public class ExternalFiles {
             } catch (Exception e2) {
                 logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, QUESTION_BANK_FILE_NAME);
                 Logger.getLogger().error(logMessage);
-                Logger.getLogger().debug(e2.toString());
+                Logger.getLogger().dumpStackTrace(e2);
                 loadFromResource(QUESTION_BANK_FILE_NAME,BACKUP_DIRECTORY_PATH + QUESTION_BANK_FILE_NAME);
                 loadFromResource(QUESTION_BANK_FILE_NAME, QUESTION_BANK_FILE_NAME);
                 File questionsYml = new File(plugin.getDataFolder(), QUESTION_BANK_FILE_NAME);
@@ -453,7 +453,7 @@ public class ExternalFiles {
             outputStream.close();
 
         } catch (IOException e) {
-            Logger.getLogger().debug(e.toString());
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -484,7 +484,7 @@ public class ExternalFiles {
             }
 
         } catch (IOException e) {
-            Logger.getLogger().debug(e.toString());
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 

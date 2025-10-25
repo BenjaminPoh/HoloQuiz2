@@ -1,5 +1,6 @@
 package benloti.holoquiz.database;
 
+import benloti.holoquiz.files.Logger;
 import benloti.holoquiz.structs.PlayerData;
 
 import java.sql.*;
@@ -31,7 +32,7 @@ public class HoloQuizStats {
             Statement statement = connection.createStatement();
             statement.executeUpdate(SQL_STATEMENT_CREATE_STATS_TABLE);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
     }
 
@@ -91,7 +92,7 @@ public class HoloQuizStats {
 
             return new PlayerData(playerName,bestTime,totalAnswers, averageTime, userID);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return null;
     }
@@ -116,7 +117,7 @@ public class HoloQuizStats {
             int averageTime = resultSet.getInt("average");
             return new PlayerData(playerName,bestTime,totalAnswers, averageTime, holoQuizID);
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return null;
     }
@@ -136,7 +137,7 @@ public class HoloQuizStats {
                 list.add(leaderboardEntry);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
 
     }
@@ -158,7 +159,7 @@ public class HoloQuizStats {
             }
             return allPlayerData;
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return null;
     }

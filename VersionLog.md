@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.5.1 - 25 Oct 2025 - Improved Logging Features
 - v 3.5.0 - 03 Oct 2025 - Mixed modes now supported!
 - v 3.4.2 - 24 Sep 2025 - Ina goes WAH!
 - v 3.4.1 - 05 Aug 2025 - Regular Contests timestamps now stored in config.yml
