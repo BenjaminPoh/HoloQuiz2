@@ -353,7 +353,7 @@ public class ConfigFile {
     }
 
     private ArrayList<ContestInfo> parseCustomContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection) {
-        ConfigurationSection customContestSection = configLoader.getSection(contestSection, "Custom");
+        ConfigurationSection customContestSection = configLoader.getSectionOptional(contestSection, "Custom");
         ArrayList<ContestInfo> customContests = new ArrayList<>();
         if (customContestSection == null) {
             return customContests;

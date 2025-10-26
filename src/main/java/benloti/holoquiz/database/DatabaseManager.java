@@ -56,7 +56,7 @@ public class DatabaseManager {
                 dataFile.createNewFile();
             } catch (IOException e) {
                 Logger.getLogger().error(ERROR_MSG_DB_FILE);
-                e.printStackTrace();
+                Logger.getLogger().dumpStackTrace(e);
             }
         }
         return dataFile;
@@ -76,7 +76,7 @@ public class DatabaseManager {
             }
             return connection;
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return null;
     }
@@ -170,7 +170,7 @@ public class DatabaseManager {
             }
             return size;
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger().dumpStackTrace(e);
         }
         return -1;
     }

@@ -15,9 +15,10 @@ public class Logger {
     /*
     Logging Level: 1 (Low)
     - Warnings and Errors
-    - Startup Info
+    - Important Startup Info
     Logging Level: 2 (Medium)
     - Correct Answers Only
+    - Extra Startup Info
     Logging Level: 3 (High)
     - All Trivia Info
     Logging Level: 4 (Debug)
@@ -28,9 +29,9 @@ public class Logger {
     private static Logger instance;
     private int currentLevel;
 
-    public static void createLogger(int level) {
+    public static void createLogger() {
         instance = new Logger();
-        instance.setLogLevel(level);
+        instance.currentLevel = 1;
     }
 
     public static Logger getLogger() {
@@ -42,11 +43,12 @@ public class Logger {
 
     public void setLogLevel(int level) {
         this.currentLevel = level;
+        Logger.getLogger().info_low(String.format("Logging Level set to %d!" , level));
     }
 
-
     public void info_low(String msg) {
-        if (currentLevel <= 1) {
+        if (currentLevel < 1) {
+            Bukkit.getLogger().info("Skipped logging for " + msg + " Current lvl is: " + currentLevel);
             return;
         }
         String message = String.format(INFO_FORMAT, msg);
@@ -54,7 +56,7 @@ public class Logger {
     }
 
     public void info_med(String msg) {
-        if (currentLevel <= 2) {
+        if (currentLevel < 2) {
             return;
         }
         String message = String.format(INFO_FORMAT, msg);
@@ -62,7 +64,7 @@ public class Logger {
     }
 
     public void info_high(String msg) {
-        if (currentLevel <= 3) {
+        if (currentLevel < 3) {
             return;
         }
         String message = String.format(INFO_FORMAT, msg);
@@ -96,4 +98,5 @@ public class Logger {
         String message = String.format(DEBUG_FORMAT, msg);
         Bukkit.getLogger().info(message);
     }
+
 }

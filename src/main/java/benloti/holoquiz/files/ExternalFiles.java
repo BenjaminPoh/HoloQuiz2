@@ -56,6 +56,7 @@ public class ExternalFiles {
     public ExternalFiles(JavaPlugin plugin) {
         this.plugin = plugin;
         this.configLoader = new ConfigLoader();
+        Logger.createLogger();
         //If plugin's data folder exists, all the necessary files are fetched from the resource section.
         if (!plugin.getDataFolder().exists()) {
             Logger.getLogger().warn(WARNING_MISSING_PLUGIN_FOLDER);
@@ -105,6 +106,7 @@ public class ExternalFiles {
                 this.configFile = new ConfigFile(plugin, configLoader, CONFIG_FILE_NAME);
             }
         }
+        Logger.getLogger().setLogLevel(configFile.getLoggingLevel());
 
         this.allNormalRewards = new ArrayList<>();
         this.secretRewards = new ArrayList<>();
@@ -191,6 +193,8 @@ public class ExternalFiles {
             Logger.getLogger().error(logMessage);
             return false;
         }
+        Logger.getLogger().setLogLevel(newConfigFile.getLoggingLevel());
+
         configLoader.setCurrentFile("Rewards.yml");
         try {
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
@@ -339,7 +343,7 @@ public class ExternalFiles {
             contestRewards.put(key + category, rewardsList);
             if(!rewardsList.isEmpty()) {
                 String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS, key, category, rewardsList.size());
-                Logger.getLogger().info_low(logMessage);
+                Logger.getLogger().info_med(logMessage);
             }
         }
     }

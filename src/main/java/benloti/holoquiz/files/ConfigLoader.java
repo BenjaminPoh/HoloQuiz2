@@ -111,6 +111,10 @@ public class ConfigLoader {
         return itemMaterial;
     }
 
+    public ConfigurationSection getSectionOptional(ConfigurationSection config, String key) {
+        return config.getConfigurationSection(key);
+    }
+
     public double getDoubleOptional(ConfigurationSection configs, String key, double defaultValue) {
         return configs.getDouble(key, defaultValue);
     }
