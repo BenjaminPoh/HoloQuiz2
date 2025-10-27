@@ -62,6 +62,9 @@ public class MessageFormatter {
     public void sendToPlayer(Player player, ArrayList<String> messages, boolean addPrefix, boolean addCustomSuffix, boolean forceSend) {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+        if(playerSettings == null) {
+            playerSettings = new PlayerSettings("", true);
+        }
         if (!playerSettings.isNotificationEnabled() && !forceSend) {
             return;
         }
@@ -74,6 +77,9 @@ public class MessageFormatter {
     public void sendToPlayer(Player player, String[] messages, boolean addPrefix, boolean addCustomSuffix, boolean forceSend) {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+        if(playerSettings == null) {
+            playerSettings = new PlayerSettings("", true);
+        }
         if (!playerSettings.isNotificationEnabled() && !forceSend) {
             return;
         }
@@ -86,6 +92,9 @@ public class MessageFormatter {
     public void sendToPlayer(Player player, String message, boolean addPrefix, boolean addCustomSuffix, boolean forceSend) {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+        if(playerSettings == null) {
+            playerSettings = new PlayerSettings("", true);
+        }
         if (!playerSettings.isNotificationEnabled() && !forceSend) {
             return;
         }
