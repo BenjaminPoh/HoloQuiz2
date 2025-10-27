@@ -1,6 +1,6 @@
 package benloti.holoquiz.structs;
 
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.MessageFormatter;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -14,22 +14,22 @@ public class ContestWinner {
     private final int position;
 
     //Used to create the template
-    public ContestWinner(RewardTier prizesTemplate, PlayerContestStats winner, int position, ContestInfo contestInfo, UserInterface userInterface) {
+    public ContestWinner(RewardTier prizesTemplate, PlayerContestStats winner, int position, ContestInfo contestInfo) {
         this.contestWinnerData = winner;
         this.position = position;
-        this.contestPrize = parseContestPrizes(prizesTemplate, contestInfo, userInterface);
+        this.contestPrize = parseContestPrizes(prizesTemplate, contestInfo);
     }
 
-    private RewardTier parseContestPrizes(RewardTier template, ContestInfo contestInfo, UserInterface userInterface) {
+    private RewardTier parseContestPrizes(RewardTier template, ContestInfo contestInfo) {
         int unusedTime = -1;
         double moneyReward = template.getMoneyReward();
-        ArrayList<ItemStack> itemRewards = formatItemRewards(template.getItemRewards(), userInterface, contestInfo);
-        ArrayList<String> messageList = formatPlaceholders(template.getMessages(), userInterface, contestInfo);
-        List<String> commandList = formatPlaceholders(template.getCommandsExecuted(), userInterface, contestInfo);
+        ArrayList<ItemStack> itemRewards = formatItemRewards(template.getItemRewards(), contestInfo);
+        ArrayList<String> messageList = formatPlaceholders(template.getMessages(), contestInfo);
+        List<String> commandList = formatPlaceholders(template.getCommandsExecuted(), contestInfo);
         return new RewardTier(unusedTime,moneyReward, commandList, itemRewards, messageList);
     }
 
-    private ArrayList<ItemStack> formatItemRewards(ArrayList<ItemStack> template, UserInterface userInterface, ContestInfo info) {
+    private ArrayList<ItemStack> formatItemRewards(ArrayList<ItemStack> template, ContestInfo info) {
         ArrayList<ItemStack> formattedItemRewards = new ArrayList<>();
         for(ItemStack unformattedItem : template) {
             ItemStack item = unformattedItem.clone(); //Important to prevent overwriting template
@@ -41,7 +41,7 @@ public class ContestWinner {
             List<String> itemLoreFormatted = new ArrayList<>();
             for (String peko : itemLore) {
                 peko = attachContestStats(peko, info);
-                peko = userInterface.formatColours(peko);
+                peko = MessageFormatter.getSender().formatColours(peko);
                 itemLoreFormatted.add(peko);
             }
             itemMeta.setLore(itemLoreFormatted);
@@ -51,11 +51,11 @@ public class ContestWinner {
         return formattedItemRewards;
     }
 
-    private ArrayList<String> formatPlaceholders(List<String> unformattedMessages, UserInterface userInterface, ContestInfo info) {
+    private ArrayList<String> formatPlaceholders(List<String> unformattedMessages, ContestInfo info) {
         ArrayList<String> formattedList = new ArrayList<>();
         for(String peko : unformattedMessages) {
             peko = attachContestStats(peko, info);
-            peko = userInterface.formatColours(peko);
+            peko = MessageFormatter.getSender().formatColours(peko);
             formattedList.add(peko);
         }
         return formattedList;

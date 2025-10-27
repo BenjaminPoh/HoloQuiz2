@@ -2,10 +2,7 @@ package benloti.holoquiz.games;
 
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.dependencies.DependencyHandler;
-import benloti.holoquiz.files.ConfigFile;
-import benloti.holoquiz.files.ExternalFiles;
-import benloti.holoquiz.files.Logger;
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.*;
 import benloti.holoquiz.structs.Question;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,7 +15,6 @@ public class GameManager {
     private static final String DEV_ERROR_INVALID_MODE = "Invalid mode %s. There is no way you ever see this.";
 
     private final JavaPlugin plugin;
-    private final UserInterface userInterface;
     private final long interval;
     private final long intervalCheck;
     private final int questionCooldown;
@@ -48,8 +44,8 @@ public class GameManager {
 
     private ArrayList<Question> triviaQuestionList;
 
-    public GameManager(JavaPlugin plugin, ConfigFile configFile, UserInterface userInterface,
-                       DependencyHandler dependencyHandler, ExternalFiles externalFiles, DatabaseManager databaseManager) {
+    public GameManager(JavaPlugin plugin, ConfigFile configFile, DependencyHandler dependencyHandler,
+                       ExternalFiles externalFiles, DatabaseManager databaseManager) {
         this.plugin = plugin;
         this.inaGoesWAH = configFile.isInaWahEnabled();
         this.interval = configFile.getInterval();
@@ -60,9 +56,7 @@ public class GameManager {
         this.triviaWeightageForMixed = configFile.getTriviaWeightage();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
-        this.userInterface = userInterface;
-        this.rewardsHandler = new RewardsHandler(plugin, userInterface, dependencyHandler.getVaultDep(),databaseManager,
-                externalFiles, configFile);
+        this.rewardsHandler = new RewardsHandler(plugin, dependencyHandler.getVaultDep(),databaseManager, externalFiles, configFile);
 
         this.revealAnswerFlag = (this.revealAnswerDelay == -1);
         this.rngesus = new Random();
@@ -126,19 +120,18 @@ public class GameManager {
         Question question = getRandomQuestion();
         boolean playInaWAH = false;
         Logger.getLogger().info_high(String.format(LOG_MESSAGE_QUESTION_SENT, question.getQuestion()));
-        String formattedQuestion = userInterface.attachLabel(question.getQuestion());
-        formattedQuestion = userInterface.formatColours(formattedQuestion);
+        String questionText = question.getQuestion();
         if(this.inaGoesWAH) {
-            playInaWAH = formattedQuestion.contains("Wha") || formattedQuestion.contains("wha");
-            formattedQuestion = formattedQuestion.replace("Wha", "WAH");
-            formattedQuestion = formattedQuestion.replace("wha", "WAH");
+            playInaWAH = questionText.contains("Wha") || questionText.contains("wha");
+            questionText = MessageFormatter.getSender().inaGoesWAH(questionText);
         }
         setQuestionAnswered(false);
         setQuestionTimedOut(false);
         long currentTime = System.currentTimeMillis();
         setTimeQuestionSent(currentTime);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            userInterface.attachSuffixAndSend(player, formattedQuestion);
+            MessageFormatter.getSender().sendToPlayer(player, questionText, true, true, false);
+            Logger.getLogger().debug("Sent question to " + player.getName() + " at Time: " + System.currentTimeMillis());
             if(playInaWAH) {
                 player.playSound(player.getLocation(), "minecraft:custom.ina.wah", 1.0f, 1.0f);
             }
@@ -148,9 +141,8 @@ public class GameManager {
     private void revealAnswer() {
         String answer = getCurrentQuestion().getAnswers().get(0);
         String announcement = String.format(MESSAGE_REVEAL_ANSWER, answer);
-        String formattedAnnouncement = userInterface.formatColours(userInterface.attachLabel(announcement));
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            userInterface.attachSuffixAndSend(player, formattedAnnouncement);
+            MessageFormatter.getSender().sendToPlayer(player, announcement, true, true, false);
         }
     }
 

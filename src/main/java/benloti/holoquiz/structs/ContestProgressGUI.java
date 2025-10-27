@@ -1,7 +1,7 @@
 package benloti.holoquiz.structs;
 
 import benloti.holoquiz.files.ContestManager;
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.MessageFormatter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -17,7 +17,6 @@ public class ContestProgressGUI {
     private int nextIndex = 0;
     private int leaderboardMaxSize;
     private String playerName;
-    private UserInterface userInterface;
 
     private static final String DESCRIPTION_FOR_PLAYER_DQ = "&c%s. %s | %s";
     private static final String DESCRIPTION_FOR_PLAYER = "&a%s. %s | %s";
@@ -26,12 +25,11 @@ public class ContestProgressGUI {
     private static final String DESCRIPTION_TIME_TO_IMPROVE = "&2You need to be faster than &a%s &2to improve your score!";
     private static final String DESCRIPTION_LEADERBOARD_OVERFLOW = "&3+%d more players...";
 
-    public ContestProgressGUI(ContestManager contestManager, String playerName, UserInterface userInterface) {
+    public ContestProgressGUI(ContestManager contestManager, String playerName) {
         int size = contestManager.getTotalEnabledSubcontests();
         size = ((size + 8)/ 9) * 9;
         this.inventory = Bukkit.createInventory(null, size, "HoloQuiz Contests");
         this.playerName = playerName;
-        this.userInterface = userInterface;
         this.leaderboardMaxSize = contestManager.getContestLeaderboardMaxSize();
     }
 
@@ -51,9 +49,9 @@ public class ContestProgressGUI {
             ItemMeta itemMeta = placeholderItem.getItemMeta();
             assert itemMeta != null;
             String contestTitle = formatContestName(contest.getContestName(), i);
-            itemMeta.setDisplayName(userInterface.formatColours("&6" + contestTitle));
+            itemMeta.setDisplayName(MessageFormatter.getSender().formatColours("&6" + contestTitle));
             List<String> description = new ArrayList<>();
-            description.add(userInterface.formatColours(dateRangeDescription));
+            description.add(MessageFormatter.getSender().formatColours(dateRangeDescription));
 
             addLeaderboardInformation(contest, playerInfo, description, currContestWinners, i);
 
@@ -88,7 +86,7 @@ public class ContestProgressGUI {
                         addContestLeaderboardEntry(currContestWinners.get(secondLastPlace), secondLastPlace + 1, code, description);
                     } else {
                         String formattedDescription = String.format(DESCRIPTION_LEADERBOARD_OVERFLOW, remainder);
-                        description.add(userInterface.formatColours(formattedDescription));
+                        description.add(MessageFormatter.getSender().formatColours(formattedDescription));
                     }
                 }
                 int lastPlace = currContestWinners.size() - 1;
@@ -112,7 +110,7 @@ public class ContestProgressGUI {
             descriptionFormat = DESCRIPTION_FOR_PLAYER;
         }
         String formattedDescription = String.format(descriptionFormat, pos, winner.getPlayerName(), score);
-        description.add(userInterface.formatColours(formattedDescription));
+        description.add(MessageFormatter.getSender().formatColours(formattedDescription));
     }
 
     private int getPlayerPlacementForContest(ArrayList<PlayerContestStats> winners, String playerName) {
@@ -127,23 +125,23 @@ public class ContestProgressGUI {
     private void addDisqualifiedPlayerInfo(ContestInfo contest, PlayerContestStats playerInfo, int i, List<String> description) {
         String score = getScoreByIndex(playerInfo, i);
         String formattedDescription = String.format(DESCRIPTION_FOR_PLAYER_DQ, "N/A", playerInfo.getPlayerName(), score);
-        description.add(userInterface.formatColours(formattedDescription));
+        description.add(MessageFormatter.getSender().formatColours(formattedDescription));
         if(i == 2 && playerInfo.getQuestionsAnswered() < contest.getBestAvgMinReq()) {
             int remainder =  contest.getBestAvgMinReq() - playerInfo.getQuestionsAnswered();
             formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
-            description.add(userInterface.formatColours(formattedDescription));
+            description.add(MessageFormatter.getSender().formatColours(formattedDescription));
         }
         if(i == 3 && playerInfo.getQuestionsAnswered() < contest.getBestXMinReq()) {
             int remainder =  contest.getBestXMinReq() - playerInfo.getQuestionsAnswered();
             formattedDescription = String.format(DESCRIPTION_REASON_FOR_PLAYER_DQ, remainder);
-            description.add(userInterface.formatColours(formattedDescription));
+            description.add(MessageFormatter.getSender().formatColours(formattedDescription));
         }
     }
 
     private void addImprovementTimeInfo(PlayerContestStats playerInfo, List<String> description) {
         String timeToImprove = playerInfo.getTimeToImproveInSeconds3dp();
         String formattedDescription = String.format(DESCRIPTION_TIME_TO_IMPROVE, timeToImprove);
-        description.add(userInterface.formatColours(formattedDescription));
+        description.add(MessageFormatter.getSender().formatColours(formattedDescription));
     }
 
     private String formatDateTime(LocalDate start, LocalDate end) {

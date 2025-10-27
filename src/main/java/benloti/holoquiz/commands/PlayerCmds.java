@@ -4,7 +4,7 @@ import benloti.holoquiz.HoloQuiz;
 import benloti.holoquiz.database.UserPersonalisation;
 import benloti.holoquiz.files.ContestManager;
 import benloti.holoquiz.files.ExternalFiles;
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.MessageFormatter;
 import benloti.holoquiz.games.GameManager;
 import benloti.holoquiz.structs.PlayerData;
 import benloti.holoquiz.structs.PlayerSettings;
@@ -95,27 +95,24 @@ public class PlayerCmds implements CommandExecutor {
     private final DatabaseManager databaseManager;
     private boolean easterEggs;
     private final UserPersonalisation userPersonalisation;
-    private UserInterface userInterface;
     private ExternalFiles externalFiles;
     private ContestManager contestManager;
     private final HoloQuiz holoQuiz;
 
     public PlayerCmds(GameManager gameManager, DatabaseManager databaseManager, ExternalFiles externalFiles,
-                      UserInterface userInterface, ContestManager contestManager, HoloQuiz plugin) {
+                      ContestManager contestManager, HoloQuiz plugin) {
         this.databaseManager = databaseManager;
         this.gameManager = gameManager;
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
         this.userPersonalisation = databaseManager.getUserPersonalisation();
-        this.userInterface = userInterface;
         this.externalFiles = externalFiles;
         this.contestManager = contestManager;
         this.holoQuiz = plugin;
     }
 
-    public void reload(GameManager gameManager, ExternalFiles externalFiles, UserInterface userInterface, ContestManager contestManager) {
+    public void reload(GameManager gameManager, ExternalFiles externalFiles, ContestManager contestManager) {
         this.gameManager = gameManager;
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
-        this.userInterface = userInterface;
         this.externalFiles = externalFiles;
         this.contestManager = contestManager;
     }
@@ -256,19 +253,18 @@ public class PlayerCmds implements CommandExecutor {
             } else {
                 message = NOTIFY_UNKNOWN_ERROR;
             }
-            message = userInterface.formatColours(message);
-            userInterface.attachSuffixAndSend(player, message);
+            MessageFormatter.getSender().sendToPlayer(player, message, false, true, true);
             return true;
         }
 
         if(args[0].equalsIgnoreCase("contest") || args[0].equalsIgnoreCase("contests")) {
             if(contestManager.getTotalEnabledSubcontests() == 0) {
-                userInterface.attachSuffixAndSend(player, userInterface.formatColours(NOTIFY_NO_CONTEST));
+                MessageFormatter.getSender().sendToPlayer(player, NOTIFY_NO_CONTEST, false, true, true);
                 return true;
             }
             String playerName = player.getName();
             String playerUUID = player.getUniqueId().toString();
-            Inventory createdGUI = contestManager.fetchPlayerContestStatus(playerName, playerUUID, userInterface).getGUI();
+            Inventory createdGUI = contestManager.fetchPlayerContestStatus(playerName, playerUUID).getGUI();
             player.openInventory(createdGUI);
             return true;
         }
@@ -341,8 +337,7 @@ public class PlayerCmds implements CommandExecutor {
             player.sendMessage("So as a joke...");
             return true;
         }
-        String error_message = userInterface.formatColours(ERROR_NO_SUCH_COMMAND);
-        userInterface.attachSuffixAndSend(player, error_message);
+        MessageFormatter.getSender().sendToPlayer(player, ERROR_NO_SUCH_COMMAND, false, true, true);
         return false;
     }
 
@@ -481,14 +476,22 @@ public class PlayerCmds implements CommandExecutor {
         return info;
     }
 
-    private void formatInformationForPlayer(String[] message, CommandSender player) {
-        message = userInterface.formatColoursArray(message);
-        player.sendMessage(message);
+    private void formatInformationForPlayer(String[] message, CommandSender sender) {
+        if(sender instanceof Player) {
+            Player player = (Player) sender;
+            MessageFormatter.getSender().sendToPlayer(player, message, false, true, true);
+        } else {
+            MessageFormatter.getSender().sendToConsole(sender, message);
+        }
     }
 
-    private void formatInformationForPlayer(String message, CommandSender player) {
-        message = userInterface.formatColours(message);
-        player.sendMessage(message);
+    private void formatInformationForPlayer(String message, CommandSender sender) {
+        if(sender instanceof Player) {
+            Player player = (Player) sender;
+            MessageFormatter.getSender().sendToPlayer(player, message, false, true, true);
+        } else {
+            MessageFormatter.getSender().sendToConsole(sender, message);
+        }
     }
 }
 

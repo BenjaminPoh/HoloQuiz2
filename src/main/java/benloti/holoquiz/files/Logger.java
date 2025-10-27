@@ -1,16 +1,24 @@
 package benloti.holoquiz.files;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 public class Logger {
 
-    private static final String INFO_FORMAT = ChatColor.WHITE + "[HoloQuiz] %s";
-    private static final String WARNING_FORMAT = ChatColor.YELLOW + "[HoloQuiz] Warning: %s";
-    private static final String ERROR_FORMAT = ChatColor.RED + "[HoloQuiz] ERROR: %s";
-    private static final String STACK_TRACE_FORMAT =  ChatColor.RED + "[HoloQuiz] Stack Trace: %s";
-    private static final String DEV_ERROR_FORMAT = ChatColor.DARK_RED + "[HoloQuiz] DEV ERROR: %s";
-    private static final String DEBUG_FORMAT =  ChatColor.BLUE + "[HoloQuiz] Debug Log: %s"; //Used for me to Debug
+    private static final String RESET = "\u001B[0m";
+    private static final String WHITE = "\u001B[37m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String RED = "\u001B[31m";
+    private static final String DARK_RED = "\u001B[91m";
+    private static final String BLUE = "\u001B[34m";
+
+    // Message formats
+    private static final String INFO_FORMAT = WHITE + "[HoloQuiz] %s" + RESET;
+    private static final String WARNING_FORMAT = YELLOW + "[HoloQuiz] Warning: %s" + RESET;
+    private static final String ERROR_FORMAT = RED + "[HoloQuiz] ERROR: %s" + RESET;
+    private static final String STACK_TRACE_FORMAT = RED + "[HoloQuiz] Stack Trace: %s" + RESET;
+    private static final String DEV_ERROR_FORMAT = DARK_RED + "[HoloQuiz] DEV ERROR: %s" + RESET;
+    private static final String DEBUG_FORMAT = BLUE + "[HoloQuiz] Debug Log: %s" + RESET;
+    private static final String LOG_SET_LOGGING_LEVEL = WHITE + "Logging Level set to %d!" + RESET;
 
     /*
     Logging Level: 1 (Low)
@@ -43,12 +51,11 @@ public class Logger {
 
     public void setLogLevel(int level) {
         this.currentLevel = level;
-        Logger.getLogger().info_low(String.format("Logging Level set to %d!" , level));
+        Logger.getLogger().info_low(String.format(LOG_SET_LOGGING_LEVEL, level));
     }
 
     public void info_low(String msg) {
         if (currentLevel < 1) {
-            Bukkit.getLogger().info("Skipped logging for " + msg + " Current lvl is: " + currentLevel);
             return;
         }
         String message = String.format(INFO_FORMAT, msg);
@@ -92,7 +99,7 @@ public class Logger {
     }
 
     public void debug(String msg) {
-        if (currentLevel <= 4) {
+        if (currentLevel < 4) {
             return;
         }
         String message = String.format(DEBUG_FORMAT, msg);

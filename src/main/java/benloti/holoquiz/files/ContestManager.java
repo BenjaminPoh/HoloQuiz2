@@ -29,7 +29,6 @@ public class ContestManager {
     private final DatabaseManager databaseManager;
     private final RewardsHandler rewardsHandler;
     private final ExternalFiles externalFiles;
-    private final UserInterface userInterface;
 
     private final ZoneId zoneId;
     private final int intendedStartDay;
@@ -39,11 +38,10 @@ public class ContestManager {
     private final int contestLeaderboardMaxSize;
 
     public ContestManager(DatabaseManager databaseManager, ConfigFile configFile,
-                          ExternalFiles externalFiles, GameManager gameManager, UserInterface userInterface) {
+                          ExternalFiles externalFiles, GameManager gameManager) {
         this.databaseManager = databaseManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.externalFiles = externalFiles;
-        this.userInterface = userInterface;
 
         this.zoneId = configFile.getTimezoneOffset();
         this.intendedStartDay = externalFiles.getConfigFile().getWeeklyResetDay();
@@ -59,13 +57,13 @@ public class ContestManager {
         this.contestLeaderboardMaxSize = configFile.getContestLeaderboardMaxSize();
     }
 
-    public ContestProgressGUI fetchPlayerContestStatus(String playerName, String playerUUID, UserInterface userInterface) {
+    public ContestProgressGUI fetchPlayerContestStatus(String playerName, String playerUUID) {
         if (this.playersWithOpenGUI.contains(playerName)) {
             Logger.getLogger().devError(DEV_ERROR_CONTEST_GUI_DOUBLE_OPENED);
         } else {
             this.playersWithOpenGUI.add(playerName);
         }
-        ContestProgressGUI contestProgressGUI = new ContestProgressGUI(this, playerName, userInterface);
+        ContestProgressGUI contestProgressGUI = new ContestProgressGUI(this, playerName);
         for (ContestInfo contest : this.allContests) {
             if (contest == null) {
                 continue;
@@ -240,7 +238,7 @@ public class ContestManager {
             ArrayList<RewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
             int limit = Math.min(contestCategoryWinnersData.size(), contestRewardTiers.size());
             for (int j = 0; j < limit; j++) {
-                ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j + 1, contestInfo, userInterface);
+                ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j + 1, contestInfo);
                 contestWinners.add(winner);
             }
         }

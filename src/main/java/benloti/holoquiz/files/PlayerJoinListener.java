@@ -9,14 +9,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 public class PlayerJoinListener implements Listener {
 
     private final DatabaseManager dbMan;
-    private final UserInterface userInterface;
 
     public static final String NOTIFY_STORAGE_CLEARED = "&aHere are your HoloQuiz rewards!";
     public static final String NOTIFY_STORAGE_NOT_CLEARED = "&cYou have HoloQuiz rewards waiting to be collected!";
 
-    public PlayerJoinListener(DatabaseManager dbMan, UserInterface userInterface) {
+    public PlayerJoinListener(DatabaseManager dbMan) {
         this.dbMan = dbMan;
-        this.userInterface = userInterface;
     }
 
     @EventHandler
@@ -34,7 +32,6 @@ public class PlayerJoinListener implements Listener {
         } else {
             message = NOTIFY_STORAGE_NOT_CLEARED;
         }
-        message = userInterface.formatColours(message);
-        userInterface.attachSuffixAndSend(player, message);
+        MessageFormatter.getSender().sendToPlayer(player, message, false, true, true);
     }
 }

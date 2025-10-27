@@ -17,7 +17,6 @@ public final class HoloQuiz extends JavaPlugin {
     private DependencyHandler dependencyHandler;
     private DatabaseManager database;
     private GameManager gameManager;
-    private UserInterface userInterface;
     private ContestManager contestManager;
     private QuizAnswerHandler quizAnswerHandler;
     private PlayerCmds playerCmds;
@@ -31,14 +30,14 @@ public final class HoloQuiz extends JavaPlugin {
         this.configFile = externalFiles.getConfigFile();
         this.dependencyHandler = new DependencyHandler(this);
         this.database = new DatabaseManager(this);
-        this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
-        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
-        this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager, userInterface);
-        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, userInterface, configFile, contestManager);
-        this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, userInterface, contestManager, this);
+        MessageFormatter.createSender(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
+        this.gameManager = new GameManager(this, configFile, dependencyHandler, externalFiles, database);
+        this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
+        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, configFile, contestManager);
+        this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, contestManager, this);
         this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
         this.invClickListener = new InvClickListener(contestManager);
-        this.playerJoinListener = new PlayerJoinListener(database, userInterface);
+        this.playerJoinListener = new PlayerJoinListener(database);
         if(configFile.isCollectRewardOnJoin()) {
             getServer().getPluginManager().registerEvents(playerJoinListener, this);
         }
@@ -53,7 +52,7 @@ public final class HoloQuiz extends JavaPlugin {
     @Override
     public void onDisable() {
         database.getUserPersonalisation().savePlayerSettings();
-        //Bukkit.getLogger().info("[HoloQuiz] Shutting Down HoloQuiz!");
+        //Logger.getLogger().info_low("Shutting Down HoloQuiz!");
     }
 
     public boolean reloadHoloQuiz() {
@@ -66,15 +65,15 @@ public final class HoloQuiz extends JavaPlugin {
 
         this.configFile = externalFiles.getConfigFile();
         this.dependencyHandler = new DependencyHandler(this);
-        this.userInterface = new UserInterface(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
-        this.gameManager = new GameManager(this, configFile, userInterface, dependencyHandler, externalFiles, database);
-        this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager, userInterface);
-        quizAnswerHandler.reload(gameManager, userInterface, configFile, contestManager);
-        playerCmds.reload(gameManager, externalFiles, userInterface, contestManager);
+        MessageFormatter.updateSender(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
+        this.gameManager = new GameManager(this, configFile, dependencyHandler, externalFiles, database);
+        this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
+        quizAnswerHandler.reload(gameManager, configFile, contestManager);
+        playerCmds.reload(gameManager, externalFiles, contestManager);
         HandlerList.unregisterAll(invClickListener);
         this.invClickListener = new InvClickListener(contestManager);
         getServer().getPluginManager().registerEvents(invClickListener, this);
-        this.playerJoinListener = new PlayerJoinListener(database, userInterface);
+        this.playerJoinListener = new PlayerJoinListener(database);
         if(configFile.isCollectRewardOnJoin()) {
             getServer().getPluginManager().registerEvents(playerJoinListener, this);
         }

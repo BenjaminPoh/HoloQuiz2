@@ -1,10 +1,7 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
-import benloti.holoquiz.files.ConfigFile;
-import benloti.holoquiz.files.ContestManager;
-import benloti.holoquiz.files.Logger;
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.*;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.structs.Question;
 import net.md_5.bungee.api.ChatMessageType;
@@ -25,7 +22,7 @@ public class QuizAnswerHandler implements Listener {
 
     public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
     public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
-    public static final String CORRECT_ANSWER_LOG = "[HoloQuiz] %s answered correctly in %s time.";
+    public static final String CORRECT_ANSWER_LOG = "%s answered correctly in %s time.";
 
     private static final String DEBUG_LOG_RACE_CONDITION = "[HoloQuiz Debug Log] Race Condition occurred. Player %s answered in %s time, with %s processing time";
 
@@ -38,7 +35,6 @@ public class QuizAnswerHandler implements Listener {
     private final DatabaseManager database;
     private GameManager gameManager;
     private RewardsHandler rewardsHandler;
-    private UserInterface userInterface;
     private ContestManager contestManager;
     private MinSDCheatDetector sdChecker;
     private MinTimeCheatDetector timeChecker;
@@ -46,22 +42,20 @@ public class QuizAnswerHandler implements Listener {
     private int correctAnswerMsgLoc;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
+                             ConfigFile configFile, ContestManager contestManager) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.rewardsHandler = gameManager.getRewardsHandler();
-        this.userInterface = userInterface;
         this.contestManager = contestManager;
         this.sdChecker = configFile.getMinSDCheatDetector();
         this.timeChecker = configFile.getMinTimeCheatDetector();
         this.correctAnswerMsgLoc = configFile.getCorrectAnswerMessageLoc();
     }
 
-    public void reload(GameManager gameManager, UserInterface userInterface, ConfigFile configFile, ContestManager contestManager) {
+    public void reload(GameManager gameManager, ConfigFile configFile, ContestManager contestManager) {
         this.gameManager = gameManager;
-        this.userInterface = userInterface;
         this.contestManager = contestManager;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.sdChecker = configFile.getMinSDCheatDetector();
@@ -151,11 +145,8 @@ public class QuizAnswerHandler implements Listener {
         if(question.getExtraMessage() != null) {
             message = message + question.getExtraMessage();
         }
-        String announcement = userInterface.attachLabel(message);
-        announcement = userInterface.formatColours(announcement);
-
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-           userInterface.attachSuffixAndSend(player, announcement);
+            MessageFormatter.getSender().sendToPlayer(player, message, true, true, false);
         }
     }
 
@@ -163,15 +154,11 @@ public class QuizAnswerHandler implements Listener {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
         String message = String.format(SECRET_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
-        String announcement = userInterface.attachLabel(message);
-        announcement = userInterface.formatColours(announcement);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            userInterface.attachSuffixAndSend(player, announcement);
+            MessageFormatter.getSender().sendToPlayer(player, message, true, true, false);
         }
         String secretAnnouncement = question.getSecretMessage();
-        secretAnnouncement = userInterface.formatColours(secretAnnouncement);
-        userInterface.attachSuffixAndSend(answerer, secretAnnouncement);
-        answerer.sendMessage();
+        MessageFormatter.getSender().sendToPlayer(answerer, secretAnnouncement, false, true, false);
     }
 
     private void makeFireworks(Player player) {
@@ -253,14 +240,10 @@ public class QuizAnswerHandler implements Listener {
 
     private void sendUserMessage(Player player, int statusCodeOne, int statusCodeTwo) {
         if(statusCodeTwo == 2 || statusCodeOne == 2) {
-
-            String fullInvMessage = userInterface.formatColours(SRTS_TRIGGERED_MESSAGE);
-            userInterface.attachSuffixAndSend(player, fullInvMessage);
+            MessageFormatter.getSender().sendToPlayer(player, SRTS_TRIGGERED_MESSAGE, false, true, false);
         }
         if(statusCodeTwo == 1 || statusCodeOne == 1) {
-
-            String fullInvMessage = userInterface.formatColours(INVENTORY_FULL_MESSAGE);
-            userInterface.attachSuffixAndSend(player, fullInvMessage);
+            MessageFormatter.getSender().sendToPlayer(player, INVENTORY_FULL_MESSAGE, false, true, false);
         }
     }
 

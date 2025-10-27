@@ -4,7 +4,7 @@ import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.dependencies.VaultDep;
 import benloti.holoquiz.files.ConfigFile;
 import benloti.holoquiz.files.ExternalFiles;
-import benloti.holoquiz.files.UserInterface;
+import benloti.holoquiz.files.MessageFormatter;
 import benloti.holoquiz.structs.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -20,7 +20,6 @@ public class RewardsHandler {
 
     private final ArrayList<RewardTier> allRewards;
     private final ArrayList<RewardTier> secretRewards;
-    private final UserInterface userInterface;
     private final VaultDep vaultDep;
     private final JavaPlugin plugin;
     private final DatabaseManager databaseManager;
@@ -28,14 +27,13 @@ public class RewardsHandler {
     private final boolean SRTS_isWhitelist;
     private final List<String> SRTS_worldList;
 
-    public RewardsHandler(JavaPlugin plugin, UserInterface userInterface, VaultDep vaultDep, DatabaseManager databaseManager,
+    public RewardsHandler(JavaPlugin plugin, VaultDep vaultDep, DatabaseManager databaseManager,
                           ExternalFiles externalFiles, ConfigFile configFile) {
         this.allRewards = externalFiles.getAllNormalRewards();
         this.secretRewards = externalFiles.getAllSecretRewards();
         this.SRTS_isWhitelist = configFile.isSRTS_useWhitelist();
         this.SRTS_worldList = configFile.getSRTS_WorldList();
 
-        this.userInterface = userInterface;
         this.vaultDep = vaultDep;
         this.plugin = plugin;
         this.databaseManager = databaseManager;
@@ -83,7 +81,7 @@ public class RewardsHandler {
         int statusCode = giveItemRewards(player, rewardTier.getItemRewards());
         giveMoneyRewards(player, rewardTier.getMoneyReward());
         executeCommandRewards(player, rewardTier.getCommandsExecuted());
-        userInterface.sendMessages(player, rewardTier.getMessages());
+        MessageFormatter.getSender().sendToPlayer(player, rewardTier.getMessages(), true, true, true);
         return statusCode;
     }
 
@@ -117,8 +115,7 @@ public class RewardsHandler {
         giveMoneyRewards(player, reward.getMoneyReward());
         executeCommandRewards(player, reward.getCommandsExecuted());
         for(String message : reward.getMessages()) {
-            String formattedMessage = userInterface.formatColours(message);
-            userInterface.attachSuffixAndSend(player, formattedMessage);
+            MessageFormatter.getSender().sendToPlayer(player,message,false, true, true);
         }
 
     }
@@ -155,7 +152,7 @@ public class RewardsHandler {
             List<String> itemLoreFormatted = new ArrayList<>();
             for (String peko : itemLore) {
                 peko = attachPlayerName(peko, player.getName());
-                peko = userInterface.formatColours(peko);
+                peko = MessageFormatter.getSender().formatColours(peko);
                 itemLoreFormatted.add(peko);
             }
             itemMeta.setLore(itemLoreFormatted);
