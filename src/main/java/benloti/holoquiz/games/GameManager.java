@@ -23,6 +23,7 @@ public class GameManager {
     private final boolean inaGoesWAH;
     private final int mathWeightageForMixed;
     private final int triviaWeightageForMixed;
+    private final int gracePeriod;
 
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
@@ -41,6 +42,7 @@ public class GameManager {
     private boolean questionAnswered;
     private boolean timedOut;
     private long nextTaskTime;
+    private long minAcceptedTime;
 
     private ArrayList<Question> triviaQuestionList;
 
@@ -52,6 +54,7 @@ public class GameManager {
         this.intervalCheck = configFile.getIntervalCheck();
         this.revealAnswerDelay = configFile.getRevealAnswerDelay();
         this.gameMode = configFile.getGameMode();
+        this.gracePeriod = configFile.getGracePeriod();
         this.mathWeightageForMixed = configFile.getMathWeightage();
         this.triviaWeightageForMixed = configFile.getTriviaWeightage();
         this.triviaQuestionList = externalFiles.getAllQuestions();
@@ -282,5 +285,17 @@ public class GameManager {
 
     public void setQuestionTimedOut(boolean status) {
         this.timedOut = status;
+    }
+
+    public int getGracePeriod() {
+        return gracePeriod;
+    }
+
+    public long getMinAcceptedtime() {
+        return minAcceptedTime;
+    }
+
+    public void setMinAcceptedtime(long minAcceptedTime) {
+        this.minAcceptedTime = minAcceptedTime;
     }
 }

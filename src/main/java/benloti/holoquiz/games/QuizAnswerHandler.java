@@ -22,7 +22,9 @@ public class QuizAnswerHandler implements Listener {
 
     public static final String CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds! The answer was &6%s!";
     public static final String SECRET_ANSWER_ANNOUNCEMENT = "&6%s&e wins after &6%s&e seconds!";
+    public static final String REPEATED_CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e also wins after &6%s&e seconds!";
     public static final String CORRECT_ANSWER_LOG = "%s answered correctly in %s time.";
+
 
     private static final String DEBUG_LOG_RACE_CONDITION = "[HoloQuiz Debug Log] Race Condition occurred. Player %s answered in %s time, with %s processing time";
 
@@ -65,45 +67,56 @@ public class QuizAnswerHandler implements Listener {
 
     @EventHandler
     public void checkAnswerSent(AsyncPlayerChatEvent theEvent) {
-        if(!gameManager.getGameStatus() || gameManager.isQuestionAnswered() || gameManager.isQuestionTimedOut()) {
+        long timeAnswered = System.currentTimeMillis();
+        boolean isFirstAnswer = gameManager.isQuestionAnswered();
+        if(!gameManager.getGameStatus() || gameManager.isQuestionTimedOut()) {
             return;
         }
+        if(gameManager.isQuestionAnswered() && timeAnswered > gameManager.getMinAcceptedtime()) {
+            return;
+        }
+
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
         List<String> answers = gameManager.getCurrentQuestion().getAnswers();
         List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
         for(String possibleAnswer : answers) {
             if (message.equalsIgnoreCase(possibleAnswer)) {
-                executeCorrectAnswerTasks(player, false, possibleAnswer);
+                executeCorrectAnswerTasks(player, false, possibleAnswer, timeAnswered, isFirstAnswer);
                 return;
             }
         }
         for(String possibleAnswer : secretAnswers) {
             if (message.equalsIgnoreCase(possibleAnswer)) {
                 theEvent.setCancelled(true);
-                executeCorrectAnswerTasks(player, true, possibleAnswer);
+                executeCorrectAnswerTasks(player, true, possibleAnswer, timeAnswered, isFirstAnswer);
                 return;
             }
         }
     }
 
-    private void executeCorrectAnswerTasks(Player player, Boolean secretAnswerTriggered, String answer) {
-        //Time sensitive tasks
-        long timeAnswered = System.currentTimeMillis();
+    private void executeCorrectAnswerTasks(Player player, Boolean secretAnswerTriggered, String answer, long timeAnswered, boolean isFirstAnswer) {
+        //Check for Cheats
         long startTime = gameManager.getTimeQuestionSent();
         int timeTaken = (int)(timeAnswered - startTime);
         if(checkIfUnderPermissibleTime(timeTaken, player) || checkIfUnderPermissibleSD(timeTaken, player)) {
             return;
         }
+
+        //Set to True if passed all checks
+        gameManager.setQuestionAnswered(true);
+        gameManager.setMinAcceptedtime(timeAnswered + gameManager.getGracePeriod());
+        /*
         if(gameManager.isQuestionAnswered()) {
             long processingTime = System.currentTimeMillis() - timeAnswered;
             String log = String.format(DEBUG_LOG_RACE_CONDITION, player.getName(), timeTaken, processingTime);
             Logger.getLogger().warn(log); //Temporary
             return;
         }
-        gameManager.setQuestionAnswered(true);
+         */
         long processingTime = System.currentTimeMillis() - timeAnswered;
         Logger.getLogger().debug("Processing done in " + processingTime + "ms");
+
 
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getCurrentQuestionType();
@@ -114,10 +127,10 @@ public class QuizAnswerHandler implements Listener {
         //Give Rewards
         int statusCodeOne = -1;
         if(secretAnswerTriggered) {
-            sendSecretAnnouncement(player, timeTaken, answeredQuestion);
+            sendSecretAnnouncement(player, timeTaken, answeredQuestion, isFirstAnswer);
             statusCodeOne = rewardsHandler.giveSecretRewards(player, timeTaken);
         } else {
-            sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion);
+            sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion, isFirstAnswer);
         }
         int statusCodeTwo = rewardsHandler.giveNormalRewards(player, timeTaken);
 
@@ -138,22 +151,32 @@ public class QuizAnswerHandler implements Listener {
         contestManager.updateContestsStatus(false);
     }
 
-    private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question) {
+    private void sendNormalAnnouncement(String possibleAnswer, Player answerer, long timeTaken, Question question, boolean isFirstAnswer) {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
-        String message = String.format(CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds, possibleAnswer);
-        if(question.getExtraMessage() != null) {
-            message = message + question.getExtraMessage();
+        String message;
+        if(!isFirstAnswer) {
+            message = String.format(CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds, possibleAnswer);
+            if(question.getExtraMessage() != null) {
+                message = message + question.getExtraMessage();
+            }
+        } else {
+            message = String.format(REPEATED_CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
         }
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             MessageFormatter.getSender().sendToPlayer(player, message, true, true, false);
         }
     }
 
-    private void sendSecretAnnouncement(Player answerer, long timeTaken, Question question) {
+    private void sendSecretAnnouncement(Player answerer, long timeTaken, Question question, boolean isFirstAnswer) {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
-        String message = String.format(SECRET_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
+        String message;
+        if(!isFirstAnswer) {
+            message = String.format(SECRET_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
+        } else {
+            message = String.format(REPEATED_CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
+        }
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             MessageFormatter.getSender().sendToPlayer(player, message, true, true, false);
         }

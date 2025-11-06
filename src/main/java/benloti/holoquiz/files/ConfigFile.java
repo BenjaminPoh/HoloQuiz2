@@ -45,6 +45,7 @@ public class ConfigFile {
     private final MinTimeCheatDetector minTimeCheatDetector;
     private final MinSDCheatDetector minSDCheatDetector;
     private final int correctAnswerMessageLoc; // -1: Disabled. 0:TitleMsg. 1:ActionBar
+    private final int gracePeriod;
 
     private final int triviaWeightage;
     private final int mathWeightage;
@@ -87,6 +88,7 @@ public class ConfigFile {
         this.leaderboardMinReq = configLoader.getInt(configs, "LeaderboardMinQuestionsNeeded", 0);
         this.correctAnswerMessageLoc = parseCorrectAnswerMsgLoc(configs, configLoader);
         this.QuestionCooldownLength = configLoader.getInt(configs, "QuestionCooldown", 5);
+        this.gracePeriod = (int) (configLoader.getDouble(configs, "GracePeriod", 0) * 1000);
 
         ConfigurationSection cheatSection = configs.getConfigurationSection("Cheats");
         ConfigurationSection minTimeSection = cheatSection.getConfigurationSection("MinTimeChecker");
@@ -262,6 +264,10 @@ public class ConfigFile {
 
     public int getMathWeightage() {
         return mathWeightage;
+    }
+
+    public int getGracePeriod() {
+        return gracePeriod;
     }
 
     private String parseGameMode(FileConfiguration configs, ConfigLoader configLoader) {
