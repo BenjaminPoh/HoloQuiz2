@@ -25,6 +25,7 @@ public class GameManager {
     private final int triviaWeightageForMixed;
     private final int gracePeriod;
 
+
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
     private final RewardsHandler rewardsHandler;
@@ -43,6 +44,7 @@ public class GameManager {
     private boolean timedOut;
     private long nextTaskTime;
     private long minAcceptedTime;
+    private final List<String> winners;
 
     private ArrayList<Question> triviaQuestionList;
 
@@ -72,6 +74,7 @@ public class GameManager {
 
         this.questionCooldownList = new LinkedList<>();
         this.questionCooldownMap = new HashSet<>();
+        this.winners = new ArrayList<>();
     }
 
     public void startGame() {
@@ -130,6 +133,7 @@ public class GameManager {
         }
         setQuestionAnswered(false);
         setQuestionTimedOut(false);
+        winners.clear();
         long currentTime = System.currentTimeMillis();
         setTimeQuestionSent(currentTime);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
@@ -297,5 +301,13 @@ public class GameManager {
 
     public void setMinAcceptedtime(long minAcceptedTime) {
         this.minAcceptedTime = minAcceptedTime;
+    }
+
+    public void addToWinnerList(String name) {
+        winners.add(name);
+    }
+
+    public boolean hasPlayerCorrectlyAnswered(String name) {
+        return winners.contains(name);
     }
 }

@@ -78,6 +78,9 @@ public class QuizAnswerHandler implements Listener {
 
         String message = theEvent.getMessage();
         Player player = theEvent.getPlayer();
+        if(gameManager.hasPlayerCorrectlyAnswered(player.getName())) {
+            return;
+        }
         List<String> answers = gameManager.getCurrentQuestion().getAnswers();
         List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
         for(String possibleAnswer : answers) {
@@ -117,7 +120,7 @@ public class QuizAnswerHandler implements Listener {
         long processingTime = System.currentTimeMillis() - timeAnswered;
         Logger.getLogger().debug("Processing done in " + processingTime + "ms");
 
-
+        gameManager.addToWinnerList(player.getName());
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getCurrentQuestionType();
         //The actual tasks
