@@ -26,6 +26,7 @@ public class RewardsHandler {
 
     private final boolean SRTS_isWhitelist;
     private final List<String> SRTS_worldList;
+    private final boolean SRTS_forceCommands;
 
     public RewardsHandler(JavaPlugin plugin, VaultDep vaultDep, DatabaseManager databaseManager,
                           ExternalFiles externalFiles, ConfigFile configFile) {
@@ -33,6 +34,7 @@ public class RewardsHandler {
         this.secretRewards = externalFiles.getAllSecretRewards();
         this.SRTS_isWhitelist = configFile.isSRTS_useWhitelist();
         this.SRTS_worldList = configFile.getSRTS_WorldList();
+        this.SRTS_forceCommands = configFile.isSRTS_forceCommands();
 
         this.vaultDep = vaultDep;
         this.plugin = plugin;
@@ -78,9 +80,11 @@ public class RewardsHandler {
             return -1;
         }
 
-        int statusCode = giveItemRewards(player, rewardTier.getItemRewards());
+        boolean forceSendRewardToStorage = checkSRTS(player.getWorld().getName());
+        int statusCode = giveItemRewards(player, rewardTier.getItemRewards(), forceSendRewardToStorage);
         giveMoneyRewards(player, rewardTier.getMoneyReward());
-        executeCommandRewards(player, rewardTier.getCommandsExecuted());
+        boolean forceCommandRewardToStorage = forceSendRewardToStorage && SRTS_forceCommands;
+        executeCommandRewards(player, rewardTier.getCommandsExecuted(), forceCommandRewardToStorage);
         MessageFormatter.getSender().sendToPlayer(player, rewardTier.getMessages(), true, true, true);
         return statusCode;
     }
@@ -113,7 +117,7 @@ public class RewardsHandler {
         }
         giveContestItemRewards(player, reward.getItemRewards());
         giveMoneyRewards(player, reward.getMoneyReward());
-        executeCommandRewards(player, reward.getCommandsExecuted());
+        executeCommandRewards(player, reward.getCommandsExecuted(), false);
         for(String message : reward.getMessages()) {
             MessageFormatter.getSender().sendToPlayer(player,message,false, true, true);
         }
@@ -138,9 +142,8 @@ public class RewardsHandler {
         }
     }
 
-    private int giveItemRewards(Player player, ArrayList<ItemStack> itemRewards) {
+    private int giveItemRewards(Player player, ArrayList<ItemStack> itemRewards, boolean forceSendRewardToStorage) {
         boolean fullInvDetected = false;
-        boolean forceSendRewardToStorage = checkSRTS(player.getWorld().getName());
 
         for (ItemStack item : itemRewards) {
             ItemStack formattedItem = item.clone(); //Important to prevent overwriting template
@@ -195,11 +198,15 @@ public class RewardsHandler {
         vaultDep.addBalance(player, moneyGained);
     }
 
-    private void executeCommandRewards(Player player, List<String> commandsToExecute) {
+    private void executeCommandRewards(Player player, List<String> commandsToExecute, boolean sendToStorage) {
         for(String peko : commandsToExecute) {
             String command = attachPlayerName(peko, player.getName());
-            Bukkit.getScheduler().runTask(plugin, () ->
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+            if(sendToStorage) {
+                databaseManager.storeRewardToStorage(player.getName(), "C", command, "", 1);
+            } else {
+                Bukkit.getScheduler().runTask(plugin, () ->
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+            }
         }
     }
 

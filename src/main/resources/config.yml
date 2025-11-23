@@ -6,6 +6,7 @@ LoggingLevel: 1 #1: Low | 2: Medium | 3: High
 
 # A special override which directly Sends item Rewards To Storage (SRTS) instead of to their inventory.
 SRTS_listType: Blacklist #Available: Whitelist/Blacklist
+SRTS_enableForCommands: true #For when your commands may give items. Note that this does not consider whether the player inventory has space.
 SRTS_WorldList:
   - world_nether #No HoloQuiz in the Nether!
 
@@ -105,4 +106,4 @@ Contests: #Edit Rewards in Rewards.yml!
 
 # Easter Eggs!
 EasterEggs: true
-InaGoesWAH: true
+InaGoesWAH: false #TODO: Change to double - 0 to disable, 1 to always trigger

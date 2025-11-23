@@ -36,6 +36,7 @@ public class ConfigFile {
 
     private final boolean SRTS_useWhitelist;
     private final List<String> SRTS_WorldList; //Expect list to be small.
+    private final boolean SRTS_forceCommands;
 
     private final String gameMode;
     private final int interval;
@@ -128,6 +129,7 @@ public class ConfigFile {
         if (this.SRTS_useWhitelist && this.SRTS_WorldList.isEmpty()) {
             Logger.getLogger().warn(WARNING_SRTS_EMPTY_WHITELIST);
         }
+        this.SRTS_forceCommands = configLoader.getBoolean(configs, "SRTS_enableForCommands", true);
     }
 
     public int getInterval() {
@@ -240,6 +242,10 @@ public class ConfigFile {
 
     public List<String> getSRTS_WorldList() {
         return SRTS_WorldList;
+    }
+
+    public boolean isSRTS_forceCommands() {
+        return SRTS_forceCommands;
     }
 
     public MinTimeCheatDetector getMinTimeCheatDetector() {
@@ -434,4 +440,5 @@ public class ConfigFile {
         }
         return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp, startDate, endDate);
     }
+
 }
