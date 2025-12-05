@@ -295,11 +295,11 @@ public class GameManager {
         return gracePeriod;
     }
 
-    public long getMinAcceptedtime() {
+    public long getMinAcceptedTime() {
         return minAcceptedTime;
     }
 
-    public void setMinAcceptedtime(long minAcceptedTime) {
+    public void setMinAcceptedTime(long minAcceptedTime) {
         this.minAcceptedTime = minAcceptedTime;
     }
 

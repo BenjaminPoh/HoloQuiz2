@@ -25,7 +25,7 @@ public class QuizAnswerHandler implements Listener {
     public static final String REPEATED_CORRECT_ANSWER_ANNOUNCEMENT = "&6%s&e also wins after &6%s&e seconds!";
     public static final String CORRECT_ANSWER_LOG = "%s answered correctly in %s time.";
 
-
+    private static final String LOG_MESSAGE_SLOW_ANSWER = "Player %s answered in %d time(%d) and is too slow!";
     private static final String DEBUG_LOG_RACE_CONDITION = "[HoloQuiz Debug Log] Race Condition occurred. Player %s answered in %s time, with %s processing time";
 
     private static final String INVENTORY_FULL_MESSAGE =
@@ -72,7 +72,10 @@ public class QuizAnswerHandler implements Listener {
         if(!gameManager.getGameStatus() || gameManager.isQuestionTimedOut()) {
             return;
         }
-        if(gameManager.isQuestionAnswered() && timeAnswered > gameManager.getMinAcceptedtime()) {
+        if(gameManager.isQuestionAnswered() && timeAnswered > gameManager.getMinAcceptedTime()) {
+            String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, theEvent.getPlayer().getName(),
+                    timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
+            Logger.getLogger().info_high(msg);
             return;
         }
 
@@ -108,7 +111,7 @@ public class QuizAnswerHandler implements Listener {
 
         //Set to True if passed all checks
         gameManager.setQuestionAnswered(true);
-        gameManager.setMinAcceptedtime(timeAnswered + gameManager.getGracePeriod());
+        gameManager.setMinAcceptedTime(timeAnswered + gameManager.getGracePeriod());
         /*
         if(gameManager.isQuestionAnswered()) {
             long processingTime = System.currentTimeMillis() - timeAnswered;
