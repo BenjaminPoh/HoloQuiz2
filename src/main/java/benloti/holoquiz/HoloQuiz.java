@@ -33,7 +33,7 @@ public final class HoloQuiz extends JavaPlugin {
         MessageFormatter.createSender(dependencyHandler.getCMIDep(), database.getUserPersonalisation(), configFile.getPluginPrefix());
         this.gameManager = new GameManager(this, configFile, dependencyHandler, externalFiles, database);
         this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
-        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, configFile, contestManager);
+        this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, configFile, contestManager, dependencyHandler);
         this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, contestManager, this);
         this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
         this.invClickListener = new InvClickListener(contestManager);

@@ -1,6 +1,7 @@
 package benloti.holoquiz.games;
 
 import benloti.holoquiz.HoloQuiz;
+import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.*;
 import benloti.holoquiz.database.DatabaseManager;
 import benloti.holoquiz.structs.Question;
@@ -38,19 +39,21 @@ public class QuizAnswerHandler implements Listener {
     private GameManager gameManager;
     private RewardsHandler rewardsHandler;
     private ContestManager contestManager;
+    private DependencyHandler dependencyHandler;
     private MinSDCheatDetector sdChecker;
     private MinTimeCheatDetector timeChecker;
 
     private int correctAnswerMsgLoc;
 
     public QuizAnswerHandler(HoloQuiz plugin, GameManager gameManager, DatabaseManager database,
-                             ConfigFile configFile, ContestManager contestManager) {
+                             ConfigFile configFile, ContestManager contestManager, DependencyHandler dependencyHandler) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.gameManager = gameManager;
         this.plugin = plugin;
         this.database = database;
         this.rewardsHandler = gameManager.getRewardsHandler();
         this.contestManager = contestManager;
+        this.dependencyHandler = dependencyHandler;
         this.sdChecker = configFile.getMinSDCheatDetector();
         this.timeChecker = configFile.getMinTimeCheatDetector();
         this.correctAnswerMsgLoc = configFile.getCorrectAnswerMessageLoc();
@@ -73,9 +76,25 @@ public class QuizAnswerHandler implements Listener {
             return;
         }
         if(gameManager.isQuestionAnswered() && timeAnswered > gameManager.getMinAcceptedTime()) {
-            String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, theEvent.getPlayer().getName(),
-                    timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
-            Logger.getLogger().info_high(msg);
+            List<String> answers = gameManager.getCurrentQuestion().getAnswers();
+            List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
+            String message = theEvent.getMessage();
+            for(String possibleAnswer : answers) {
+                if (message.equalsIgnoreCase(possibleAnswer)) {
+                    String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, theEvent.getPlayer().getName(),
+                            timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
+                    Logger.getLogger().info_high(msg);
+                    return;
+                }
+            }
+            for(String possibleAnswer : secretAnswers) {
+                if (message.equalsIgnoreCase(possibleAnswer)) {
+                    String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, theEvent.getPlayer().getName(),
+                            timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
+                    Logger.getLogger().info_high(msg);
+                    return;
+                }
+            }
             return;
         }
 
@@ -191,6 +210,9 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private void makeFireworks(Player player) {
+        if(dependencyHandler.getCMIDep().isPlayerVanished(player)) {
+            return;
+        }
         Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
         FireworkMeta fireworkMeta = firework.getFireworkMeta();
         FireworkEffect.Builder builder = FireworkEffect.builder();

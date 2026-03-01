@@ -1,6 +1,8 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+
+- v 3.6.2 - 01 Mar 2026 - Vanished players no longer trigger fireworks
 - v 3.6.1 - 22 Nov 2025 - Commands can be toggled for SRTS
 - v 3.6.0 - 06 Nov 2025 - Added a Grace Period to accept answers within a certain time of the first answer 
 - v 3.5.1 - 25 Oct 2025 - Improved Logging Features
