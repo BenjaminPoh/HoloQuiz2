@@ -2,8 +2,8 @@
   <artifact type="jar" name="HoloQuiz2 v1.2.0:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/HoloQuiz2__1__jar</output-path>
     <root id="archive" name="HoloQuiz2 (1).jar">
-      <element id="module-output" name="HoloQuiz" />
       <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/plugin.yml" />
+      <element id="module-output" name="HoloQuiz2" />
     </root>
   </artifact>
 </component>
