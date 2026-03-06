@@ -95,10 +95,10 @@ public class QuizAnswerHandler implements Listener {
         }
         String message = parseChatPrefixes(eventMessage.trim());
         Logger.getLogger().debug("Your message after parse is " + message);
-        if (Logger.getLogger().getLogLevel() >= 3) {
+        if (gameManager.isQuestionAnswered() && timeAnswered > gameManager.getMinAcceptedTime()) {
             logLateAnswers(message, player.getName(), timeAnswered);
+            return false;
         }
-
         if (gameManager.hasPlayerCorrectlyAnswered(player.getName())) {
             return false;
         }
@@ -337,7 +337,7 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private void logLateAnswers(String playerAnswer, String playerName, long timeAnswered) {
-        if (!gameManager.isQuestionAnswered() || timeAnswered < gameManager.getMinAcceptedTime()) {
+        if (Logger.getLogger().getLogLevel() < 3) {
             return;
         }
         List<String> answers = gameManager.getCurrentQuestion().getAnswers();
