@@ -28,6 +28,7 @@ public class ConfigFile {
     private final boolean collectRewardOnJoin;
     private final boolean enableOnStart;
     private final int loggingLevel;
+    private final List<String> prefixCompatibility;
     private final boolean easterEggsEnabled;
     private final boolean inaWahEnabled;
 
@@ -75,6 +76,7 @@ public class ConfigFile {
         this.collectRewardOnJoin = configLoader.getBoolean(configs, "CollectRewardsOnJoin", true);
         this.enableOnStart = configLoader.getBoolean(configs, "EnableOnStart", false);
         this.loggingLevel = configLoader.getInt(configs, "LoggingLevel", 1);
+        this.prefixCompatibility = configLoader.getStringList(configs, "PrefixCompatibility");
         this.easterEggsEnabled = configLoader.getBoolean(configs, "EasterEggs", false);
         this.inaWahEnabled = configLoader.getBoolean(configs, "InaGoesWAH", false);
 
@@ -162,6 +164,10 @@ public class ConfigFile {
 
     public int getLoggingLevel() {
         return loggingLevel;
+    }
+
+    public List<String> getPrefixCompatibilityList() {
+        return prefixCompatibility;
     }
 
     public String getPluginPrefix() {
@@ -440,5 +446,4 @@ public class ConfigFile {
         }
         return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp, startDate, endDate);
     }
-
 }

@@ -1,7 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
-
+- v 3.6.3 - 06 Mar 2026 - Prefixes can be configured to be compatible with chat prefixes from other commands
 - v 3.6.2 - 01 Mar 2026 - Vanished players no longer trigger fireworks
 - v 3.6.1 - 22 Nov 2025 - Commands can be toggled for SRTS
 - v 3.6.0 - 06 Nov 2025 - Added a Grace Period to accept answers within a certain time of the first answer 

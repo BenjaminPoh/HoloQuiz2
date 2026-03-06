@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -42,6 +43,7 @@ public class QuizAnswerHandler implements Listener {
     private DependencyHandler dependencyHandler;
     private MinSDCheatDetector sdChecker;
     private MinTimeCheatDetector timeChecker;
+    private List<String> acceptedPrefixes;
 
     private int correctAnswerMsgLoc;
 
@@ -57,6 +59,7 @@ public class QuizAnswerHandler implements Listener {
         this.sdChecker = configFile.getMinSDCheatDetector();
         this.timeChecker = configFile.getMinTimeCheatDetector();
         this.correctAnswerMsgLoc = configFile.getCorrectAnswerMessageLoc();
+        this.acceptedPrefixes = configFile.getPrefixCompatibilityList();
     }
 
     public void reload(GameManager gameManager, ConfigFile configFile, ContestManager contestManager) {
@@ -66,65 +69,61 @@ public class QuizAnswerHandler implements Listener {
         this.sdChecker = configFile.getMinSDCheatDetector();
         this.timeChecker = configFile.getMinTimeCheatDetector();
         this.correctAnswerMsgLoc = configFile.getCorrectAnswerMessageLoc();
+        this.acceptedPrefixes = configFile.getPrefixCompatibilityList();
+    }
+    @EventHandler
+    public void checkAnswerSent(PlayerCommandPreprocessEvent theEvent) {
+        boolean cancelEvent = processAnswer(theEvent.getPlayer(),theEvent.getMessage());
+        if(cancelEvent) {
+            theEvent.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void checkAnswerSent(AsyncPlayerChatEvent theEvent) {
+        boolean cancelEvent = processAnswer(theEvent.getPlayer(),theEvent.getMessage());
+        if(cancelEvent) {
+            theEvent.setCancelled(true);
+        }
+    }
+
+    private boolean processAnswer(Player player, String eventMessage) {
         long timeAnswered = System.currentTimeMillis();
         boolean isFirstAnswer = gameManager.isQuestionAnswered();
-        if(!gameManager.getGameStatus() || gameManager.isQuestionTimedOut()) {
-            return;
+        if (!gameManager.getGameStatus() || gameManager.isQuestionTimedOut()) {
+            return false;
         }
-        if(gameManager.isQuestionAnswered() && timeAnswered > gameManager.getMinAcceptedTime()) {
-            List<String> answers = gameManager.getCurrentQuestion().getAnswers();
-            List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
-            String message = theEvent.getMessage();
-            for(String possibleAnswer : answers) {
-                if (message.equalsIgnoreCase(possibleAnswer)) {
-                    String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, theEvent.getPlayer().getName(),
-                            timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
-                    Logger.getLogger().info_high(msg);
-                    return;
-                }
-            }
-            for(String possibleAnswer : secretAnswers) {
-                if (message.equalsIgnoreCase(possibleAnswer)) {
-                    String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, theEvent.getPlayer().getName(),
-                            timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
-                    Logger.getLogger().info_high(msg);
-                    return;
-                }
-            }
-            return;
+        String message = parseChatPrefixes(eventMessage.trim());
+        Logger.getLogger().debug("Your message after parse is " + message);
+        if (Logger.getLogger().getLogLevel() >= 3) {
+            logLateAnswers(message, player.getName(), timeAnswered);
         }
 
-        String message = theEvent.getMessage();
-        Player player = theEvent.getPlayer();
-        if(gameManager.hasPlayerCorrectlyAnswered(player.getName())) {
-            return;
+        if (gameManager.hasPlayerCorrectlyAnswered(player.getName())) {
+            return false;
         }
         List<String> answers = gameManager.getCurrentQuestion().getAnswers();
         List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
-        for(String possibleAnswer : answers) {
+        for (String possibleAnswer : answers) {
             if (message.equalsIgnoreCase(possibleAnswer)) {
                 executeCorrectAnswerTasks(player, false, possibleAnswer, timeAnswered, isFirstAnswer);
-                return;
+                return false;
             }
         }
-        for(String possibleAnswer : secretAnswers) {
+        for (String possibleAnswer : secretAnswers) {
             if (message.equalsIgnoreCase(possibleAnswer)) {
-                theEvent.setCancelled(true);
                 executeCorrectAnswerTasks(player, true, possibleAnswer, timeAnswered, isFirstAnswer);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     private void executeCorrectAnswerTasks(Player player, Boolean secretAnswerTriggered, String answer, long timeAnswered, boolean isFirstAnswer) {
         //Check for Cheats
         long startTime = gameManager.getTimeQuestionSent();
-        int timeTaken = (int)(timeAnswered - startTime);
-        if(checkIfUnderPermissibleTime(timeTaken, player) || checkIfUnderPermissibleSD(timeTaken, player)) {
+        int timeTaken = (int) (timeAnswered - startTime);
+        if (checkIfUnderPermissibleTime(timeTaken, player) || checkIfUnderPermissibleSD(timeTaken, player)) {
             return;
         }
 
@@ -151,7 +150,7 @@ public class QuizAnswerHandler implements Listener {
 
         //Give Rewards
         int statusCodeOne = -1;
-        if(secretAnswerTriggered) {
+        if (secretAnswerTriggered) {
             sendSecretAnnouncement(player, timeTaken, answeredQuestion, isFirstAnswer);
             statusCodeOne = rewardsHandler.giveSecretRewards(player, timeTaken);
         } else {
@@ -180,15 +179,15 @@ public class QuizAnswerHandler implements Listener {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
         String message;
-        if(!isFirstAnswer) {
+        if (!isFirstAnswer) {
             message = String.format(CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds, possibleAnswer);
-            if(question.getExtraMessage() != null) {
+            if (question.getExtraMessage() != null) {
                 message = message + question.getExtraMessage();
             }
         } else {
             message = String.format(REPEATED_CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
         }
-        for(Player player : plugin.getServer().getOnlinePlayers()) {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
             MessageFormatter.getSender().sendToPlayer(player, message, true, true, false);
         }
     }
@@ -197,12 +196,12 @@ public class QuizAnswerHandler implements Listener {
         String playerName = answerer.getName();
         double timeTakenInSeconds = timeTaken / 1000.0;
         String message;
-        if(!isFirstAnswer) {
+        if (!isFirstAnswer) {
             message = String.format(SECRET_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
         } else {
             message = String.format(REPEATED_CORRECT_ANSWER_ANNOUNCEMENT, playerName, timeTakenInSeconds);
         }
-        for(Player player : plugin.getServer().getOnlinePlayers()) {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
             MessageFormatter.getSender().sendToPlayer(player, message, true, true, false);
         }
         String secretAnnouncement = question.getSecretMessage();
@@ -210,7 +209,7 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private void makeFireworks(Player player) {
-        if(dependencyHandler.getCMIDep().isPlayerVanished(player)) {
+        if (dependencyHandler.getCMIDep().isPlayerVanished(player)) {
             return;
         }
         Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
@@ -228,10 +227,9 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private void sendCorrectAnswerNotification(Player player, int status) {
-        if(status == 0) {
+        if (status == 0) {
             displayTitle(player);
-        }
-        else if(status == 1) {
+        } else if (status == 1) {
             displayActionBar(player);
         }
     }
@@ -268,16 +266,16 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private boolean checkIfUnderPermissibleSD(int timeTaken, Player player) {
-        if(!sdChecker.isEnabled()) {
+        if (!sdChecker.isEnabled()) {
             return false;
         }
         List<Double> listOfTimes = database.fetchPrevTimes(sdChecker.getMinAnsUsed() - 1, player);
-        if(listOfTimes.size() + 1 < sdChecker.getMinAnsUsed()) {
+        if (listOfTimes.size() + 1 < sdChecker.getMinAnsUsed()) {
             return false;
         }
         listOfTimes.add(timeTaken / 1000.0);
         double stdDev = calculateStdDev(listOfTimes);
-        if(stdDev < sdChecker.getMinSDReq()) {
+        if (stdDev < sdChecker.getMinSDReq()) {
             for (String peko : sdChecker.getCheatingCommands()) {
                 String command = antiCheatCommandFormatter(peko, player.getName(), stdDev);
                 Bukkit.getScheduler().runTask(plugin, () -> {
@@ -290,10 +288,10 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private void sendUserMessage(Player player, int statusCodeOne, int statusCodeTwo) {
-        if(statusCodeTwo == 2 || statusCodeOne == 2) {
+        if (statusCodeTwo == 2 || statusCodeOne == 2) {
             MessageFormatter.getSender().sendToPlayer(player, SRTS_TRIGGERED_MESSAGE, false, true, false);
         }
-        if(statusCodeTwo == 1 || statusCodeOne == 1) {
+        if (statusCodeTwo == 1 || statusCodeOne == 1) {
             MessageFormatter.getSender().sendToPlayer(player, INVENTORY_FULL_MESSAGE, false, true, false);
         }
     }
@@ -318,10 +316,47 @@ public class QuizAnswerHandler implements Listener {
     }
 
     private String antiCheatCommandFormatter(String cmd, String playerName, double stat) {
-        cmd = cmd.replace("[stat]" , Double.toString(stat));
-        if(cmd.contains("[player]")) {
+        cmd = cmd.replace("[stat]", Double.toString(stat));
+        if (cmd.contains("[player]")) {
             return cmd.replace("[player]", playerName);
         }
         return cmd;
+    }
+
+    private String parseChatPrefixes(String message) {
+        Logger.getLogger().debug("Your message at parse is " + message);
+        if(!message.startsWith("/")) {
+            return message;
+        }
+        for(String prefix : acceptedPrefixes) {
+            if(message.startsWith(prefix)) {
+                return message.substring(prefix.length()).trim();
+            }
+        }
+        return message;
+    }
+
+    private void logLateAnswers(String playerAnswer, String playerName, long timeAnswered) {
+        if (!gameManager.isQuestionAnswered() || timeAnswered < gameManager.getMinAcceptedTime()) {
+            return;
+        }
+        List<String> answers = gameManager.getCurrentQuestion().getAnswers();
+        List<String> secretAnswers = gameManager.getCurrentQuestion().getSecretAnswers();
+        for (String possibleAnswer : answers) {
+            if (playerAnswer.equalsIgnoreCase(possibleAnswer)) {
+                String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, playerName,
+                        timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
+                Logger.getLogger().info_high(msg);
+                return;
+            }
+        }
+        for (String possibleAnswer : secretAnswers) {
+            if (playerAnswer.equalsIgnoreCase(possibleAnswer)) {
+                String msg = String.format(LOG_MESSAGE_SLOW_ANSWER, playerName,
+                        timeAnswered - gameManager.getTimeQuestionSent(), timeAnswered);
+                Logger.getLogger().info_high(msg);
+                return;
+            }
+        }
     }
 }

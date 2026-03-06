@@ -54,6 +54,10 @@ public class Logger {
         Logger.getLogger().info_low(String.format(LOG_SET_LOGGING_LEVEL, level));
     }
 
+    public int getLogLevel() {
+        return this.currentLevel;
+    }
+
     public void info_low(String msg) {
         if (currentLevel < 1) {
             return;
