@@ -33,6 +33,8 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_BLOCKED_WORLD = "&4You are not allowed to claim rewards in this World!";
     public static final String NOTIFY_UNKNOWN_ERROR = "&4You should not see this message. How did you get here?";
     public static final String NOTIFY_NO_CONTEST = "&4There does not seem to be any contests running!";
+    public static final String MSG_HOLOQUIZ_MESSAGES_ENABLED = "&bHoloQuiz will now be&a shown to you!";
+    public static final String MSG_HOLOQUIZ_MESSAGES_DISABLED = "&bHoloQuiz will&c no longer be shown to you!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_CONFIG_FILE_BROKEN = "&cA file is broken! Aborting reload!";
@@ -64,9 +66,6 @@ public class PlayerCmds implements CommandExecutor {
             "&3%s. &e%s&3: &2%s &eBest Time: &6%s &3| Average Time: &2%s";
     public static final String MSG_LEADERBOARD_BODY_AVERAGE_BEST_ANSWERS_FORMAT =
             "&3%s. &e%s&3: &2%s &3Best Time: &2%s &3| &eAverage Time: &6%s";
-
-    public static final String MSG_HOLOQUIZ_MESSAGES_ENABLED = "&bHoloQuiz will now be&a shown to you%s!";
-    public static final String MSG_HOLOQUIZ_MESSAGES_DISABLED = "&bHoloQuiz will&c no longer be shown to you%s!";
 
     public static final String HELP_TABLE = "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n" +
             "&a/HoloQuiz info: &bShows information on the current question\n" +
@@ -353,15 +352,13 @@ public class PlayerCmds implements CommandExecutor {
             return;
         }
         boolean newNotificationSetting = !playerSettings.isNotificationEnabled();
-        String playerSuffix = playerSettings.getSuffix();
         userPersonalisation.setNotificationSetting(playerUUID, newNotificationSetting);
 
         if (newNotificationSetting) {
-            holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_ENABLED, playerSuffix);
+            formatInformationForPlayer(MSG_HOLOQUIZ_MESSAGES_ENABLED, player);
         } else {
-            holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_DISABLED, playerSuffix);
+            formatInformationForPlayer(MSG_HOLOQUIZ_MESSAGES_DISABLED, player);
         }
-        formatInformationForPlayer(holoQuizNotificationFormatted, player);
     }
 
     private String[] obtainQuestionInfo(boolean adminInfoRequired) {
