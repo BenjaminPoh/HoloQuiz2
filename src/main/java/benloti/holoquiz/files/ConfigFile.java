@@ -48,6 +48,7 @@ public class ConfigFile {
     private final MinSDCheatDetector minSDCheatDetector;
     private final int correctAnswerMessageLoc; // -1: Disabled. 0:TitleMsg. 1:ActionBar
     private final int gracePeriod;
+    private final int alertTime;
 
     private final int triviaWeightage;
     private final int mathWeightage;
@@ -86,6 +87,7 @@ public class ConfigFile {
         this.mathWeightage = configLoader.getInt(gameModeDistributionSection, "Math", 1);
         this.interval = configLoader.getInt(configs, "Interval", 300);
         this.intervalCheck = configLoader.getInt(configs, "IntervalCheck", 10);
+        this.alertTime = configLoader.getInt(configs, "Alert", 0);
         this.revealAnswerDelay = configLoader.getInt(configs, "RevealAnswerDelay", 0);
         this.leaderboardSize = configLoader.getInt(configs, "LeaderboardSize", 10);
         this.leaderboardMinReq = configLoader.getInt(configs, "LeaderboardMinQuestionsNeeded", 0);
@@ -282,6 +284,10 @@ public class ConfigFile {
         return gracePeriod;
     }
 
+    public int getAlertTime() {
+        return alertTime;
+    }
+
     private String parseGameMode(FileConfiguration configs, ConfigLoader configLoader) {
         String gameMode = configLoader.getString(configs, "GameMode", "Trivia");
         if (!gameMode.equals("Trivia") && !gameMode.equals("Math") && !gameMode.equals("Mixed")) {
@@ -446,4 +452,5 @@ public class ConfigFile {
         }
         return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp, startDate, endDate);
     }
+
 }

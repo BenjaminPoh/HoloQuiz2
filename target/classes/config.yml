@@ -5,7 +5,7 @@ CollectRewardsOnJoin: true
 LoggingLevel: 1 #1: Low | 2: Medium | 3: High | 4: Debug
 PrefixCompatibility: #These prefixes are stripped away
   - /p
-  - /s
+  - /cmi staffmsg
   - /a
 
 # A special override which directly Sends item Rewards To Storage (SRTS) instead of to their inventory.
@@ -17,6 +17,7 @@ SRTS_WorldList:
 # Game Config
 Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math / Mixed
+Alert: 5 #Provides an alert X Seconds before question is sent. Individually enabled by /Holoquiz Alerts.
 MixedGameModeDistribution: #Sums all the numbers, and the chance is the specified number.
   Trivia: 1
   Math: 1

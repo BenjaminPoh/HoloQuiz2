@@ -14,6 +14,8 @@ public class GameManager {
     private static final String LOG_MESSAGE_QUESTION_SENT = "Question Sent: %s";
     private static final String DEV_ERROR_INVALID_MODE = "Invalid mode %s. There is no way you ever see this.";
 
+    private static final String ALERT_MESSAGE_FORMAT = "&6The next Question is coming in %d seconds. Get ready!";
+
     private final JavaPlugin plugin;
     private final long interval;
     private final long intervalCheck;
@@ -24,7 +26,7 @@ public class GameManager {
     private final int mathWeightageForMixed;
     private final int triviaWeightageForMixed;
     private final int gracePeriod;
-
+    private final int alertTime;
 
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
@@ -33,7 +35,9 @@ public class GameManager {
 
     private final String gameMode;
     private final Random rngesus;
+    private final String alertMessage;
     private NextTaskScheduler nextTaskScheduler;
+    private QuizAlertScheduler quizAlertScheduler;
     private PeriodicChecker periodicChecker;
     private boolean gameRunning;
     private Question currentQuestion;
@@ -57,14 +61,17 @@ public class GameManager {
         this.revealAnswerDelay = configFile.getRevealAnswerDelay();
         this.gameMode = configFile.getGameMode();
         this.gracePeriod = configFile.getGracePeriod();
+        this.alertTime = configFile.getAlertTime();
         this.mathWeightageForMixed = configFile.getMathWeightage();
         this.triviaWeightageForMixed = configFile.getTriviaWeightage();
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
         this.rewardsHandler = new RewardsHandler(plugin, dependencyHandler.getVaultDep(),databaseManager, externalFiles, configFile);
 
-        this.revealAnswerFlag = (this.revealAnswerDelay == -1);
+        this.revealAnswerFlag = (this.revealAnswerDelay != -1);
         this.rngesus = new Random();
+
+        this.alertMessage = String.format(ALERT_MESSAGE_FORMAT, this.alertTime);
 
         if(configFile.getQuestionCooldownLength() >= triviaQuestionList.size()) {
             this.questionCooldown = 0;
@@ -82,9 +89,11 @@ public class GameManager {
             return;
         }
         this.nextTaskScheduler = new NextTaskScheduler(this);
+        this.quizAlertScheduler = new QuizAlertScheduler(plugin, this);
         this.gameRunning = true;
         sendQuestion();
         this.nextTaskScheduler.runTaskLater(plugin,  getInterval() * 20);
+        this.quizAlertScheduler.scheduleAlert((getInterval() - getAlertTime())*20);
         this.nextTaskTime = this.timeQuestionSent + getInterval()*1000;
 
         if(intervalCheck > 0) {
@@ -96,23 +105,27 @@ public class GameManager {
     public void triggerNextTask(boolean cancelScheduledTask) {
         if(cancelScheduledTask) {
             nextTaskScheduler.cancel();
+            quizAlertScheduler.cancelExecution();
         }
         this.nextTaskScheduler = new NextTaskScheduler(this);
+        this.quizAlertScheduler = new QuizAlertScheduler(plugin, this);
 
         //If chosen to not reveal answer, send next question immediately.
-        if(revealAnswerFlag) {
+        if(!revealAnswerFlag) {
             sendQuestion();
             this.nextTaskScheduler.runTaskLater(plugin,  getInterval() * 20);
             this.nextTaskTime = this.timeQuestionSent + getInterval()*1000;
+            this.quizAlertScheduler.scheduleAlert((getInterval() - getAlertTime())*20);
             return;
         }
-
+        //From here on its reveal answer
         //If question is not answered, send the answer
         if(!isQuestionAnswered() && !isQuestionTimedOut()) {
             revealAnswer();
             setQuestionTimedOut(true);
             this.nextTaskScheduler.runTaskLater(plugin,  getRevealAnswerDelay() * 20);
             this.nextTaskTime = System.currentTimeMillis() + getRevealAnswerDelay()*1000;
+            this.quizAlertScheduler.scheduleAlert((getRevealAnswerDelay() - getAlertTime())*20);
             return;
         }
 
@@ -120,6 +133,7 @@ public class GameManager {
         sendQuestion();
         this.nextTaskScheduler.runTaskLater(plugin,  getInterval() * 20);
         this.nextTaskTime = this.timeQuestionSent + getInterval()*1000;
+        this.quizAlertScheduler.scheduleAlert((getInterval() - getAlertTime())*20);
     }
 
     private void sendQuestion() {
@@ -174,6 +188,7 @@ public class GameManager {
             return;
         }
         nextTaskScheduler.cancel();
+        quizAlertScheduler.cancelExecution();
         this.nextTaskScheduler = null;
         if(intervalCheck > 0) {
             periodicChecker.cancel();
@@ -234,6 +249,13 @@ public class GameManager {
         return mathQuestionGenerator.parser(mathQuestionGenerator.getMathQuestionColour(), question, answer);
     }
 
+    public void addToWinnerList(String name) {
+        winners.add(name);
+    }
+
+    public boolean hasPlayerCorrectlyAnswered(String name) {
+        return winners.contains(name);
+    }
     //Getters and Setters
     public String getCurrentQuestionType() {
         return this.currentQuestionType;
@@ -265,6 +287,10 @@ public class GameManager {
 
     public long getInterval() {
         return this.interval;
+    }
+
+    public long getAlertTime() {
+        return this.alertTime;
     }
 
     public void updateQuestionList(ArrayList<Question> questionList) {
@@ -303,11 +329,11 @@ public class GameManager {
         this.minAcceptedTime = minAcceptedTime;
     }
 
-    public void addToWinnerList(String name) {
-        winners.add(name);
+    public String getAlertMessage() {
+        return alertMessage;
     }
 
-    public boolean hasPlayerCorrectlyAnswered(String name) {
-        return winners.contains(name);
+    public boolean isRevealAnswerFlag() {
+        return this.revealAnswerFlag;
     }
 }

@@ -33,8 +33,11 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_BLOCKED_WORLD = "&4You are not allowed to claim rewards in this World!";
     public static final String NOTIFY_UNKNOWN_ERROR = "&4You should not see this message. How did you get here?";
     public static final String NOTIFY_NO_CONTEST = "&4There does not seem to be any contests running!";
-    public static final String MSG_HOLOQUIZ_MESSAGES_ENABLED = "&bHoloQuiz will now be&a shown to you!";
-    public static final String MSG_HOLOQUIZ_MESSAGES_DISABLED = "&bHoloQuiz will&c no longer be shown to you!";
+    public static final String NOTIFY_HOLOQUIZ_MESSAGES_ENABLED = "&bHoloQuiz will now be&a shown to you!";
+    public static final String NOTIFY_HOLOQUIZ_MESSAGES_DISABLED = "&bHoloQuiz will&c no longer be shown to you!";
+    public static final String NOTIFY_ALERT_NOT_ALLOWED = "&4You cannot use this command!";
+    public static final String NOTIFY_ALERT_TURNED_ON = "&aAlerts for the next question have been turned on!";
+    public static final String NOTIFY_ALERT_TURNED_OFF = "&cAlerts for the next question have been turned off!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_CONFIG_FILE_BROKEN = "&cA file is broken! Aborting reload!";
@@ -297,6 +300,15 @@ public class PlayerCmds implements CommandExecutor {
                 return false;
             }
         }
+
+        if (args[0].equalsIgnoreCase("alert")) {
+            if(!player.hasPermission("HoloQuiz.alert")) {
+                MessageFormatter.getSender().sendToPlayer(player, NOTIFY_ALERT_NOT_ALLOWED, false, true, true);
+                return true;
+            }
+            toggleAlertsForPlayer(player);
+            return true;
+        }
         return false;
     }
 
@@ -342,22 +354,25 @@ public class PlayerCmds implements CommandExecutor {
 
     private void toggleHoloQuizNotification(Player player) {
         String playerUUID = player.getUniqueId().toString();
-        String holoQuizNotificationFormatted;
-        PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+        PlayerSettings playerSettings = userPersonalisation.toggleNotificationSetting(playerUUID);
 
-        if (playerSettings == null) {
-            userPersonalisation.setNotificationSetting(playerUUID, false);
-            holoQuizNotificationFormatted = String.format(MSG_HOLOQUIZ_MESSAGES_DISABLED, "");
-            formatInformationForPlayer(holoQuizNotificationFormatted, player);
-            return;
-        }
-        boolean newNotificationSetting = !playerSettings.isNotificationEnabled();
-        userPersonalisation.setNotificationSetting(playerUUID, newNotificationSetting);
-
-        if (newNotificationSetting) {
-            formatInformationForPlayer(MSG_HOLOQUIZ_MESSAGES_ENABLED, player);
+        boolean updatedSetting = playerSettings.isNotificationEnabled();
+        if (updatedSetting) {
+            formatInformationForPlayer(NOTIFY_HOLOQUIZ_MESSAGES_ENABLED, player);
         } else {
-            formatInformationForPlayer(MSG_HOLOQUIZ_MESSAGES_DISABLED, player);
+            formatInformationForPlayer(NOTIFY_HOLOQUIZ_MESSAGES_DISABLED, player);
+        }
+    }
+
+    private void toggleAlertsForPlayer(Player player) {
+        String playerUUID = player.getUniqueId().toString();
+        PlayerSettings playerSettings = userPersonalisation.toggleAlertSetting(playerUUID);
+
+        boolean updatedSetting = playerSettings.isAlertEnabled();
+        if (updatedSetting) {
+            formatInformationForPlayer(NOTIFY_ALERT_TURNED_ON, player);
+        } else {
+            formatInformationForPlayer(NOTIFY_ALERT_TURNED_OFF, player);
         }
     }
 

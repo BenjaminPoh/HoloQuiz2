@@ -63,7 +63,7 @@ public class MessageFormatter {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
         if(playerSettings == null) {
-            playerSettings = new PlayerSettings("", true);
+            playerSettings = new PlayerSettings("", true, false);
         }
         if (!playerSettings.isNotificationEnabled() && !forceSend) {
             return;
@@ -78,7 +78,7 @@ public class MessageFormatter {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
         if(playerSettings == null) {
-            playerSettings = new PlayerSettings("", true);
+            playerSettings = new PlayerSettings("", true, false);
         }
         if (!playerSettings.isNotificationEnabled() && !forceSend) {
             return;
@@ -93,13 +93,22 @@ public class MessageFormatter {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
         if(playerSettings == null) {
-            playerSettings = new PlayerSettings("", true);
+            playerSettings = new PlayerSettings("", true, false);
         }
         if (!playerSettings.isNotificationEnabled() && !forceSend) {
             return;
         }
 
         player.sendMessage(formatMessage(playerSettings, message, addPrefix, addCustomSuffix));
+    }
+
+    public void sendAlertToPlayers(Player player, String message) {
+        String playerUUID = player.getUniqueId().toString();
+        PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
+        if(!playerSettings.sendAlert()) {
+            return;
+        }
+        player.sendMessage(formatMessage(playerSettings, message, true, true));
     }
 
     public void sendToConsole(CommandSender sender, String[] message) {
