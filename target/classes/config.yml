@@ -17,7 +17,7 @@ SRTS_WorldList:
 # Game Config
 Interval: 300 #In Seconds
 GameMode: Trivia #Available: Trivia / Math / Mixed
-Alert: 5 #Provides an alert X Seconds before question is sent. Individually enabled by /Holoquiz Alerts.
+Alert: 5 #Provides an alert X Seconds before question is sent. Individually enabled by /Holoquiz Alert.
 MixedGameModeDistribution: #Sums all the numbers, and the chance is the specified number.
   Trivia: 1
   Math: 1

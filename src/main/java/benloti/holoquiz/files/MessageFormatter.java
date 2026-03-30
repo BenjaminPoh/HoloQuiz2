@@ -105,7 +105,7 @@ public class MessageFormatter {
     public void sendAlertToPlayers(Player player, String message) {
         String playerUUID = player.getUniqueId().toString();
         PlayerSettings playerSettings = userPersonalisation.getPlayerSettings(playerUUID);
-        if(!playerSettings.sendAlert()) {
+        if(playerSettings == null || !playerSettings.sendAlert()) {
             return;
         }
         player.sendMessage(formatMessage(playerSettings, message, true, true));
