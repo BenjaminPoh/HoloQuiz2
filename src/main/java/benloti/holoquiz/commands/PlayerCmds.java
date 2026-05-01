@@ -78,6 +78,7 @@ public class PlayerCmds implements CommandExecutor {
             "&a/HoloQuiz collect: &bCollect rewards stored in Storage\n" +
             "&a/HoloQuiz contest: &bView the current placements for the HoloQuiz Contests\n" +
             "&a/HoloQuiz normal: &bSwitches off &6/HoloQuiz Pekofy\n" +
+            "&a/HoloQuiz alert: &bToggles an Alert before question is sent\n" +
             "&9=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=";
 
     public static final String EASTER_EGG_FBK_GLASSES = "First, you can have glasses-wearing girls take them off and " +
@@ -386,31 +387,12 @@ public class PlayerCmds implements CommandExecutor {
 
         long currentTime = System.currentTimeMillis();
         long timeQuestionSent = gameManager.getNextTaskTime();
-        String timeLeftFormatted;
-        String questionStatusFormatted;
         long timeLeft = timeQuestionSent - currentTime;
         double timeLeftInSeconds = timeLeft / 1000.0;
 
-        //I call this the Bukit Timah Hill Coding Style
-        if (gameManager.isQuestionAnswered()) {
-            timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
-            questionStatusFormatted = MSG_QUESTION_STATUS_ANSWERED_FORMAT;
-        } else {
-            if(gameManager.isQuestionTimedOut()) {
-                timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
-                questionStatusFormatted = MSG_QUESTION_STATUS_TIMEOUT_FORMAT;
-            } else {
-                if(gameManager.getRevealAnswerDelay() > 0) {
-                    timeLeftFormatted = String.format(MSG_ANSWER_REVEAL_COUNTDOWN_FORMAT, timeLeftInSeconds);
-                } else {
-                    timeLeftFormatted = String.format(MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, timeLeftInSeconds);
-                }
-                questionStatusFormatted = MSG_QUESTION_STATUS_UNANSWERED_FORMAT;
-            }
-        }
-
-        String[] basicInfo = {TABLE_BORDER, questionStatusFormatted, timeLeftFormatted,
-                currentQuestionFormatted, TABLE_BORDER};
+        String[] questionInfoFormats = fetchInfoFormats();
+        String timeLeftFormatted = String.format(questionInfoFormats[0], timeLeftInSeconds);
+        String[] basicInfo = {TABLE_BORDER, questionInfoFormats[1], timeLeftFormatted, currentQuestionFormatted, TABLE_BORDER};
         if (!adminInfoRequired) {
             return basicInfo;
         }
@@ -426,6 +408,7 @@ public class PlayerCmds implements CommandExecutor {
             String formattedAnswer = String.format(MSG_ANSWER_LIST_FORMAT, s);
             information.add(formattedAnswer);
         }
+        information.add(TABLE_BORDER);
 
         int size = information.size();
         String[] finalInfoArray = new String[size];
@@ -434,6 +417,20 @@ public class PlayerCmds implements CommandExecutor {
         }
         return finalInfoArray;
     }
+
+    private String[] fetchInfoFormats() {
+        if (gameManager.isQuestionAnswered()) {
+            return new String [] {MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, MSG_QUESTION_STATUS_ANSWERED_FORMAT};
+        }
+        if(gameManager.isQuestionTimedOut()) {
+            return new String [] {MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, MSG_QUESTION_STATUS_TIMEOUT_FORMAT};
+        }
+        if(gameManager.getRevealAnswerDelay() > 0) {
+            return new String [] {MSG_ANSWER_REVEAL_COUNTDOWN_FORMAT, MSG_QUESTION_STATUS_UNANSWERED_FORMAT};
+        }
+        return new String [] {MSG_NEXT_QUESTION_COUNTDOWN_FORMAT, MSG_QUESTION_STATUS_UNANSWERED_FORMAT};
+    }
+
 
     private void updateQuestionBank(CommandSender player) {
         formatInformationForPlayer(NOTIFY_RELOADING, player);

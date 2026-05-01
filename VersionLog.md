@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.8.1 - 01 May 2026 - Fixed a visual bug where Admins have a missing border with /holoquiz info
 - v 3.8.0 - 04 Apr 2026 - Bonus reward for the Champion of a Contest added
 - v 3.7.0 - 29 Mar 2026 - Alert feature enabled. It's not very customisable, but works!
 - v 3.6.4 - 28 Mar 2026 - Fixed Double Peko bug when toggling HoloQuiz notifications
