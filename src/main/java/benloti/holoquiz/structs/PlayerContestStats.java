@@ -5,7 +5,7 @@ public class PlayerContestStats{
     private final String playerName;
     private final int holoQuizID;
 
-    private final double averageTime;
+    private final int averageTime;
     private final int bestTime;
     private final int questionsAnswered;
     private final int bestXTimes;
@@ -26,8 +26,12 @@ public class PlayerContestStats{
         return playerName;
     }
 
-    public double getAverageTime() {
+    public int getAverageTime() {
         return averageTime;
+    }
+
+    public int getBestXTime() {
+        return bestXTimes;
     }
 
     public int getBestTime() {

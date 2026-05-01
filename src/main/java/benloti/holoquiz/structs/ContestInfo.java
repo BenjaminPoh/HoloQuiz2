@@ -30,11 +30,14 @@ public class ContestInfo {
     private ArrayList<RewardTier> bestAverageRewards; // Code 2
     private ArrayList<RewardTier> bestXRewards; //Code 3
 
+    private final boolean championRewardEnabled;
+    private RewardTier championRewards;
+
     private final int bestAvgMinReq;
     private final int bestXMinReq;
 
     public ContestInfo(int type, boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq, long startTime, long endTime, LocalDate startDate, LocalDate endDate) {
+                       int twoMinReq, int threeMinReq, boolean championEnabled, long startTime, long endTime, LocalDate startDate, LocalDate endDate) {
         this.typeCode = type;
         this.isEnabled = isEnabled;
         this.contestName = getTypeString();
@@ -45,6 +48,7 @@ public class ContestInfo {
         this.fastestAnswerContestEnabled = oneEnabled;
         this.bestAvgContestEnabled = twoEnabled;
         this.bestXContestEnabled = threeEnabled;
+        this.championRewardEnabled = championEnabled;
         this.startTime = startTime;
         this.endTime = endTime;
         this.startDate = startDate;
@@ -52,7 +56,7 @@ public class ContestInfo {
     }
 
     public ContestInfo(boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq, long startTime, long endTime, LocalDate startDate, LocalDate endDate, String name, String rewardCategory) {
+                       int twoMinReq, int threeMinReq, boolean championEnabled, long startTime, long endTime, LocalDate startDate, LocalDate endDate, String name, String rewardCategory) {
         this.typeCode = 3;
         this.isEnabled = isEnabled;
         this.contestName = name;
@@ -63,6 +67,7 @@ public class ContestInfo {
         this.fastestAnswerContestEnabled = oneEnabled;
         this.bestAvgContestEnabled = twoEnabled;
         this.bestXContestEnabled = threeEnabled;
+        this.championRewardEnabled = championEnabled;
         this.startTime = startTime;
         this.endTime = endTime;
         this.startDate = startDate;
@@ -125,12 +130,17 @@ public class ContestInfo {
         return this.isEnabled;
     }
 
+    public boolean isChampionRewardEnabled() {
+        return championRewardEnabled;
+    }
+
     public void updateRewards(ArrayList<RewardTier> topAnswerRewards, ArrayList<RewardTier> fastestRewards,
-                              ArrayList<RewardTier> bestAverageRewards, ArrayList<RewardTier> bestXRewards) {
+                              ArrayList<RewardTier> bestAverageRewards, ArrayList<RewardTier> bestXRewards, RewardTier championRewards) {
         this.mostAnswerRewards = topAnswerRewards;
         this.bestAverageRewards = bestAverageRewards;
         this.fastestRewards = fastestRewards;
         this.bestXRewards = bestXRewards;
+        this.championRewards = championRewards;
     }
 
     //Methods related to Intervals
@@ -252,5 +262,9 @@ public class ContestInfo {
         this.startTime = startDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
         LocalDate tempEndDate = endDate.plusDays(1);
         this.endTime = tempEndDate.atStartOfDay(zoneId).toInstant().toEpochMilli() - 1;
+    }
+
+    public RewardTier getChampionRewards() {
+        return championRewards;
     }
 }

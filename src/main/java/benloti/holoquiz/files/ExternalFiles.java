@@ -11,10 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExternalFiles {
 
@@ -29,7 +26,9 @@ public class ExternalFiles {
 
     private static final String[] CONTEST_CATEGORIES = {"Most", "Fastest", "BestAvg", "BestX"};
 
-    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "Contest Reward %s %s has %d rewards";
+    public static final String LOG_MESSAGE_NUMBER_OF_CONTEST_REWARDS = "Contest %s %s has %d rewards";
+    public static final String LOG_MESSAGE_NO_CHAMPION_REWARDS = "Contest %s has no Champion rewards!";
+    public static final String LOG_MESSAGE_CHAMPION_REWARDS_LOADED = "Contest %s Champion reward is loaded!";
     public static final String LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS = "Trivia Category loaded %d Questions!";
     public static final String LOG_MESSAGE_REPLACED_FILE = "Replaced %s with %s successfully!";
     public static final String WARNING_MOVED_BROKEN_FILE_TO_ARCHIVE = "Archived Broken File: %s to %s!";
@@ -51,6 +50,7 @@ public class ExternalFiles {
     private ArrayList<RewardTier> allNormalRewards;
     private ArrayList<RewardTier> secretRewards;
     private Map<String, ArrayList<RewardTier>> contestRewards;
+    private Map<String, RewardTier> contestChampionBonusReward;
     private ArrayList<Question> allQuestions;
 
     public ExternalFiles(JavaPlugin plugin) {
@@ -111,11 +111,12 @@ public class ExternalFiles {
         this.allNormalRewards = new ArrayList<>();
         this.secretRewards = new ArrayList<>();
         this.contestRewards = new HashMap<>();
+        this.contestChampionBonusReward = new HashMap<>();
         configLoader.setCurrentFile("Rewards.yml");
 
         try {
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-            loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards, this.contestRewards);
+            loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards, this.contestRewards, this.contestChampionBonusReward);
             updateFile(BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME, REWARDS_FILE_NAME);
         } catch (Exception e) {
             String logMessage = String.format(ERROR_BROKEN_FILE, REWARDS_FILE_NAME);
@@ -124,7 +125,7 @@ public class ExternalFiles {
             storeToArchive(REWARDS_FILE_NAME, ARCHIVE_REWARDS_FILE_NAME);
             try {
                 File rewardsYml = new File(plugin.getDataFolder(), BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
-                loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
+                loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards, this.contestChampionBonusReward);
                 updateFile(REWARDS_FILE_NAME, BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
             } catch (Exception e2) {
                 logMessage = String.format(ERROR_BROKEN_BACKUP_FILE, REWARDS_FILE_NAME);
@@ -133,7 +134,7 @@ public class ExternalFiles {
                 loadFromResource(REWARDS_FILE_NAME,BACKUP_DIRECTORY_PATH + REWARDS_FILE_NAME);
                 loadFromResource(REWARDS_FILE_NAME, REWARDS_FILE_NAME);
                 File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-                loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards);
+                loadAllRewards(rewardsYml, this.allNormalRewards, this.secretRewards,this.contestRewards, this.contestChampionBonusReward);
             }
         }
 
@@ -183,6 +184,7 @@ public class ExternalFiles {
         ArrayList<RewardTier> newAllNormalRewards = new ArrayList<>();
         ArrayList<RewardTier> newSecretRewards = new ArrayList<>();
         Map<String, ArrayList<RewardTier>> newContestRewards = new HashMap<>();
+        Map<String, RewardTier> newContestChampionBonusRewards = new HashMap<>();
         ArrayList<Question> newQuestions;
 
         configLoader.setCurrentFile("config.yml");
@@ -198,7 +200,7 @@ public class ExternalFiles {
         configLoader.setCurrentFile("Rewards.yml");
         try {
             File rewardsYml = new File(plugin.getDataFolder(), REWARDS_FILE_NAME);
-            loadAllRewards(rewardsYml, newAllNormalRewards, newSecretRewards, newContestRewards);
+            loadAllRewards(rewardsYml, newAllNormalRewards, newSecretRewards, newContestRewards, newContestChampionBonusRewards);
         } catch (Exception e) {
             String logMessage = String.format(ERROR_ON_RELOAD_BROKEN_FILE, REWARDS_FILE_NAME);
             Logger.getLogger().error(logMessage);
@@ -222,6 +224,7 @@ public class ExternalFiles {
         this.allNormalRewards = newAllNormalRewards;
         this.secretRewards = newSecretRewards;
         this.contestRewards = newContestRewards;
+        this.contestChampionBonusReward = newContestChampionBonusRewards;
         this.configFile = newConfigFile;
 
         return true;
@@ -275,6 +278,13 @@ public class ExternalFiles {
         return contestRewards.get(category);
     }
 
+    public RewardTier getChampionContestRewardByCategory(String category, boolean isEnabled) {
+        if(!isEnabled) {
+            return null;
+        }
+        return contestChampionBonusReward.get(category);
+    }
+
     /**
      * Warning: Passing in the 3 Reward structures as Local Variables is done for the reload function
      *
@@ -282,7 +292,7 @@ public class ExternalFiles {
      * @param rewardsYml the Rewards.yml File
      */
     private void loadAllRewards(File rewardsYml, ArrayList<RewardTier> allNormalRewards, ArrayList<RewardTier> secretRewards,
-                                Map<String, ArrayList<RewardTier>> contestRewards) {
+                                Map<String, ArrayList<RewardTier>> contestRewards, Map<String, RewardTier> contestChampionBonusRewards) {
         FileConfiguration rewardsFile = YamlConfiguration.loadConfiguration(rewardsYml);
 
         ConfigurationSection normalRewardsSection = rewardsFile.getConfigurationSection("Rewards");
@@ -294,7 +304,7 @@ public class ExternalFiles {
         loadRewardsTier(secretRewardsSection, secretRewards);
 
         ConfigurationSection contestRewardsSection = rewardsFile.getConfigurationSection("ContestRewards");
-        loadAllContestRewards(contestRewardsSection, contestRewards);
+        loadAllContestRewards(contestRewardsSection, contestRewards, contestChampionBonusRewards);
     }
 
     /**
@@ -325,18 +335,19 @@ public class ExternalFiles {
      * Used to load the contest rewards.
      * @param rewardsSection The section that has all the Contest rewards.
      */
-    private void loadAllContestRewards(ConfigurationSection rewardsSection, Map<String, ArrayList<RewardTier>> contestRewards) {
+    private void loadAllContestRewards(ConfigurationSection rewardsSection, Map<String, ArrayList<RewardTier>> contestRewards,
+                                       Map<String, RewardTier> contestChampionBonusRewards) {
         if(rewardsSection == null) {
             return;
         }
         for(String key : rewardsSection.getKeys(false)) {
             ConfigurationSection contestSection = rewardsSection.getConfigurationSection(key);
-            loadIndividualContestRewards(key, contestSection, contestRewards);
+            loadIndividualContestRewards(key, contestSection, contestRewards, contestChampionBonusRewards);
         }
-
     }
 
-    private void loadIndividualContestRewards(String key, ConfigurationSection rewardsSection, Map<String, ArrayList<RewardTier>> contestRewards) {
+    private void loadIndividualContestRewards(String key, ConfigurationSection rewardsSection, Map<String, ArrayList<RewardTier>> contestRewards,
+                                              Map<String, RewardTier> contestChampionBonusRewards) {
         for(String category: CONTEST_CATEGORIES) {
             ConfigurationSection section = rewardsSection.getConfigurationSection(category);
             ArrayList<RewardTier> rewardsList = loadContestRewardsTier(section);
@@ -346,6 +357,9 @@ public class ExternalFiles {
                 Logger.getLogger().info_med(logMessage);
             }
         }
+        ConfigurationSection championSection = rewardsSection.getConfigurationSection("Champion");
+        RewardTier championReward = loadChampionReward(key, championSection);
+        contestChampionBonusRewards.put(key, championReward);
     }
 
     private ArrayList<RewardTier> loadContestRewardsTier(ConfigurationSection section) {
@@ -371,6 +385,25 @@ public class ExternalFiles {
             }
         }
         return rewardsList;
+    }
+
+    private RewardTier loadChampionReward(String key, ConfigurationSection section) {
+        ArrayList<String> stringList = new ArrayList<>();
+        ArrayList<ItemStack> itemReward = new ArrayList<>();
+        if(section == null) {
+            String logMessage = String.format(LOG_MESSAGE_NO_CHAMPION_REWARDS, key);
+            Logger.getLogger().info_med(logMessage);
+            return new RewardTier(-1, 0, new ArrayList<>(), itemReward, stringList);
+        }
+        double moneyReward = configLoader.getDoubleOptional(section,"Money", 0);
+        String message = configLoader.getStringOptional(section,"Message", "");
+        stringList.add(message);
+        List<String> commandsExecuted = configLoader.getStringListOptional(section,"Commands");
+        ConfigurationSection rewardTierItemSection = section.getConfigurationSection("Items");
+        loadItemReward(rewardTierItemSection, itemReward);
+        String logMessage = String.format(LOG_MESSAGE_CHAMPION_REWARDS_LOADED, key);
+        Logger.getLogger().info_med(logMessage);
+        return new RewardTier(-1, moneyReward, commandsExecuted, itemReward, stringList);
     }
 
     private void loadItemReward(ConfigurationSection rewardTierItemSection, ArrayList<ItemStack> itemReward) {
@@ -434,10 +467,11 @@ public class ExternalFiles {
             List<String> secretAnswers = configLoader.getStringListOptional(questionConfig, "SecretAnswers");
             String secretMessage = configLoader.getStringOptional(questionConfig, "SecretMessage", "");
             secretMessage = msgColorCode + secretMessage;
+            String source = configLoader.getStringOptional(questionConfig, "Source", "");
 
             secretAnswers.replaceAll(String::trim);
             answers.replaceAll(String::trim);
-            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage);
+            Question newQuestion = new Question(question, answers, message, secretAnswers, secretMessage, source);
 
             questionList.add(newQuestion);
         }

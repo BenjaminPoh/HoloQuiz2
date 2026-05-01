@@ -196,6 +196,13 @@ ContestRewards:
         Money: 10000
         Commands:
           - "bta add [player] 2"
+    Champion:
+      Money: 50000
+      Commands:
+        - "bta add [player] 20"
+        - "ac key give [player] holocrate 1"
+        - "ac key give [player] vipcrate 1"
+      Message: "&eYou are the champion of HoloQuiz for &a[start]&e! Here is an extra reward!"
   Weekly:
     Most:
       Top1:
@@ -309,6 +316,12 @@ ContestRewards:
         Money: 25000
         Commands:
           - "bta add [player] 5"
+    Champion:
+      Money: 250000
+      Commands:
+        - "bta add [player] 25"
+        - "ac key give [player] holocrate 3"
+      Message: "&eYou are the champion of HoloQuiz from &a[start] &eto &a[end]&e! Have an extra reward!"
   Monthly:
     Most:
       Top1:
@@ -614,6 +627,19 @@ ContestRewards:
             Lore:
               - "&bHoloquiz Reward for &a[player]"
               - "&a[pos++] &bBest of &a[month] [year]"
+    Champion:
+      Money: 1000000
+      Commands:
+        - "bta add [player] 100"
+        - "ac key give [player] holofes 1"
+      Message: "&eYou are the Champion of HoloQuiz for &a[month]&e! Have your Triple Crown, you deserved it!"
+      Items:
+        1:
+          Material: cake
+          Qty: 1
+          Lore:
+            - "&bHoloquiz Reward for &a[player]"
+            - "&eTriple Crown &bof &a[month] [year]"
   Pioneers:
     Most:
       PartyTime:

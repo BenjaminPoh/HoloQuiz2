@@ -126,7 +126,8 @@ public class ContestManager {
         ArrayList<RewardTier> fastestRewards = externalFiles.getContestRewardByCategory(type + "Fastest", contest.isFastestAnswerContestEnabled());
         ArrayList<RewardTier> bestAverageRewards = externalFiles.getContestRewardByCategory(type + "BestAvg", contest.isBestAvgContestEnabled());
         ArrayList<RewardTier> bestXRewards = externalFiles.getContestRewardByCategory(type + "BestX", contest.isBestXContestEnabled());
-        contest.updateRewards(mostAnswerRewards, fastestRewards, bestAverageRewards, bestXRewards);
+        RewardTier championRewards = externalFiles.getChampionContestRewardByCategory(type, contest.isChampionRewardEnabled());
+        contest.updateRewards(mostAnswerRewards, fastestRewards, bestAverageRewards, bestXRewards, championRewards);
     }
 
     private void updateContestInfo(ContestInfo contest, ArrayList<ContestInfo> contestList, ExternalFiles externalFiles) {
@@ -233,6 +234,9 @@ public class ContestManager {
 
     private ArrayList<ContestWinner> parseContestWinners(ArrayList<ArrayList<PlayerContestStats>> contestWinnersData, ContestInfo contestInfo) {
         ArrayList<ContestWinner> contestWinners = new ArrayList<>();
+
+        ArrayList<ContestWinner> championsList = new ArrayList<>();
+
         for (int i = 0; i < contestWinnersData.size(); i++) {
             ArrayList<PlayerContestStats> contestCategoryWinnersData = contestWinnersData.get(i);
             ArrayList<RewardTier> contestRewardTiers = contestInfo.getRewardByCategory(i);
@@ -240,7 +244,16 @@ public class ContestManager {
             for (int j = 0; j < limit; j++) {
                 ContestWinner winner = new ContestWinner(contestRewardTiers.get(j), contestCategoryWinnersData.get(j), j + 1, contestInfo);
                 contestWinners.add(winner);
+                if(j == 0) {
+                    championsList.add(winner);
+                }
             }
+        }
+
+        PlayerContestStats championStats = parseChampion(championsList);
+        if(championStats != null && contestInfo.isChampionRewardEnabled()) {
+            ContestWinner champion = new ContestWinner(contestInfo.getChampionRewards(), championStats, 1 , contestInfo);
+            contestWinners.add(champion);
         }
         return contestWinners;
     }
@@ -263,6 +276,44 @@ public class ContestManager {
 
         }
         return count;
+    }
+
+    private PlayerContestStats parseChampion(ArrayList<ContestWinner> championsList) {
+        String playerName = "";
+        int holoQuizID = -1;
+        int averageTime = -1;
+        int bestTime = -1;
+        int questionsAnswered = -1;
+        int bestXTimes = -1;
+
+        for(ContestWinner winner : championsList) {
+            PlayerContestStats currentStats = winner.getContestWinnerData();
+            if(holoQuizID == -1) {
+                holoQuizID = currentStats.getHoloQuizID();
+                playerName = currentStats.getPlayerName();
+                averageTime = currentStats.getAverageTime();
+                bestTime = currentStats.getBestTime();
+                questionsAnswered = currentStats.getQuestionsAnswered();
+                bestXTimes = currentStats.getBestXTime();
+                continue;
+            }
+            if(holoQuizID != currentStats.getHoloQuizID()) {
+                return null;
+            }
+            if(averageTime == -1) {
+                averageTime = currentStats.getAverageTime();
+            }
+            if(bestTime == -1) {
+                bestTime = currentStats.getBestTime();
+            }
+            if(questionsAnswered == -1) {
+                questionsAnswered = currentStats.getQuestionsAnswered();
+            }
+            if(bestXTimes == -1) {
+                bestXTimes = currentStats.getBestXTime();
+            }
+        }
+        return new PlayerContestStats(playerName,holoQuizID,questionsAnswered, bestTime, averageTime, bestXTimes, -1);
     }
 }
 

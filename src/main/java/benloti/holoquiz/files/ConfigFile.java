@@ -394,7 +394,7 @@ public class ConfigFile {
     private ContestInfo parseRegularContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
         ContestInfo regularContestInfo = parseContestInfo(configLoader, contestSection, key, code);
         if(regularContestInfo == null) {
-            return new ContestInfo(code, false, false, false, false, false, 0, 0, 0, 0, null, null);
+            return new ContestInfo(code, false, false, false, false, false, 0, 0, false, 0, 0, null, null);
         }
         return regularContestInfo;
     }
@@ -423,6 +423,7 @@ public class ConfigFile {
         boolean bestXEnabled = configLoader.getBoolean(section, "BestX", false);
         int bestAvgMinReq = configLoader.getInt(section, "BestAvgMinReq", 1);
         int bestXMinReq = configLoader.getInt(section, "BestXMinReq", 1);
+        boolean championBonusEnabled = configLoader.getBoolean(section, "ChampionBonus", false);
         if (bestAvgMinReq < 1 && bestAvgEnabled) {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestAvgMinReq");
             Logger.getLogger().warn(logMessage);
@@ -447,10 +448,11 @@ public class ConfigFile {
         Logger.getLogger().debug(String.format("%s: Start %d (%s) End %d (%s)", code, startTimestamp, startDate, endTimestamp, endDate));
         if(code > 2) {
             String rewardCategory = configLoader.getString(section, "RewardCategory", "");
-            return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq,
+            return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, championBonusEnabled,
                     startTimestamp, endTimestamp, startDate, endDate, key, rewardCategory);
         }
-        return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, startTimestamp, endTimestamp, startDate, endDate);
+        return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, championBonusEnabled,
+                startTimestamp, endTimestamp, startDate, endDate);
     }
 
 }
