@@ -151,9 +151,11 @@ public class QuizAnswerHandler implements Listener {
         //Give Rewards
         int statusCodeOne = -1;
         if (secretAnswerTriggered) {
+            gameManager.setGivenAnswer("&cFor you to find out!");
             sendSecretAnnouncement(player, timeTaken, answeredQuestion, isFirstAnswer);
             statusCodeOne = rewardsHandler.giveSecretRewards(player, timeTaken);
         } else {
+            gameManager.setGivenAnswer(answer);
             sendNormalAnnouncement(answer, player, timeTaken, answeredQuestion, isFirstAnswer);
         }
         int statusCodeTwo = rewardsHandler.giveNormalRewards(player, timeTaken);

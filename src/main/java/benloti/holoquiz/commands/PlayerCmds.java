@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class PlayerCmds implements CommandExecutor {
@@ -48,8 +48,10 @@ public class PlayerCmds implements CommandExecutor {
 
     public static final String MSG_PLAYER_STATS_FORMAT = "&b|Answers: &6%s &b| Best Time: &6%ss &b| Average Time: &6%ss &b|";
     public static final String MSG_PLAYER_NAME_FORMAT = "&9=-=-=-=-=-=-=[ &bPlayer Stats for &a&l%s&9 ]=-=-=-=-=-=-=";
-    public static final String MSG_ANSWER_LIST_FORMAT = "&2- &b%s";
+    public static final String MSG_ANSWER_LIST_FORMAT = "&2- &6%s";
     public static final String MSG_ANSWER_HEADER_FORMAT = "&bAnswers: ";
+    public static final String MSG_CORRECT_GIVEN_ANSWER_HEADER_FORMAT = "&bAnswer: &6%s";
+    public static final String MSG_PROVIDED_SOURCE = "&bSource: &6%s";
     public static final String MSG_QUESTION_STATUS_ANSWERED_FORMAT = "&bThe Question has been &aAnswered!";
     public static final String MSG_QUESTION_STATUS_TIMEOUT_FORMAT = "&bThe Question has &cTimed Out!";
     public static final String MSG_QUESTION_STATUS_UNANSWERED_FORMAT = "&bThe Question is &cNot Yet Answered!";
@@ -157,7 +159,7 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         if (args[0].equalsIgnoreCase("info")) {
-            String[] information = obtainQuestionInfo(true);
+            String[] information = obtainQuestionInfo(true, true);
             formatInformationForPlayer(information, sender);
             return true;
         }
@@ -223,7 +225,8 @@ public class PlayerCmds implements CommandExecutor {
         }
 
         if (args[0].equalsIgnoreCase("info")) {
-            String[] information = obtainQuestionInfo(false);
+            boolean viewSourceEarly = player.hasPermission("HoloQuiz.viewSourceEarly");
+            String[] information = obtainQuestionInfo(false, viewSourceEarly);
             formatInformationForPlayer(information, player);
             return true;
         }
@@ -377,37 +380,48 @@ public class PlayerCmds implements CommandExecutor {
         }
     }
 
-    private String[] obtainQuestionInfo(boolean adminInfoRequired) {
+    private String[] obtainQuestionInfo(boolean adminInfoRequired, boolean viewSourceBeforeAnswering) {
         if (!gameManager.getGameStatus()) {
             return new String[]{ERROR_HOLOQUIZ_IS_STOPPED};
         }
-
+        String[] questionInfoFormats = fetchInfoFormats();
         String currentQuestion = gameManager.getCurrentQuestion().getQuestion();
         String currentQuestionFormatted = String.format(MSG_DISPLAY_QUESTION_FORMAT, currentQuestion);
+        String sourceFormatted;
+        if(gameManager.getCurrentQuestion().getSource().isEmpty()) {
+            sourceFormatted = String.format(MSG_PROVIDED_SOURCE, "-");
+        } else {
+            sourceFormatted = String.format(MSG_PROVIDED_SOURCE, gameManager.getCurrentQuestion().getSource());
+        }
 
         long currentTime = System.currentTimeMillis();
         long timeQuestionSent = gameManager.getNextTaskTime();
         long timeLeft = timeQuestionSent - currentTime;
         double timeLeftInSeconds = timeLeft / 1000.0;
-
-        String[] questionInfoFormats = fetchInfoFormats();
         String timeLeftFormatted = String.format(questionInfoFormats[0], timeLeftInSeconds);
-        String[] basicInfo = {TABLE_BORDER, questionInfoFormats[1], timeLeftFormatted, currentQuestionFormatted, TABLE_BORDER};
+
         if (!adminInfoRequired) {
-            return basicInfo;
+            if(gameManager.isQuestionAnswered() || (gameManager.isQuestionTimedOut() && gameManager.isRevealAnswerFlag())) {
+                //Adds in Answer and Source only if question is answered, or it has Timed Out and Answers are revealed.
+                String givenAnswer = String.format(MSG_CORRECT_GIVEN_ANSWER_HEADER_FORMAT, gameManager.getGivenAnswer());
+                return new String[] {TABLE_BORDER, questionInfoFormats[1], timeLeftFormatted, currentQuestionFormatted, givenAnswer, sourceFormatted, TABLE_BORDER};
+            }
+            if(viewSourceBeforeAnswering) {
+                return new String[] {TABLE_BORDER, questionInfoFormats[1], timeLeftFormatted, currentQuestionFormatted, sourceFormatted, TABLE_BORDER};
+            }
+            return new String[] {TABLE_BORDER, questionInfoFormats[1], timeLeftFormatted, currentQuestionFormatted, TABLE_BORDER};
         }
 
         //ADMIN ONLY!!
-        ArrayList<String> information = new ArrayList<>();
-
-        basicInfo[4] = MSG_ANSWER_HEADER_FORMAT;
-        Collections.addAll(information, basicInfo);
+        ArrayList<String> information = new ArrayList<>(Arrays.asList(
+                TABLE_BORDER, questionInfoFormats[1], timeLeftFormatted, currentQuestionFormatted, MSG_ANSWER_HEADER_FORMAT));
 
         List<String> answersList = gameManager.getCurrentQuestion().getAnswers();
         for (String s : answersList) {
             String formattedAnswer = String.format(MSG_ANSWER_LIST_FORMAT, s);
             information.add(formattedAnswer);
         }
+        information.add(sourceFormatted);
         information.add(TABLE_BORDER);
 
         int size = information.size();

@@ -8,14 +8,16 @@ public class Question {
     private final String extraMessage;
     private final List<String> secretAnswers;
     private final String secretMessage;
+    private final String source;
 
     public Question(String question, List<String> answers, String message,
-                    List<String> secretAnswers, String secretMessage) {
+                    List<String> secretAnswers, String secretMessage, String source) {
         this.question = question;
         this.defaultAnswers = answers;
         this.extraMessage = message;
         this.secretAnswers = secretAnswers;
         this.secretMessage = secretMessage;
+        this.source = source;
     }
 
     public String getQuestion() {
@@ -36,6 +38,10 @@ public class Question {
 
     public String getSecretMessage() {
         return secretMessage;
+    }
+
+    public String getSource() {
+        return source;
     }
 
 }

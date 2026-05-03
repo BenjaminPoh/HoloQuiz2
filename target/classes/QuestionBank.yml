@@ -41,6 +41,21 @@ SuiseiQuestions:
       SecretAnswers:
         - "Me"
       SecretMessage: "&dVery funny!"
+DoubleSourceExample:
+  QuestionColour: "&6"
+  CategoryLabel: "&dUmamusume: "
+  MessageColour: "&3"
+  Source: "I am the Category Source!"
+  QuestionList:
+    1:
+      Question: "What is Mambo's full name"
+      Answers:
+        - "Matikanetannhauser"
+    2:
+      Question: "Who is the Horse with a 113 Losing Streak?"
+      Answers:
+        - "Haru Urara"
+      Source: "Google it Yourself"
 #Example section of things that will throw errors.
 MissingInfoArea:
   QuestionColour:

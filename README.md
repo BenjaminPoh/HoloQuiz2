@@ -34,6 +34,13 @@ in item rewards and commands for answering questions too.
 
 Note: Someone asked me "Why does `[start]` and `[end]` return the same result for Daily contests?" I don't feel like answering.
 
+## Permissions
+| Permission         | Description                                                     |
+|--------------------|-----------------------------------------------------------------|
+| `.admin`           | Access to admin Commands and Info                               |
+| `.alert`           | Access to Alerts                                                |
+| `.viewSourceEarly` | Can view Source in `/holoquiz Info` before question is answered |
+
 
 ## Special Credits
 

@@ -1,5 +1,5 @@
 name: HoloQuiz
-version: 3.8.0
+version: 3.8.2
 main: benloti.holoquiz.HoloQuiz
 description: A fun little plugin designed to send Trivia or Math questions, with some Hololive Easter Eggs
 author: Benloti, together with me, myself and I. And ChatGPT my beloved.
@@ -14,4 +14,7 @@ permissions:
   HoloQuiz.admin:
     description: Allow access to admin commands
     default: op
-  
+  HoloQuiz.alert:
+    description: Allow access to an alert before the next question is sent
+  HoloQuiz.viewSourceEarly:
+    description: The source can be viewed with /holoquiz info, even for unanswered questions

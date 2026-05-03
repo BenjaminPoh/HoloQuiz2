@@ -438,9 +438,10 @@ public class ExternalFiles {
             String questionColourCode = configLoader.getString(configSection,"QuestionColour", "");
             String messageColourCode = configLoader.getString(configSection,"MessageColour", "");
             String categoryLabel = configLoader.getString(configSection,"CategoryLabel", "");
+            String categorySource = configLoader.getString(configSection,"Source", "");
             String categoryPrefix = categoryLabel + questionColourCode;
             ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
-            questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode);
+            questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode, categorySource);
         }
         String logMessage = String.format(LOG_MESSAGE_NUMBER_OF_TRIVIA_QUESTIONS, questionList.size());
         Logger.getLogger().info_low(logMessage);
@@ -452,7 +453,7 @@ public class ExternalFiles {
      * Question and Answer cannot be empty, and hence will be skipped and logged if so.
      */
     private void questionListLoader(ArrayList<Question> questionList, ConfigurationSection config,
-                                    String prefix, String msgColorCode) {
+                                    String prefix, String msgColorCode, String categorySource) {
         for (String key : config.getKeys(false)) {
             ConfigurationSection questionConfig = config.getConfigurationSection(key);
             String question = configLoader.getString(questionConfig, "Question", "");
@@ -468,6 +469,9 @@ public class ExternalFiles {
             String secretMessage = configLoader.getStringOptional(questionConfig, "SecretMessage", "");
             secretMessage = msgColorCode + secretMessage;
             String source = configLoader.getStringOptional(questionConfig, "Source", "");
+            if(source.isEmpty()) {
+                source = categorySource;
+            }
 
             secretAnswers.replaceAll(String::trim);
             answers.replaceAll(String::trim);

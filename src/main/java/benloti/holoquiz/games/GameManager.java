@@ -42,6 +42,7 @@ public class GameManager {
     private boolean gameRunning;
     private Question currentQuestion;
     private String currentQuestionType;
+    private String currentGivenAnswer;
 
     private long timeQuestionSent;
     private boolean questionAnswered;
@@ -148,6 +149,7 @@ public class GameManager {
         setQuestionAnswered(false);
         setQuestionTimedOut(false);
         winners.clear();
+        setGivenAnswer("");
         long currentTime = System.currentTimeMillis();
         setTimeQuestionSent(currentTime);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
@@ -161,6 +163,7 @@ public class GameManager {
 
     private void revealAnswer() {
         String answer = getCurrentQuestion().getAnswers().get(0);
+        setGivenAnswer(answer);
         String announcement = String.format(MESSAGE_REVEAL_ANSWER, answer);
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             MessageFormatter.getSender().sendToPlayer(player, announcement, true, true, false);
@@ -335,5 +338,13 @@ public class GameManager {
 
     public boolean isRevealAnswerFlag() {
         return this.revealAnswerFlag;
+    }
+
+    public void setGivenAnswer(String answer) {
+        this.currentGivenAnswer = answer;
+    }
+
+    public String getGivenAnswer() {
+        return this.currentGivenAnswer;
     }
 }
