@@ -438,7 +438,7 @@ public class ExternalFiles {
             String questionColourCode = configLoader.getString(configSection,"QuestionColour", "");
             String messageColourCode = configLoader.getString(configSection,"MessageColour", "");
             String categoryLabel = configLoader.getString(configSection,"CategoryLabel", "");
-            String categorySource = configLoader.getString(configSection,"Source", "");
+            String categorySource = configLoader.getStringOptional(configSection,"Source", "");
             String categoryPrefix = categoryLabel + questionColourCode;
             ConfigurationSection questionListSection = configSection.getConfigurationSection("QuestionList");
             questionListLoader(questionList, questionListSection, categoryPrefix, messageColourCode, categorySource);
