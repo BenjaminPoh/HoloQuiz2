@@ -100,14 +100,14 @@ public class ConfigFile {
         boolean isEnabled_MT = configLoader.getBoolean(minTimeSection, "Checker", true);
         int limit_MT = (int) (configLoader.getDouble(minTimeSection, "CheatingTimer", 0.5) * 1000);
         boolean countAsCorrect_MT = configLoader.getBoolean(minTimeSection, "CountAsCorrect", false);
-        List<String> cheatingCommands_MT = configLoader.getStringList(minTimeSection, "CommandToPerform");
+        List<String> cheatingCommands_MT = configLoader.getStringListOptional(minTimeSection, "CommandToPerform");
         this.minTimeCheatDetector = new MinTimeCheatDetector(isEnabled_MT, limit_MT, countAsCorrect_MT, cheatingCommands_MT);
         ConfigurationSection consistencySection = cheatSection.getConfigurationSection("ConsistencyChecker");
         boolean isEnabled_SD = configLoader.getBoolean(consistencySection, "Checker", true);
         int numOfAnswers_SD = configLoader.getInt(consistencySection, "NumberOfAnswers", 5);
         double limit_SD = configLoader.getDouble(consistencySection, "AcceptableSD", 0.1);
         boolean countAsCorrect_SD = configLoader.getBoolean(consistencySection, "CountAsCorrect", true);
-        List<String> cheatingCommands_SD = configLoader.getStringList(consistencySection, "CommandToPerform");
+        List<String> cheatingCommands_SD = configLoader.getStringListOptional(consistencySection, "CommandToPerform");
         this.minSDCheatDetector = new MinSDCheatDetector(isEnabled_SD, numOfAnswers_SD, limit_SD, countAsCorrect_SD, cheatingCommands_SD);
 
         ConfigurationSection mathSection = configs.getConfigurationSection("QuickMath");
