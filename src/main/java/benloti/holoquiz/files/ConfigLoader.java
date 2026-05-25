@@ -127,7 +127,6 @@ public class ConfigLoader {
         return configs.getString(key, defaultValue);
     }
 
-
     private void handleMissingKey(String path, String key) {
         String logMessage = String.format(ERROR_MISSING_CONFIG, key, path, currentFile);
         Logger.getLogger().error(logMessage);

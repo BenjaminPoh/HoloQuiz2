@@ -1,5 +1,7 @@
 package benloti.holoquiz.commands;
 
+import benloti.holoquiz.dependencies.CMIDep;
+import benloti.holoquiz.dependencies.DependencyHandler;
 import benloti.holoquiz.files.ExternalFiles;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,16 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CmdAutoComplete implements TabCompleter {
-    private boolean easterEggs;
     private final JavaPlugin plugin;
+    private boolean easterEggs;
+    private CMIDep cmiDep;
 
-    public CmdAutoComplete(ExternalFiles externalFiles, JavaPlugin plugin) {
+    public CmdAutoComplete(ExternalFiles externalFiles, DependencyHandler dep, JavaPlugin plugin) {
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
+        this.cmiDep = dep.getCMIDep();
         this.plugin = plugin;
     }
 
-    public void reload(ExternalFiles externalFiles) {
+    public void reload(ExternalFiles externalFiles, DependencyHandler dep) {
         this.easterEggs = externalFiles.getConfigFile().isEasterEggsEnabled();
+        this.cmiDep = dep.getCMIDep();
     }
 
     @Override
@@ -63,6 +68,9 @@ public class CmdAutoComplete implements TabCompleter {
             String subCommand = args[0].toLowerCase();
             if(subCommand.equals("stats")) {
                 for(Player player : plugin.getServer().getOnlinePlayers()) {
+                    if(cmiDep.isPlayerVanished(player)) {
+                        continue;
+                    }
                     result.add(player.getName());
                 }
                 return result;

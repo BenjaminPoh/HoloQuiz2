@@ -35,7 +35,7 @@ public final class HoloQuiz extends JavaPlugin {
         this.contestManager = new ContestManager(database, configFile, externalFiles, gameManager);
         this.quizAnswerHandler = new QuizAnswerHandler(this, gameManager, database, configFile, contestManager, dependencyHandler);
         this.playerCmds = new PlayerCmds(gameManager, database, externalFiles, contestManager, this);
-        this.cmdAutoComplete = new CmdAutoComplete(externalFiles, this);
+        this.cmdAutoComplete = new CmdAutoComplete(externalFiles, dependencyHandler, this);
         this.invClickListener = new InvClickListener(contestManager);
         this.playerJoinListener = new PlayerJoinListener(database);
         if(configFile.isCollectRewardOnJoin()) {
@@ -77,7 +77,7 @@ public final class HoloQuiz extends JavaPlugin {
         if(configFile.isCollectRewardOnJoin()) {
             getServer().getPluginManager().registerEvents(playerJoinListener, this);
         }
-        cmdAutoComplete.reload(externalFiles);
+        cmdAutoComplete.reload(externalFiles, dependencyHandler);
         if(configFile.isEnableOnStart()) {
             gameManager.startGame();
         }
