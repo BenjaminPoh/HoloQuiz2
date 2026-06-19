@@ -35,6 +35,7 @@ public class DatabaseManager {
     private final UserPersonalisation userPersonalisation;
     private final Contests contests;
     private final Storage storage;
+    private final BanList banList;
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -47,6 +48,7 @@ public class DatabaseManager {
         this.userPersonalisation = new UserPersonalisation(connection);
         this.contests = new Contests(connection);
         this.storage = new Storage(connection);
+        this.banList = new BanList(connection);
     }
 
     public File checkFile() {
@@ -288,5 +290,34 @@ public class DatabaseManager {
             Logger.getLogger().devError(DEV_ERROR_HOLOQUIZ_ID_NOT_FOUND);
         }
         return holoQuizID;
+    }
+
+    public boolean banPlayer(String playerName) {
+        connection = getConnection();
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
+        if (playerHoloQuizID == 0) {
+            return false;
+        }
+        return banList.addBannedPlayer(connection, playerHoloQuizID, System.currentTimeMillis());
+    }
+
+    public boolean unbanPlayer(String playerName) {
+        connection = getConnection();
+        int playerHoloQuizID = userInfo.getHoloQuizIDByUserName(connection, playerName);
+        if (playerHoloQuizID == 0) {
+            return false;
+        }
+        return banList.removeBannedPlayer(connection, playerHoloQuizID);
+    }
+
+    public ArrayList<String> fetchBannedPlayers() {
+        connection = getConnection();
+        ArrayList<Integer> bannedIDs = banList.getAllBannedPlayers(connection);
+        ArrayList<String> bannedUsernames = new ArrayList<>();
+        for(Integer id : bannedIDs) {
+            String bannedPlayer = userInfo.getPlayerNameByHoloQuizID(connection,id);
+            bannedUsernames.add(bannedPlayer);
+        }
+        return bannedUsernames;
     }
 }

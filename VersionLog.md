@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.9.0 - 19 Jun 2026 - Implemented ban feature
 - v 3.8.3 - 25 May 2026 - Autocomplete no longer reveals vanished players
 - v 3.8.2 - 03 May 2026 - HoloQuiz now provides the Source! With added p2w Functionality!
 - v 3.8.1 - 01 May 2026 - Fixed a visual bug where Admins have a missing border with /holoquiz info

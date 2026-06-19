@@ -95,22 +95,6 @@ public class UserInfo {
         return -1;
     }
 
-    public int getHoloQuizIDByUserName(Connection connection, String playerName) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID);
-            statement.setString(1, playerName);
-            ResultSet resultSet = statement.executeQuery();
-            boolean resultExists = resultSet.next();
-            if (!resultExists) {
-                return 0;
-            }
-            return resultSet.getInt("user_id");
-        } catch (SQLException e) {
-            Logger.getLogger().dumpStackTrace(e);
-        }
-        return 0;
-    }
-
     public String[] getAllPlayerNames(Connection connection, int size) {
         String[] allPlayerNamesByHoloQuizID = new String[size];
         try {
@@ -138,6 +122,22 @@ public class UserInfo {
             Logger.getLogger().dumpStackTrace(e);
         }
         return null;
+    }
+
+    public int getHoloQuizIDByUserName(Connection connection, String playerName) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SQL_STATEMENT_OBTAIN_HOLOQUIZ_ID);
+            statement.setString(1, playerName);
+            ResultSet resultSet = statement.executeQuery();
+            boolean resultExists = resultSet.next();
+            if (!resultExists) {
+                return 0;
+            }
+            return resultSet.getInt("user_id");
+        } catch (SQLException e) {
+            Logger.getLogger().dumpStackTrace(e);
+        }
+        return 0;
     }
 
     private void createTable(Connection connection) {

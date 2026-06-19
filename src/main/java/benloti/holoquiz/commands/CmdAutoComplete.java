@@ -42,12 +42,14 @@ public class CmdAutoComplete implements TabCompleter {
             autoCompleteSuggestions.add("alert");
         }
         if (sender.hasPermission("HoloQuiz.admin")) {
+            autoCompleteSuggestions.add("ban");
             autoCompleteSuggestions.add("next");
             autoCompleteSuggestions.add("start");
             autoCompleteSuggestions.add("stop");
             autoCompleteSuggestions.add("reloadQns");
             autoCompleteSuggestions.add("reloadStats");
             autoCompleteSuggestions.add("reload");
+            autoCompleteSuggestions.add("unban");
         }
         if (easterEggs) {
             autoCompleteSuggestions.add("pekofy");
@@ -66,7 +68,7 @@ public class CmdAutoComplete implements TabCompleter {
 
         if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
-            if(subCommand.equals("stats")) {
+            if(subCommand.equalsIgnoreCase("stats")) {
                 for(Player player : plugin.getServer().getOnlinePlayers()) {
                     if(cmiDep.isPlayerVanished(player)) {
                         continue;
@@ -75,10 +77,16 @@ public class CmdAutoComplete implements TabCompleter {
                 }
                 return result;
             }
-            if(subCommand.equals("top")) {
+            if(subCommand.equalsIgnoreCase("top")) {
                 result.add("best");
                 result.add("average");
                 result.add("answers");
+                return result;
+            }
+            if(subCommand.equalsIgnoreCase("ban") || subCommand.equalsIgnoreCase("unban")) {
+                for(Player player : plugin.getServer().getOnlinePlayers()) {
+                    result.add(player.getName());
+                }
                 return result;
             }
         }

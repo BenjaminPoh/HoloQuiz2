@@ -38,6 +38,8 @@ public class PlayerCmds implements CommandExecutor {
     public static final String NOTIFY_ALERT_NOT_ALLOWED = "&4You cannot use this command!";
     public static final String NOTIFY_ALERT_TURNED_ON = "&aAlerts for the next question have been turned on!";
     public static final String NOTIFY_ALERT_TURNED_OFF = "&cAlerts for the next question have been turned off!";
+    public static final String NOTIFY_PLAYER_BANNED = "&c%s has been banned from HoloQuiz!";
+    public static final String NOTIFY_PLAYER_UNBANNED = "&a%s has been unbanned from HoloQuiz!";
 
     public static final String ERROR_QUESTION_FILE_BROKEN = "&cQuestion File broken! Aborting reload!";
     public static final String ERROR_CONFIG_FILE_BROKEN = "&cA file is broken! Aborting reload!";
@@ -211,6 +213,32 @@ public class PlayerCmds implements CommandExecutor {
 
         if (args[0].equalsIgnoreCase("reload")) {
             reloadConfigFile(sender);
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("ban") && args.length > 1) {
+            String targetName = args[1];
+            boolean result = databaseManager.banPlayer(targetName);
+            if(!result) {
+                formatInformationForPlayer(ERROR_NO_PLAYER_FOUND, sender);
+            } else {
+                String message = String.format(NOTIFY_PLAYER_BANNED, targetName);
+                gameManager.addBannedPlayer(targetName);
+                formatInformationForPlayer(message, sender);
+            }
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("unban") && args.length > 1) {
+            String targetName = args[1];
+            boolean result = databaseManager.unbanPlayer(targetName);
+            if(!result) {
+                formatInformationForPlayer(ERROR_NO_PLAYER_FOUND, sender);
+            } else {
+                String message = String.format(NOTIFY_PLAYER_UNBANNED, targetName);
+                gameManager.removeBannedPlayer(targetName);
+                formatInformationForPlayer(message, sender);
+            }
             return true;
         }
 

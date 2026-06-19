@@ -30,6 +30,7 @@ public class GameManager {
 
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
+    private final ArrayList<String> bannedPlayers;
     private final RewardsHandler rewardsHandler;
     private final MathQuestionGenerator mathQuestionGenerator;
 
@@ -68,6 +69,8 @@ public class GameManager {
         this.triviaQuestionList = externalFiles.getAllQuestions();
         this.mathQuestionGenerator = new MathQuestionGenerator(configFile);
         this.rewardsHandler = new RewardsHandler(plugin, dependencyHandler.getVaultDep(),databaseManager, externalFiles, configFile);
+        this.bannedPlayers = databaseManager.fetchBannedPlayers();
+        Logger.getLogger().info_high("Total banned players: " + bannedPlayers.size());
 
         this.revealAnswerFlag = (this.revealAnswerDelay != -1);
         this.rngesus = new Random();
@@ -259,6 +262,19 @@ public class GameManager {
     public boolean hasPlayerCorrectlyAnswered(String name) {
         return winners.contains(name);
     }
+
+    public boolean isPlayerBanned(String name) {
+        return bannedPlayers.contains(name);
+    }
+
+    public void addBannedPlayer(String name) {
+        bannedPlayers.add(name);
+    }
+
+    public void removeBannedPlayer(String name) {
+        bannedPlayers.remove(name);
+    }
+
     //Getters and Setters
     public String getCurrentQuestionType() {
         return this.currentQuestionType;
@@ -347,4 +363,5 @@ public class GameManager {
     public String getGivenAnswer() {
         return this.currentGivenAnswer;
     }
+
 }

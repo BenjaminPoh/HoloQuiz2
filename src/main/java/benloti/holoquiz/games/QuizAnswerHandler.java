@@ -126,6 +126,10 @@ public class QuizAnswerHandler implements Listener {
         if (checkIfUnderPermissibleTime(timeTaken, player) || checkIfUnderPermissibleSD(timeTaken, player)) {
             return;
         }
+        if (gameManager.isPlayerBanned(player.getName())) {
+            Logger.getLogger().debug(player.getName() + " is banned from HoloQuiz, and his answer is rejected!");
+            return;
+        }
 
         //Set to True if passed all checks
         gameManager.setQuestionAnswered(true);
