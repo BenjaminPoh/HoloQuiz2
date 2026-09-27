@@ -10,9 +10,9 @@ public class AnswersLogs {
     private final DatabaseManager databaseManager;
 
     private static final String SQL_STATEMENT_CREATE_LOGS_TABLE =
-            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp BIGINT, took INT, mode varchar(1))";
+            "CREATE TABLE IF NOT EXISTS answers_logs (user_id INT , timestamp BIGINT, took INT, mode varchar(1), mixed INT)";
     private static final String SQL_STATEMENT_UPDATE_LOGS =
-            "INSERT INTO answers_logs (user_id, timestamp, took, mode) VALUES (?, ?, ?, ?)";
+            "INSERT INTO answers_logs (user_id, timestamp, took, mode, mixed) VALUES (?, ?, ?, ?, ?)";
 
     private static final String SQL_STATEMENT_FETCH_MOST_ANSWERS_WITHIN_TIMESTAMP =
             "SELECT user_id, COUNT (*) as ans_count FROM answers_logs WHERE timestamp >= %d AND timestamp <= %d " +
@@ -56,12 +56,13 @@ public class AnswersLogs {
         }
     }
 
-    public void updateLogsRecord(Connection connection, int userID, long timeStamp, int timeTaken, String gameMode) {
+    public void updateLogsRecord(Connection connection, int userID, long timeStamp, int timeTaken, String gameMode, int ismMixed) {
         try (PreparedStatement logsStatement = connection.prepareStatement(SQL_STATEMENT_UPDATE_LOGS)) {
             logsStatement.setInt(1, userID);
             logsStatement.setLong(2, timeStamp);
             logsStatement.setInt(3, timeTaken);
             logsStatement.setString(4, gameMode);
+            logsStatement.setInt(5, ismMixed);
             logsStatement.executeUpdate();
         } catch (SQLException e) {
             Logger.getLogger().dumpStackTrace(e);

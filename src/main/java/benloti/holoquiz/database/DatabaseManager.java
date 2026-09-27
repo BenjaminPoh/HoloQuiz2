@@ -91,9 +91,11 @@ public class DatabaseManager {
      * @param player       The player who answered correctly
      * @param timeAnswered UNIX timestamp of when the player answered
      * @param timeTaken    Time taken for player to answer, in milliseconds
+     * @param gameMode     A letter denoting the game mode
+     * @param isMixed      1 if Mixed, 0 if not
      * @return The player's PlayerData, to update the leaderboards
      */
-    public PlayerData updateAfterCorrectAnswer(Player player, long timeAnswered, int timeTaken, String gameMode) {
+    public PlayerData updateAfterCorrectAnswer(Player player, long timeAnswered, int timeTaken, String gameMode, int isMixed) {
         String playerName = player.getName();
         String playerUUID = player.getUniqueId().toString();
         connection = getConnection();
@@ -102,7 +104,7 @@ public class DatabaseManager {
             Logger.getLogger().devError(DEV_ERROR_HOLOQUIZ_ID_NOT_FOUND);
             return null;
         }
-        answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken, gameMode);
+        answersLogs.updateLogsRecord(connection, playerHoloQuizID, timeAnswered, timeTaken, gameMode, isMixed);
         return holoQuizStats.updateStatsRecord(connection, playerHoloQuizID, timeTaken, playerName);
     }
 

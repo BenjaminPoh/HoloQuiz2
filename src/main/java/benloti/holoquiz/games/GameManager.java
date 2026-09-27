@@ -27,6 +27,7 @@ public class GameManager {
     private final int triviaWeightageForMixed;
     private final int gracePeriod;
     private final int alertTime;
+    private final int gameIsMixed;
 
     private final LinkedList<Integer> questionCooldownList;
     private final HashSet<Integer> questionCooldownMap;
@@ -81,6 +82,12 @@ public class GameManager {
             this.questionCooldown = 0;
         } else {
             this.questionCooldown = configFile.getQuestionCooldownLength();
+        }
+
+        if(this.gameMode.equals("Mixed")) {
+            this.gameIsMixed = 1;
+        } else {
+            this.gameIsMixed = 0;
         }
 
         this.questionCooldownList = new LinkedList<>();
@@ -362,6 +369,10 @@ public class GameManager {
 
     public String getGivenAnswer() {
         return this.currentGivenAnswer;
+    }
+
+    public int isGameMixed() {
+        return gameIsMixed;
     }
 
 }

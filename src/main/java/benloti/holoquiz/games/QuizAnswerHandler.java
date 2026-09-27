@@ -127,7 +127,7 @@ public class QuizAnswerHandler implements Listener {
             return;
         }
         if (gameManager.isPlayerBanned(player.getName())) {
-            Logger.getLogger().debug(player.getName() + " is banned from HoloQuiz, and his answer is rejected!");
+            //Logger.getLogger().debug(player.getName() + " is banned from HoloQuiz, and his answer is rejected!");
             return;
         }
 
@@ -148,9 +148,10 @@ public class QuizAnswerHandler implements Listener {
         gameManager.addToWinnerList(player.getName());
         Question answeredQuestion = gameManager.getCurrentQuestion();
         String gameMode = gameManager.getCurrentQuestionType();
+        int isMixed = gameManager.isGameMixed();
         //The actual tasks
         //Update database
-        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode);
+        database.updateAfterCorrectAnswer(player, timeAnswered, timeTaken, gameMode, isMixed);
 
         //Give Rewards
         int statusCodeOne = -1;
