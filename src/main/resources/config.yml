@@ -68,6 +68,7 @@ Contests: #Edit Rewards in Rewards.yml!
     Fastest: true #Fastest Answer
     BestAvg: false #Best Average of all Answers
     BestX: false #Best Average among top X Answers
+    QuizType: All #Target specific Quiz Types in case Mixed mode is used: Trivia/Math/All
     BestAvgMinReq: 5
     BestXMinReq: 5
     StartTimestamp: 1753977600
@@ -79,7 +80,7 @@ Contests: #Edit Rewards in Rewards.yml!
     Fastest: true
     BestAvg: true
     BestX: false
-    All: false
+    QuizType: All
     BestAvgMinReq: 10
     BestXMinReq: 30
     StartTimestamp: 1753632000
@@ -91,7 +92,7 @@ Contests: #Edit Rewards in Rewards.yml!
     Fastest: true
     BestAvg: true
     BestX: false
-    All: false
+    QuizType: All
     BestAvgMinReq: 30
     BestXMinReq: 60
     StartTimestamp: 1753977600
@@ -106,6 +107,7 @@ Contests: #Edit Rewards in Rewards.yml!
       Fastest: true
       BestAvg: true
       BestX: false
+      QuizType: All
       BestAvgMinReq: 100
       BestXMinReq: 50
       StartTimestamp: 1710604800 #17th March 2024, the day INNK Reunited on HoloFes

@@ -206,18 +206,39 @@ public class DatabaseManager {
         int minAnsForBestX = endedContest.getBestXMinReq();
 
         //Fetch All the Winners
-        ArrayList<PlayerContestStats> mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
-                startTime, endTime, endedContest.getRewardCountByCategory(0));
+        ArrayList<PlayerContestStats> mostAnswerWinners;
+        ArrayList<PlayerContestStats> fastestAnswerWinners;
+        ArrayList<PlayerContestStats> bestAverageWinners;
+        ArrayList<PlayerContestStats> bestXWinners;
+        if(endedContest.getTargetQuizType() == 'X') {
+            //Safeguard because you never know what happens in life
+            return new ArrayList<>();
+        } else if (endedContest.getTargetQuizType() == 'A') {
+            mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(0));
 
-        ArrayList<PlayerContestStats> fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
+            fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
                     startTime, endTime, endedContest.getRewardCountByCategory(1));
 
-        ArrayList<PlayerContestStats> bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
-                startTime, endTime, endedContest.getRewardCountByCategory(2), minAnsForBestAvg);
+            bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(2), minAnsForBestAvg);
 
-        ArrayList<PlayerContestStats> bestXWinners = answersLogs.getBestXWithinTimestamp(connection,
-                startTime, endTime, endedContest.getRewardCountByCategory(3), minAnsForBestX);
+            bestXWinners = answersLogs.getBestXWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(3), minAnsForBestX);
+        } else {
+            char quizType = endedContest.getTargetQuizType();
+            mostAnswerWinners = answersLogs.getTopAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(0), quizType);
 
+            fastestAnswerWinners = answersLogs.getFastestAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(1), quizType);
+
+            bestAverageWinners = answersLogs.getBestAnswerersWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(2), minAnsForBestAvg, quizType);
+
+            bestXWinners = answersLogs.getBestXWithinTimestamp(connection,
+                    startTime, endTime, endedContest.getRewardCountByCategory(3), minAnsForBestX, quizType);
+        }
 
         //Return ArrayLists for issuing rewards
         ArrayList<ArrayList<PlayerContestStats>> fullWinnersList = new ArrayList<>(3);
@@ -277,7 +298,14 @@ public class DatabaseManager {
         connection = getConnection();
         long startTime = contest.getStartTime();
         long endTime = contest.getEndTime();
-        return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, contest.getBestXMinReq(), playerName);
+        if(contest.getTargetQuizType() == 'X') {
+            //Safeguard because you never know what happens in life
+            return null;
+        }
+        if (contest.getTargetQuizType() == 'A') {
+            return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, contest.getBestXMinReq(), playerName);
+        }
+        return answersLogs.getPlayerStatsWithinTimestamp(connection, startTime, endTime, holoQuizID, contest.getBestXMinReq(), playerName, contest.getTargetQuizType());
     }
 
     public List<Double> fetchPrevTimes(int count, Player player) {

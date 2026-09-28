@@ -14,6 +14,7 @@ public class ContestInfo {
     private final int typeCode; //0 -> Daily, 1 -> Weekly , 2 -> Monthly
     private final String contestName;
     private final String rewardCategoryName;
+    private final char targetQuizType; //T, M, A. If its X, something is wrong.
 
     private long startTime;
     private long endTime;
@@ -37,7 +38,8 @@ public class ContestInfo {
     private final int bestXMinReq;
 
     public ContestInfo(int type, boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq, boolean championEnabled, long startTime, long endTime, LocalDate startDate, LocalDate endDate) {
+                       int twoMinReq, int threeMinReq, boolean championEnabled, char quizType,
+                       long startTime, long endTime, LocalDate startDate, LocalDate endDate) {
         this.typeCode = type;
         this.isEnabled = isEnabled;
         this.contestName = getTypeString();
@@ -49,6 +51,7 @@ public class ContestInfo {
         this.bestAvgContestEnabled = twoEnabled;
         this.bestXContestEnabled = threeEnabled;
         this.championRewardEnabled = championEnabled;
+        this.targetQuizType = quizType;
         this.startTime = startTime;
         this.endTime = endTime;
         this.startDate = startDate;
@@ -56,7 +59,8 @@ public class ContestInfo {
     }
 
     public ContestInfo(boolean isEnabled, boolean zeroEnabled, boolean oneEnabled, boolean twoEnabled, boolean threeEnabled,
-                       int twoMinReq, int threeMinReq, boolean championEnabled, long startTime, long endTime, LocalDate startDate, LocalDate endDate, String name, String rewardCategory) {
+                       int twoMinReq, int threeMinReq, boolean championEnabled, char quizType,
+                       long startTime, long endTime, LocalDate startDate, LocalDate endDate, String name, String rewardCategory) {
         this.typeCode = 3;
         this.isEnabled = isEnabled;
         this.contestName = name;
@@ -68,6 +72,7 @@ public class ContestInfo {
         this.bestAvgContestEnabled = twoEnabled;
         this.bestXContestEnabled = threeEnabled;
         this.championRewardEnabled = championEnabled;
+        this.targetQuizType = quizType;
         this.startTime = startTime;
         this.endTime = endTime;
         this.startDate = startDate;
@@ -266,5 +271,9 @@ public class ContestInfo {
 
     public RewardTier getChampionRewards() {
         return championRewards;
+    }
+
+    public char getTargetQuizType() {
+        return targetQuizType;
     }
 }

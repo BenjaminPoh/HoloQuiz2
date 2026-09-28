@@ -20,6 +20,7 @@ public class ConfigFile {
     private static final String WARNING_SRTS_EMPTY_WHITELIST = "SRTS uses an empty Whitelist - No one can claim reward items!";
     private static final String WARNING_CONTEST_INVALID_MIN = "Minimum Requirement for %s cannot be lower than 1!";
     private static final String WARNING_INVALID_CONFIG = "The Value %s for %s is invalid!";
+    private static final String WARNING_CONTEST_INVALID_TYPE = "The Value %s for %s is invalid!";
     private static final String EASTER_EGG_EXTRA_SASS = " What sort of day is %s anyway?";
     private static final String ERROR_CONTEST_FAILED_TO_LOAD = "Failed to load contest of name %s due to invalid timestamp";
     private static final String ERROR_CUSTOM_CONTEST_FAILED_TO_LOAD = "Failed to load Custom contest of name %s due to missing Rewards";
@@ -394,7 +395,7 @@ public class ConfigFile {
     private ContestInfo parseRegularContestConfig(ConfigLoader configLoader, ConfigurationSection contestSection, String key, int code) {
         ContestInfo regularContestInfo = parseContestInfo(configLoader, contestSection, key, code);
         if(regularContestInfo == null) {
-            return new ContestInfo(code, false, false, false, false, false, 0, 0, false, 0, 0, null, null);
+            return new ContestInfo(code, false, false, false, false, false, 0, 0, false, 'X', 0, 0, null, null);
         }
         return regularContestInfo;
     }
@@ -421,6 +422,7 @@ public class ConfigFile {
         boolean fastestEnabled = configLoader.getBoolean(section, "Fastest", false);
         boolean bestAvgEnabled = configLoader.getBoolean(section, "BestAvg", false);
         boolean bestXEnabled = configLoader.getBoolean(section, "BestX", false);
+        String quizType = configLoader.getString(section, "QuizType", "All");
         int bestAvgMinReq = configLoader.getInt(section, "BestAvgMinReq", 1);
         int bestXMinReq = configLoader.getInt(section, "BestXMinReq", 1);
         boolean championBonusEnabled = configLoader.getBoolean(section, "ChampionBonus", false);
@@ -433,6 +435,17 @@ public class ConfigFile {
             String logMessage = String.format(WARNING_CONTEST_INVALID_MIN, "BestXMinReq");
             Logger.getLogger().warn(logMessage);
             bestXEnabled = false;
+        }
+        char formattedQuizType;
+        if (quizType.equalsIgnoreCase("Trivia")) {
+            formattedQuizType = 'T';
+        } else if (quizType.equalsIgnoreCase("Math")) {
+            formattedQuizType = 'M';
+        } else if (quizType.equalsIgnoreCase("All")) {
+            formattedQuizType = 'A';
+        } else {
+            Logger.getLogger().error(String.format(WARNING_CONTEST_INVALID_TYPE, quizType, key));
+            formattedQuizType = 'A';
         }
         long startTimestamp = configLoader.getLong(section, "StartTimestamp", 0);
         long endTimestamp = configLoader.getLong(section, "EndTimestamp", 0);
@@ -448,10 +461,12 @@ public class ConfigFile {
         Logger.getLogger().debug(String.format("%s: Start %d (%s) End %d (%s)", code, startTimestamp, startDate, endTimestamp, endDate));
         if(code > 2) {
             String rewardCategory = configLoader.getString(section, "RewardCategory", "");
-            return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, championBonusEnabled,
+            return new ContestInfo(contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled,
+                    bestAvgMinReq, bestXMinReq, championBonusEnabled, formattedQuizType,
                     startTimestamp, endTimestamp, startDate, endDate, key, rewardCategory);
         }
-        return new ContestInfo(code,contestStatus,  mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled, bestAvgMinReq, bestXMinReq, championBonusEnabled,
+        return new ContestInfo(code, contestStatus, mostEnabled, fastestEnabled, bestAvgEnabled, bestXEnabled,
+                bestAvgMinReq, bestXMinReq, championBonusEnabled, formattedQuizType,
                 startTimestamp, endTimestamp, startDate, endDate);
     }
 
