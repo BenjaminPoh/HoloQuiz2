@@ -15,7 +15,6 @@ public class MathQuestionGenerator {
     public static final String ROUND_2DP_INST = "Round off to 2 decimal places: ";
     public static final String ROUND_3DP_INST = "Round off to 3 decimal places: ";
 
-
     private final int mathNumberLimit;
     private final boolean useNormalDistribution;
     private final boolean mathDivisorLimit;

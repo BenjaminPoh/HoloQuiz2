@@ -41,7 +41,10 @@ public class Question {
     }
 
     public String getSource() {
-        return source;
+        if (this.source == null) {
+            return "";
+        }
+        return this.source;
     }
 
 }

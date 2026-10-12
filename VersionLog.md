@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.9.2 - 12 Oct 2026 - Fixed Null error.
 - v 3.9.1 - 27 Sep 2026 - Improved logging and Contest Support for Mixed modes to discriminate specific quiz types
 - v 3.9.0 - 19 Jun 2026 - Implemented ban feature
 - v 3.8.3 - 25 May 2026 - Autocomplete no longer reveals vanished players
