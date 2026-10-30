@@ -133,16 +133,22 @@ public class MathQuestionGenerator {
     public Question parser(String questionColour, String question, double answer) {
         List<String> finalAnswer = new ArrayList<>();
 
-        //Exact answer wanted if 3dp or less
+        //Require Exact Answer if integer
         if(answer % 1 == 0) {
             finalAnswer.add(String.valueOf((long) answer));
             return new Question(questionColour + question, finalAnswer, null  , new ArrayList<>(), null, null);
         }
-        if((answer * 1000) % 1 == 0) {
-            finalAnswer.add(String.valueOf(answer));
-            return new Question(questionColour + question, finalAnswer, null  , new ArrayList<>(), null, null);
-        }
 
+        //Require Exact Answer if 3 decimal places or less
+        double scaled = answer * 1000;
+        double nearest = Math.rint(scaled);
+        if (Math.abs(scaled - nearest) < 1e-9) {
+            finalAnswer.add(String.valueOf(answer));
+            return new Question(questionColour + question, finalAnswer, null, new ArrayList<>(), null, null);
+        }
+        //From here on, answer needs to be rounded
+
+        //Floating point rounding + Negative dance
         boolean isNegative = answer < 0;
         double tempAnswer;
         if(mathChaosMode) {
@@ -157,6 +163,7 @@ public class MathQuestionGenerator {
         }
         finalAnswer.add(String.valueOf(tempAnswer));
 
+        //Require 3dp if Chaos Mode, 2dp otherwise.
         if(mathChaosMode) {
             question = questionColour + ROUND_3DP_INST + question;
             return new Question(question, finalAnswer, null  , new ArrayList<>(), null, null);
