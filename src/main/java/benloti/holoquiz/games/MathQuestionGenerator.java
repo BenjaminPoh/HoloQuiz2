@@ -48,10 +48,6 @@ public class MathQuestionGenerator {
         this.questionColour = configFile.getMathQuestionColour();
     }
 
-    public String getMathQuestionColour() {
-        return this.questionColour;
-    }
-
     public String getMathQuestion() {
         Random randFunc = new Random();
         StringBuilder stringBuilder = new StringBuilder();
@@ -143,7 +139,7 @@ public class MathQuestionGenerator {
         double scaled = answer * 1000;
         double nearest = Math.rint(scaled);
         if (Math.abs(scaled - nearest) < 1e-9) {
-            finalAnswer.add(String.valueOf(answer));
+            finalAnswer.add(String.valueOf(nearest / 1000.0));
             return new Question(questionColour + question, finalAnswer, null, new ArrayList<>(), null, null);
         }
         //From here on, answer needs to be rounded
@@ -170,6 +166,10 @@ public class MathQuestionGenerator {
         }
         question = questionColour + ROUND_2DP_INST + question;
         return new Question(question, finalAnswer, null  , new ArrayList<>(), null, null);
+    }
+
+    public String getMathQuestionColour() {
+        return this.questionColour;
     }
 
     private void generateChaoticQuestion(Random randFunc, StringBuilder stringBuilder, Stack<Integer> parenthesesPosition, int operationsUsed) {

@@ -1,6 +1,7 @@
 ## Version Log!
 For my own entertainment I suppose.
 
+- v 3.9.4 - 02 Nov 2026 - Fixed floating point error again
 - v 3.9.3 - 30 Oct 2026 - Fixed floating point error
 - v 3.9.2 - 12 Oct 2026 - Fixed Null error
 - v 3.9.1 - 27 Sep 2026 - Improved logging and Contest Support for Mixed modes to discriminate specific quiz types
